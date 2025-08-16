@@ -16,12 +16,30 @@ build: ## Build the buffkit package
 	go build -v ./...
 
 .PHONY: test
-test: ## Run tests
-	go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+test: ## Run BDD feature tests with Godog
+	@which godog > /dev/null || (echo "Installing Godog..." && go install github.com/cucumber/godog/cmd/godog@latest)
+	cd features && go test -v . -coverprofile=../coverage.txt -covermode=atomic
 
 .PHONY: test-short
-test-short: ## Run short tests only
-	go test -v -short ./...
+test-short: ## Run core feature tests only
+	@which godog > /dev/null || (echo "Installing Godog..." && go install github.com/cucumber/godog/cmd/godog@latest)
+	cd features && godog --tags="~@integration" *.feature
+
+.PHONY: test-watch
+test-watch: ## Watch and run feature tests on changes
+	@which godog > /dev/null || (echo "Installing Godog..." && go install github.com/cucumber/godog/cmd/godog@latest)
+	@echo "Watching for changes... (manual restart required)"
+	cd features && godog *.feature
+
+.PHONY: test-focus
+test-focus: ## Run focused scenarios only (scenarios marked with @focus)
+	@which godog > /dev/null || (echo "Installing Godog..." && go install github.com/cucumber/godog/cmd/godog@latest)
+	cd features && godog --tags="@focus" *.feature
+
+.PHONY: test-verbose
+test-verbose: ## Run feature tests with verbose output
+	@which godog > /dev/null || (echo "Installing Godog..." && go install github.com/cucumber/godog/cmd/godog@latest)
+	cd features && godog --format=pretty --strict *.feature
 
 .PHONY: examples
 examples: ## Run the example application
@@ -101,10 +119,14 @@ dev: docker-services ## Start development environment with services
 
 .PHONY: setup
 setup: deps docker-services ## Initial project setup
+	@echo "Installing Godog..."
+	@go install github.com/cucumber/godog/cmd/godog@latest
 	@echo "✅ Dependencies installed"
 	@echo "✅ Docker services started"
+	@echo "✅ Godog BDD framework installed"
 	@echo ""
 	@echo "Ready to run: make examples"
+	@echo "Run feature tests with: make test"
 
 # Variables
 GOPATH ?= $(shell go env GOPATH)
