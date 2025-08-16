@@ -1917,7 +1917,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 // Test runner
 func TestFeatures(t *testing.T) {
 	suite := godog.TestSuite{
-		ScenarioInitializer: InitializeScenario,
+		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
+			InitializeScenario(ctx)
+			InitializeSSEReconnectionScenario(ctx)
+		},
 		Options: &godog.Options{
 			Format:   "pretty",
 			Paths:    []string{"."},

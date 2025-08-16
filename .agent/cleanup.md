@@ -1,67 +1,78 @@
-# Buffkit Cleanup Tasks
+# Cleanup Items
 
-## Completed
-- [x] Configure Codecov integration with token
-- [x] Fix coverage reporting to capture actual package coverage (24% from feature tests)
-- [x] Add proper -coverpkg flags to test commands
-- [x] Create initial unit test for Version() function
+## SSE Reconnection Implementation
 
-## High Priority
-- [ ] Fix import issues - auth.r{} renderer struct conflicts with package imports
-- [ ] Add proper Buffalo renderer integration instead of stub renderers
-- [ ] Implement actual template embedding and loading from embed.FS
-- [ ] Fix the formatInt function in secure/middleware.go (currently broken)
-- [ ] Implement proper CSRF token generation using crypto/rand
-- [ ] Add proper error handling in all middleware functions
+### Immediate Cleanup Needed
+- [ ] Add proper error handling for ring buffer operations
+- [ ] Implement proper session ID validation/signing to prevent spoofing
+- [ ] Add metrics/monitoring hooks for production use
+- [ ] Implement Redis-based session storage for multi-server deployments
+- [ ] Add rate limiting for reconnection attempts to prevent abuse
 
-## Medium Priority
-- [ ] Replace simple hash functions with crypto/sha256 for content hashing
-- [ ] Implement proper rate limiting with Redis backend
-- [ ] Add connection pooling for database connections
-- [ ] Implement proper context handling in all async operations
-- [ ] Add graceful shutdown for SSE broker
-- [ ] Implement actual HTML parsing for component expansion (currently stubbed)
+### Code Quality Improvements
+- [ ] Extract magic numbers into named constants (e.g., timeouts, buffer sizes)
+- [ ] Add comprehensive logging with levels (debug, info, warn, error)
+- [ ] Implement proper context cancellation throughout the SSE pipeline
+- [ ] Add connection pooling for better resource management
+- [ ] Create integration tests for the full reconnection flow
 
-## Low Priority
-- [ ] Add comprehensive logging with levels
-- [ ] Implement metrics collection for monitoring
-- [ ] Add request ID tracking through middleware chain
-- [ ] Create proper test fixtures for harness
-- [ ] Add benchmark tests for critical paths
-- [ ] Document all public APIs with godoc comments
+### Performance Optimizations
+- [ ] Implement lazy loading of buffered events
+- [ ] Add compression for large event payloads
+- [ ] Optimize ring buffer allocation strategy
+- [ ] Implement event batching for high-throughput scenarios
+- [ ] Add configurable backpressure mechanisms
 
-## Technical Debt
-- [ ] Remove duplicate renderer structs (r{}) across packages
-- [ ] Consolidate error types into single errors package
-- [ ] Standardize configuration loading across all packages
-- [ ] Add validation for all user inputs
-- [ ] Implement proper session storage backend
-- [ ] Add migration versioning and rollback support
+### Security Enhancements
+- [ ] Implement CSRF protection for SSE endpoints
+- [ ] Add session token rotation on reconnection
+- [ ] Implement IP-based validation for session ownership
+- [ ] Add configurable max connections per session
+- [ ] Implement event encryption for sensitive data
 
-## Missing Features from Plan
-- [ ] Implement actual migration runner logic
-- [ ] Add grift tasks for migrations and import maps
-- [ ] Create embedded default templates
-- [ ] Implement template shadowing mechanism
-- [ ] Add proper SSE client JavaScript
-- [ ] Implement job retry logic with backoff
-- [ ] Add email template support
-- [ ] Create more default components
+### Documentation Needs
+- [ ] Add inline documentation for all public APIs
+- [ ] Create usage examples for common scenarios
+- [ ] Document configuration options and defaults
+- [ ] Add troubleshooting guide for common issues
+- [ ] Create performance tuning guide
 
-## Testing Gaps
-- [ ] Unit tests for all packages (currently 24% coverage from feature tests)
-- [ ] Integration tests for middleware chain
-- [ ] SSE connection tests (partially covered by feature tests)
-- [ ] Component rendering tests
-- [ ] Auth flow tests
-- [ ] Job processing tests
-- [ ] Email sending tests
-- [ ] Increase coverage to 70%+ target
+### Testing Gaps
+- [ ] Add unit tests for session manager
+- [ ] Add unit tests for broker event handling
+- [ ] Test buffer overflow scenarios
+- [ ] Test rapid connect/disconnect cycles
+- [ ] Add load testing for memory usage validation
+- [ ] Test cross-server session handoff (Redis scenario)
 
-## Documentation Needs
-- [ ] API documentation for each package
-- [ ] Migration guide from Rails/Loco
-- [ ] Component authoring guide
-- [ ] Deployment guide
-- [ ] Performance tuning guide
-- [ ] Security best practices
+### Integration Work
+- [ ] Wire SSE handler into main Buffkit framework
+- [ ] Add configuration options to Buffkit Config struct
+- [ ] Create middleware for SSE authentication
+- [ ] Integrate with existing auth system
+- [ ] Add htmx-specific event formatting support
+
+### Monitoring & Observability
+- [ ] Add Prometheus metrics for:
+  - Active connections
+  - Buffer usage
+  - Reconnection rate
+  - Event throughput
+  - Memory usage per session
+- [ ] Add structured logging with correlation IDs
+- [ ] Create health check endpoint for SSE subsystem
+- [ ] Add distributed tracing support
+
+### Technical Debt
+- [ ] Refactor getAllSessionIDs() to properly iterate through SessionManager
+- [ ] Improve event parsing in test client (currently simplified)
+- [ ] Add proper cleanup for abandoned sessions
+- [ ] Implement exponential backoff for reconnection attempts
+- [ ] Add circuit breaker for failing clients
+
+### Future Enhancements
+- [ ] Add support for event replay from persistent storage
+- [ ] Implement event compression for bandwidth optimization
+- [ ] Add support for binary event data
+- [ ] Create client SDK for easier integration
+- [ ] Add WebSocket fallback for older browsers

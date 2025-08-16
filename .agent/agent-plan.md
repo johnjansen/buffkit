@@ -1,110 +1,83 @@
-# Buffkit Implementation Plan
+# Agent Plan: SSE Reconnection with State Recovery
 
-## Current Sprint: Implement Simplest Pending BDD Scenario
+## Problem Statement
+Implement a robust Server-Sent Events (SSE) reconnection mechanism with state recovery that handles:
+- Client disconnections (network issues, browser refresh, etc.)
+- Missed events during disconnection
+- Client identity persistence across reconnections
+- Event replay/catch-up on reconnection
+- Race conditions between disconnect and reconnect
 
-### Target: "Mail preview endpoint is available in dev mode"
+## Why This Is Hard
+1. **State Management**: Need to track client state across disconnections
+2. **Event Buffering**: Must buffer events for disconnected clients without memory leaks
+3. **Identity**: Clients need persistent identity that survives reconnections
+4. **Timing**: Handle rapid disconnect/reconnect cycles gracefully
+5. **Cleanup**: Distinguish between temporary disconnects and permanent abandonment
 
-This is the simplest pending scenario because:
-- Clear, single responsibility (show mail preview in dev mode)
-- No complex dependencies (just needs basic routing and template)
-- Testable in isolation
-- Foundation for other mail features
+## Implementation Strategy
 
-### Implementation Steps
+### Phase 1: Client Identity System
+- [ ] Implement persistent client IDs (using cookies/headers)
+- [ ] Create client session tracking
+- [ ] Build reconnection detection logic
 
-#### Step 1: Create Mail Preview Handler
-**What**: Create a handler that serves the mail preview interface at `/__mail/preview`
-**How**: 
-1. Create `mail/preview_handler.go`
-2. Define `PreviewHandler` function that returns `buffalo.Handler`
-3. Check if DevMode is enabled, return 404 if not
-4. For now, return a simple HTML template with mock data
+### Phase 2: Event Buffering
+- [ ] Create per-client event buffer with size limits
+- [ ] Implement event sequence numbering
+- [ ] Add TTL (time-to-live) for buffered events
 
-**Why**: This establishes the endpoint and conditional dev-mode behavior
+### Phase 3: Reconnection Protocol
+- [ ] Detect reconnection attempts
+- [ ] Replay missed events from buffer
+- [ ] Handle "last-event-id" header for catch-up
 
-#### Step 2: Create Mail Preview Template
-**What**: Create an embedded HTML template for the preview interface
-**How**:
-1. Create `mail/templates/preview.html`
-2. Use Go's `embed` package to embed the template
-3. Create a basic HTML page with:
-   - Title: "Mail Preview"
-   - Empty list placeholder for emails
-   - Basic styling
+### Phase 4: Resource Management
+- [ ] Implement buffer cleanup strategies
+- [ ] Add configurable buffer sizes and TTLs
+- [ ] Create monitoring/metrics for buffer usage
 
-**Why**: Provides visual feedback that the endpoint works
+### Phase 5: BDD Testing
+- [ ] Write comprehensive feature scenarios
+- [ ] Test edge cases (rapid reconnects, buffer overflow)
+- [ ] Validate memory usage and cleanup
 
-#### Step 3: Wire Preview Handler into Buffkit
-**What**: Register the preview handler when DevMode is true
-**How**:
-1. In `buffkit.go`, add preview handler registration in `Wire()`
-2. Only register if `config.DevMode == true`
-3. Mount at `GET /__mail/preview`
+## Technical Approach
 
-**Why**: Integrates the feature into the main wiring flow
-
-#### Step 4: Update Test Implementation
-**What**: Implement the pending test steps
-**How**:
-1. Update `features/steps_test.go`
-2. Implement `iVisit()` to make HTTP GET request
-3. Implement `iShouldSeeTheMailPreviewInterface()` to check response body
-4. Implement `theResponseStatusShouldBe()` to verify status code
-5. Implement `iShouldSeeAListOfSentEmails()` to check for list element
-
-**Why**: Makes the BDD scenario pass and validates our implementation
-
-#### Step 5: Run and Verify
-**What**: Execute the specific BDD scenario
-**How**:
-```bash
-cd buffkit
-go test -v ./features -run "TestFeatures/Mail_preview_endpoint_is_available_in_dev_mode"
+### Client Identity
+```go
+type ClientSession struct {
+    ID            string
+    LastEventID   string
+    LastSeen      time.Time
+    EventBuffer   *ring.Buffer
+    Reconnections int
+}
 ```
 
-**Why**: Confirms implementation meets requirements
+### Event Buffering
+- Use ring buffer with configurable size (e.g., 1000 events)
+- Store events with timestamps and sequence numbers
+- Clean up buffers for clients gone > 5 minutes
 
-### Success Criteria
-- [x] Scenario "Mail preview endpoint is available in dev mode" passes
-- [x] Endpoint returns 200 in dev mode
-- [x] Endpoint returns 404 in production mode
-- [x] Basic HTML interface is displayed
+### Reconnection Flow
+1. Client connects with session cookie/header
+2. Server checks for existing session
+3. If reconnecting, replay buffered events
+4. Continue with live events
 
-### Code Locations
-- `mail/preview_handler.go` - Handler implementation
-- `mail/templates/preview.html` - Embedded template
-- `buffkit.go` - Wiring logic
-- `features/steps_test.go` - Test step implementations
+## Success Criteria
+- Clients can reconnect after network interruption
+- No events lost during brief disconnections (< 30s)
+- Memory usage remains bounded
+- Clean separation between temporary and permanent disconnects
+- Full BDD test coverage
 
-### Estimated Time: 30 minutes
-- 10 min: Handler and template
-- 10 min: Wiring and integration
-- 10 min: Test implementation and verification
+## Risks and Mitigations
+- **Memory leak**: Use ring buffers and TTLs
+- **Race conditions**: Use proper locking/channels
+- **Client spoofing**: Sign session IDs cryptographically
+- **Buffer overflow**: Drop oldest events, notify client
 
-## Next Simplest Scenarios (Priority Order)
-1. "Mail preview endpoint is not available in production" - Complement to current
-2. "Development mail sender logs emails" - Build on preview foundation
-3. "Development mail sender stores email content" - Extend mail storage
-
-## Previous Implementation Plan (Archive)
-
-### Phase 1: Core Structure & Wire Function ✅
-- Created main `buffkit.go` with Wire() function and Config struct
-- Defined Kit struct to hold references to all subsystems
-- Implemented basic error handling and initialization
-
-### Phase 2: Package Stubs (In Progress)
-- SSR Package (`ssr/`) - Partially complete
-- Auth Package (`auth/`) - Partially complete
-- Jobs Package (`jobs/`) - Pending
-- Mail Package (`mail/`) - Current focus
-- Import Maps Package (`importmap/`) - Pending
-- Secure Package (`secure/`) - Partially complete
-- Components Package (`components/`) - Pending
-
-### Architecture Decisions
-- Use embedded files for default templates
-- Keep interfaces minimal and clear
-- Avoid external dependencies where possible
-- Make everything overridable/shadowable
-- Focus on composability over configuration
+## Current Status
+Starting implementation - no code written yet

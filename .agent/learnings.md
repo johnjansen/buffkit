@@ -1,259 +1,157 @@
-# Buffkit Implementation Learnings
+# Learnings
 
-## Architecture Insights
+## SSE Reconnection with State Recovery
 
-### 1. Package Organization
-- Keeping packages focused and single-purpose makes the system more composable
-- Each package should expose minimal interfaces to reduce coupling
-- The registry pattern works well for extensible components
+### Complex Problem Characteristics
+1. **State Management Complexity**: Managing client state across disconnections requires careful synchronization between multiple components (broker, session manager, clients)
+2. **Race Conditions**: Multiple goroutines accessing shared state necessitates proper mutex usage and careful ordering of operations
+3. **Memory Management**: Ring buffers provide bounded memory usage but require careful size tuning based on expected usage patterns
+4. **Identity Persistence**: Using cookies + headers provides redundancy for session ID transmission across different client types
 
-### 2. Buffalo Integration
-- Buffalo's middleware chain is powerful but needs careful ordering
-- Response wrapping for component expansion must happen early in the chain
-- Session handling needs to be initialized before auth middleware
+### Architectural Decisions That Worked
 
-### 3. Interface Design
-- Small, focused interfaces (like `Sender` for mail) make testing easier
-- Providing both interface and default implementation gives flexibility
-- Global singletons (like stores) need careful initialization order
+#### Separation of Concerns
+- **Session Manager**: Handles persistent state, cleanup, and validation
+- **Broker**: Manages active connections and message routing
+- **Handler**: Deals with HTTP/SSE protocol specifics
+- This separation makes each component testable and maintainable
 
-## Technical Discoveries
+#### Ring Buffer for Event Storage
+- Provides automatic oldest-event eviction when full
+- Bounded memory usage prevents runaway memory consumption
+- Simple to implement and reason about
+- Trade-off: May lose events during extended disconnections
 
-### 1. SSE Implementation
-- Heartbeats are critical to keep connections alive through proxies
-- Non-blocking channel sends prevent slow clients from blocking the broker
-- Need proper cleanup on client disconnect to avoid goroutine leaks
+#### Dual-Channel Communication
+- Using both cookies and headers for session ID allows flexibility
+- Cookies work well for browsers
+- Headers work for programmatic clients
+- Fallback mechanism increases robustness
 
-### 2. Component System
-- Server-side component expansion needs HTML parsing, not just string replacement
-- Slot system requires careful extraction of nested content
-- Component middleware must only process HTML responses
+### Implementation Insights
 
-### 3. Import Maps
-- Browser support is good but needs polyfill for older browsers
-- CDN-first approach works well but needs fallback for offline
-- Content hashing for vendored files prevents cache issues
+#### Goroutine Lifecycle Management
+- Always use WaitGroups for graceful shutdown
+- Cleanup goroutines should have configurable intervals
+- Stop channels should be buffered to prevent blocking
 
-## Go-Specific Patterns
+#### Event Replay Strategy
+- Mark replayed events with metadata rather than modifying content
+- Send replay markers (start/end) to help clients manage state
+- Small delays between replayed events prevent overwhelming clients
+- Original timestamps should be preserved for event ordering
 
-### 1. Embedding
-- `embed.FS` is perfect for default templates and assets
-- Shadowing requires checking app files before embedded files
-- Need to handle both development (file system) and production (embedded) modes
+#### Session Validation
+- Simply checking "is session active" prevents basic hijacking
+- More sophisticated validation (IP, user agent) adds security but may break legitimate reconnections
+- Balance between security and usability is context-dependent
 
-### 2. Context Usage
-- Buffalo's Context wraps standard context.Context
-- Need careful type assertions when retrieving values from context
-- Context should flow through all operations for proper cancellation
+### Testing Challenges
 
-### 3. Error Handling
-- Sentinel errors (like `ErrUserNotFound`) improve error checking
-- Wrapping errors with context helps debugging
-- Middleware errors need special handling to not break the chain
+#### Timing Issues
+- SSE connections are inherently asynchronous
+- Tests need appropriate sleeps/waits for events to propagate
+- Consider using channels or callbacks for synchronization in tests
 
-## Challenges Encountered
+#### Connection Management
+- httptest.Server provides good isolation for tests
+- Must properly close connections to avoid resource leaks
+- Mock clients need careful lifecycle management
 
-### 1. Circular Dependencies
-- Auth package referencing mail for welcome emails creates cycles
-- Solution: Use interfaces and dependency injection
-- Event-driven approach (jobs) decouples packages nicely
+#### Event Parsing
+- SSE format parsing in tests can be simplified but must handle edge cases
+- Line-based parsing works but needs buffering for multi-line data
 
-### 2. Database Abstraction
-- `database/sql` is limiting for complex queries
-- Need query builder without full ORM overhead
-- Migration system needs dialect-specific SQL handling
+### Performance Considerations
 
-### 3. Testing Complexity
-- Mocking Buffalo context is non-trivial
-- Need test helpers for common scenarios
-- Integration tests require full app setup
+#### Buffer Sizing
+- 1000 events per session is reasonable for most applications
+- Consider memory usage: 1000 clients × 1000 events × event size
+- Make buffer size configurable based on deployment constraints
 
-## Design Decisions
+#### Cleanup Intervals
+- 10-second cleanup interval balances resource usage with responsiveness
+- Shorter intervals increase CPU usage
+- Longer intervals may delay memory reclamation
 
-### 1. No ORM by Default
-- Keeps the framework lightweight
-- Allows users to choose their preferred solution
-- SQL knowledge requirement might limit adoption
+#### Connection Timeouts
+- 5-second timeout for event delivery prevents zombie connections
+- 30-second buffer TTL handles typical network interruptions
+- Both should be configurable based on use case
 
-### 2. SSR-First Approach
-- Aligns with modern trends (HTMX, LiveView, etc.)
-- Simplifies deployment (no separate API/frontend)
-- May need education for SPA-minded developers
-
-### 3. Battery Included Philosophy
-- Reduces decision fatigue for developers
-- Ensures consistent patterns across apps
-- Risk of bloat if not carefully managed
-
-## Performance Considerations
-
-### 1. Component Rendering
-- HTML parsing on every request has overhead
-- Consider caching expanded components
-- Maybe pre-process at build time for production
-
-### 2. SSE Scalability
-- In-memory broker doesn't scale horizontally
-- Need Redis pub/sub for multi-instance deployments
-- Consider using dedicated SSE service
-
-### 3. Job Processing
-- Asynq is solid but Redis-only
-- Consider supporting other backends (Postgres, SQS)
-- Need careful timeout and retry configuration
-
-## Security Observations
-
-### 1. CSRF Protection
-- Must be carefully integrated with AJAX requests
-- Token rotation strategy needs consideration
-- SameSite cookies provide additional protection
-
-### 2. Session Management
-- Cookie-based sessions have size limits
-- Need secure session store for production
-- Consider JWT for stateless alternative
-
-### 3. Content Security Policy
-- Import maps require careful CSP configuration
-- Inline scripts need nonces or unsafe-inline
-- Development vs production CSP needs differ
-
-## Future Improvements
-
-### 1. Developer Experience
-- Need better error messages
-- Hot reload for templates
-- Browser dev tools integration
-
-### 2. Modularity
-- Make each package truly optional
-- Plugin system for third-party packages
-- Configuration presets for common use cases
-
-### 3. Production Readiness
-- Add observability (metrics, tracing)
-- Implement health checks
-- Add deployment templates (Docker, K8s)
-
-## Comparison with Rails
-
-### What Works Well
-- Convention over configuration philosophy
-- Integrated stack reduces complexity
-- Familiar patterns for Rails developers
-
-### What's Different
-- Type safety catches errors at compile time
-- No ActiveRecord magic (explicit is better)
-- Deployment is simpler (single binary)
-
-### What's Missing
-- Rich ecosystem of gems
-- Mature admin interfaces
-- Advanced ORM features
-
-## Key Takeaways
-
-1. **Start simple, iterate** - The stub approach lets us test integration early
-2. **Interfaces over implementations** - Allows flexibility without breaking changes
-3. **Documentation as code** - Embed docs and examples in the codebase
-4. **Test the harness** - Having a working example validates the design
-5. **Performance last** - Get it working, then optimize based on real usage
-
-## CI/CD and Project Health
-
-### Badge Implementation
-- GitHub Actions status badges provide immediate build feedback
-- Codecov integration requires token setup but works without for public repos
-- Go Report Card automatically analyzes public repos
-- Multiple badge services create comprehensive project health overview
-
-### Testing Evolution
-- Moved from unit tests to BDD with Godog
-- Feature files serve as living documentation
-- Step definitions can be reused across scenarios
-- Test suite runs in <1 second maintaining fast feedback
-
-### Linting Insights
-- golangci-lint catches deprecated APIs and style issues
-- BeforeScenario deprecated in favor of Before with context
-- Error checking must be explicit (no ignored returns)
-- Boolean comparisons should be simplified
-
-### Documentation Structure
-- README badges should be centered and organized by category
-- CONTRIBUTING.md essential for open source projects
-- SECURITY.md establishes trust and reporting process
-- Feature files double as user documentation
-
-### Coverage Strategy
-- Run tests with -coverprofile for coverage data
-- Upload to Codecov for tracking over time
-- Set reasonable targets (70% project, 80% patch)
-- Exclude test files and generated code from coverage
-
-## BDD Testing Implementation
-
-### Mail Preview Feature
-- PreviewHandler was already implemented but had redundant environment check
-- Handler is conditionally mounted based on DevMode flag during wiring
-- Global mail sender must be set during Wire() for mail.Send() to work
-- Test environment differs from development environment in Buffalo app setup
-
-### Test Step Implementation Patterns
-- Missing step definitions cause "pending" status in scenarios
-- Step functions can be simple wrappers (e.g., checking DevMode flag)
-- HTTP testing uses httptest.NewRecorder() for response capture
-- Response body inspection validates feature functionality
-
-### Progressive Scenario Implementation
-- Started with 15/37 scenarios passing (24% coverage)
-- Implemented mail preview: 17/37 scenarios passing
-- Implemented mail logging: 18/37 scenarios passing
-- Each scenario builds on existing infrastructure
-
-### Key Testing Discoveries
-- Step registration must match exact Gherkin text including "And/Given/When/Then"
-- Buffalo app environment ("test" vs "development") affects behavior
-- DevSender automatically stores messages for preview functionality
-- Test isolation requires resetting suite state between scenarios
-
-### Authentication Implementation Insights
+### Security Learnings
 
 #### Session Management
-- Buffalo sessions require explicit Save() call to persist changes
-- Session cookies must be properly extracted and passed between test requests
-- Cookie header format: "name=value; name2=value2" (semicolon separated)
-- Test apps need SessionName configured for consistent cookie handling
+- Cryptographically secure session IDs prevent guessing
+- HttpOnly cookies prevent XSS attacks
+- SameSite=Strict prevents CSRF for modern browsers
+- Session validation must balance security with usability
 
-#### Store Configuration
-- Wire() was overwriting memory store with nil when no DB configured
-- Solution: Check if SQLStore is nil before setting, fallback to MemoryStore
-- GetStore() creates new MemoryStore instance each time if store is nil
-- Must use consistent store instance across test lifecycle
+#### Resource Limits
+- Buffer size limits prevent memory exhaustion attacks
+- Connection limits per session prevent resource abuse
+- Rate limiting (not yet implemented) would prevent reconnection storms
 
-#### User Model
-- User struct is minimal: ID, Email, PasswordDigest, timestamps
-- No Name field - keep user data lean
-- PasswordDigest has json:"-" tag to prevent accidental exposure
-- Create() generates UUID for user ID automatically
+### BDD Testing Insights
 
-#### Testing Authentication Flow
-1. Set up MemoryStore before Wire() to ensure consistency
-2. Create user in store with Create() to get generated ID
-3. Set user_id in session to simulate login
-4. Extract session cookie from response for subsequent requests
-5. Pass cookie header in protected route requests
+#### Scenario Complexity
+- Complex scenarios require more setup code
+- Helper functions (like readEvents) reduce duplication
+- Table-driven tests would further improve maintainability
 
-#### Middleware Testing
-- RequireLogin returns buffalo.Handler wrapper
-- Middleware redirects with StatusSeeOther (303) for POST-to-GET
-- Can test middleware is callable without full request cycle
-- Protected handlers need auth context from session
+#### State Management in Tests
+- Test suites need careful state isolation
+- Reset functions must be comprehensive
+- Concurrent access requires proper synchronization
 
-#### Progress Acceleration
-- Implemented 4 authentication scenarios in one session
-- Jumped from 19/37 to 23/37 scenarios (62.2%)
-- Authentication unlocks many dependent scenarios
-- Proper test infrastructure accelerates future implementations
+#### Feature File Design
+- Comprehensive scenarios help think through edge cases
+- Natural language helps communicate intent
+- Some scenarios may be too complex for simple step definitions
+
+### Production Readiness Gaps
+
+#### Monitoring
+- Need metrics for buffer usage, reconnection rates, memory usage
+- Structured logging would improve debugging
+- Distributed tracing would help in microservice environments
+
+#### Scalability
+- Current in-memory storage won't work for multiple servers
+- Redis-based session storage would enable horizontal scaling
+- Event sourcing could provide better event persistence
+
+#### Resilience
+- Circuit breakers for failing clients would prevent cascade failures
+- Exponential backoff for reconnections would prevent thundering herd
+- Health checks would enable proper load balancer integration
+
+### Code Quality Observations
+
+#### Type Safety
+- Go's type system helps catch many errors at compile time
+- Interface definitions would improve testability
+- Generic types (Go 1.18+) could reduce code duplication
+
+#### Error Handling
+- Errors should be wrapped with context
+- Silent failures in goroutines are dangerous
+- Proper error propagation improves debuggability
+
+#### Concurrency Patterns
+- Channels for communication between goroutines works well
+- Mutexes for shared state protection is necessary but adds complexity
+- Consider alternatives like sync.Map for specific use cases
+
+### Next Steps for Improvement
+
+1. **Add Redis support** for horizontal scaling
+2. **Implement rate limiting** to prevent abuse
+3. **Add metrics collection** for production monitoring
+4. **Create client SDKs** for easier integration
+5. **Improve test coverage** especially for edge cases
+6. **Add benchmarks** to validate performance assumptions
+7. **Implement event compression** for bandwidth optimization
+8. **Add circuit breakers** for resilience
+9. **Create integration tests** for full system validation
+10. **Document deployment patterns** for production use
