@@ -10,9 +10,9 @@ import (
 
 // RegisterTasks registers import map management tasks with Grift
 func RegisterTasks(manager *Manager) {
-	grift.Namespace("importmap", func() {
-		grift.Desc("pin", "Pin a JavaScript package to the import map")
-		grift.Add("pin", func(c *grift.Context) error {
+	_ = grift.Namespace("importmap", func() {
+		_ = grift.Desc("pin", "Pin a JavaScript package to the import map")
+		_ = grift.Add("pin", func(c *grift.Context) error {
 			if len(c.Args) < 2 {
 				return fmt.Errorf("usage: buffalo task importmap:pin <name> <url>")
 			}
@@ -37,8 +37,8 @@ func RegisterTasks(manager *Manager) {
 			return nil
 		})
 
-		grift.Desc("unpin", "Remove a package from the import map")
-		grift.Add("unpin", func(c *grift.Context) error {
+		_ = grift.Desc("unpin", "Remove a package from the import map")
+		_ = grift.Add("unpin", func(c *grift.Context) error {
 			if len(c.Args) < 1 {
 				return fmt.Errorf("usage: buffalo task importmap:unpin <name>")
 			}
@@ -55,8 +55,8 @@ func RegisterTasks(manager *Manager) {
 			return nil
 		})
 
-		grift.Desc("list", "List all pinned packages")
-		grift.Add("list", func(c *grift.Context) error {
+		_ = grift.Desc("list", "List all pinned packages")
+		_ = grift.Add("list", func(c *grift.Context) error {
 			imports := manager.List()
 
 			if len(imports) == 0 {
@@ -87,8 +87,8 @@ func RegisterTasks(manager *Manager) {
 			return nil
 		})
 
-		grift.Desc("vendor", "Download all remote packages to local vendor directory")
-		grift.Add("vendor", func(c *grift.Context) error {
+		_ = grift.Desc("vendor", "Download all remote packages to local vendor directory")
+		_ = grift.Add("vendor", func(c *grift.Context) error {
 			fmt.Println("Vendoring remote packages...")
 
 			// Load current import map
@@ -121,8 +121,8 @@ func RegisterTasks(manager *Manager) {
 			return nil
 		})
 
-		grift.Desc("update", "Update all vendored packages to latest versions")
-		grift.Add("update", func(c *grift.Context) error {
+		_ = grift.Desc("update", "Update all vendored packages to latest versions")
+		_ = grift.Add("update", func(c *grift.Context) error {
 			fmt.Println("Updating vendored packages...")
 
 			// Load current import map
@@ -144,8 +144,8 @@ func RegisterTasks(manager *Manager) {
 			return nil
 		})
 
-		grift.Desc("init", "Initialize import map with default packages")
-		grift.Add("init", func(c *grift.Context) error {
+		_ = grift.Desc("init", "Initialize import map with default packages")
+		_ = grift.Add("init", func(c *grift.Context) error {
 			fmt.Println("Initializing import map with defaults...")
 
 			// Load defaults
@@ -170,8 +170,8 @@ func RegisterTasks(manager *Manager) {
 			return nil
 		})
 
-		grift.Desc("clean", "Remove unused vendored files")
-		grift.Add("clean", func(c *grift.Context) error {
+		_ = grift.Desc("clean", "Remove unused vendored files")
+		_ = grift.Add("clean", func(c *grift.Context) error {
 			fmt.Println("Cleaning vendor directory...")
 
 			// This would remove files not referenced in the current import map

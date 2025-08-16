@@ -105,7 +105,7 @@ func VendorMiddleware(manager *Manager) buffalo.MiddlewareFunc {
 			filename := strings.TrimPrefix(c.Request().URL.Path, "/assets/vendor/")
 
 			// Look up integrity hash if available
-			for name, _ := range manager.List() {
+			for name := range manager.List() {
 				if strings.Contains(filename, sanitizeName(name)) {
 					integrity := manager.GetIntegrity(name)
 					if integrity != "" {

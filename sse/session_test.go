@@ -237,7 +237,7 @@ func TestSessionManager_GetCounts(t *testing.T) {
 	metadata := SessionMeta{UserAgent: "test"}
 	session1, _ := sm.CreateSession(metadata)
 	session2, _ := sm.CreateSession(metadata)
-	sm.CreateSession(metadata)
+	_, _ = sm.CreateSession(metadata)
 
 	if sm.GetActiveSessionCount() != 3 {
 		t.Errorf("Expected 3 active sessions, got %d", sm.GetActiveSessionCount())

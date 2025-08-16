@@ -247,7 +247,7 @@ func (r *Runner) applyMigration(ctx context.Context, migration Migration) error 
 		}
 		defer func() {
 			if err != nil {
-				tx.Rollback()
+				_ = tx.Rollback()
 			}
 		}()
 	}
@@ -435,7 +435,7 @@ func (r *Runner) rollbackMigration(ctx context.Context, migration Migration) err
 		}
 		defer func() {
 			if err != nil {
-				tx.Rollback()
+				_ = tx.Rollback()
 			}
 		}()
 	}

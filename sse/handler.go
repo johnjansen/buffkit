@@ -54,7 +54,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send initial connection event
-	h.sendEvent(w, Event{
+	_ = h.sendEvent(w, Event{
 		Type: "connected",
 		Data: fmt.Sprintf(`{"sessionId":"%s","reconnection":%v,"bufferSize":%d}`,
 			client.SessionID, h.config.EnableReconnection, h.config.BufferSize),
