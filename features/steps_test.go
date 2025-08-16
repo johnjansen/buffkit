@@ -782,7 +782,9 @@ func (ts *TestSuite) iAmLoggedInAsAValidUser() error {
 	// Create a handler that sets the session
 	ts.app.GET("/test-login", func(c buffalo.Context) error {
 		c.Session().Set("user_id", user.ID)
-		c.Session().Save()
+		if err := c.Session().Save(); err != nil {
+			return err
+		}
 		return c.Render(http.StatusOK, testRenderer{html: "Logged in"})
 	})
 
@@ -1369,18 +1371,17 @@ func (ts *TestSuite) theSecurityHeadersShouldBePresentButRelaxed() error {
 
 	// In dev mode, headers should be present but relaxed
 	// Check X-Content-Type-Options
-	if contentType := headers.Get("X-Content-Type-Options"); contentType != "" {
+	if contentType := headers.Get("X-Content-Type-Options"); contentType != "" && contentType != "nosniff" {
 		// In dev mode, this might be relaxed or missing
-		if contentType == "nosniff" {
-			// This is fine, just not required in dev
-		}
+		// nosniff is fine in dev mode, just not required
+		return fmt.Errorf("unexpected X-Content-Type-Options value: %s", contentType)
 	}
 
 	// Check X-Frame-Options
 	frameOptions := headers.Get("X-Frame-Options")
-	if frameOptions == "DENY" || frameOptions == "SAMEORIGIN" {
-		// These are strict settings, in dev mode they might be relaxed
-	}
+	// In dev mode, frame options might be relaxed to allow development tools
+	// DENY and SAMEORIGIN are fine but not required
+	_ = frameOptions // Mark as intentionally checked but not enforced
 
 	// The key is that we're not enforcing strict security in dev mode
 	// This allows for development tools to work properly
@@ -1764,12 +1765,6 @@ func (ts *TestSuite) theEndpointShouldNotExist() error {
 		return fmt.Errorf("expected 404, but got %d", ts.response.Code)
 	}
 	return nil
-}
-
-// Skipped steps - these would be implemented as features are built
-func (ts *TestSuite) skipStep(stepText string) error {
-	// For now, we'll skip more complex integration steps that aren't ready
-	return godog.ErrPending
 }
 
 // Initialize the test suite
