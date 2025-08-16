@@ -1,5 +1,24 @@
 # Buffkit
 
+<div align="center">
+
+[![Build Status](https://github.com/johnjansen/buffkit/actions/workflows/test.yml/badge.svg)](https://github.com/johnjansen/buffkit/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/johnjansen/buffkit/branch/main/graph/badge.svg)](https://codecov.io/gh/johnjansen/buffkit)
+[![Go Report Card](https://goreportcard.com/badge/github.com/johnjansen/buffkit)](https://goreportcard.com/report/github.com/johnjansen/buffkit)
+[![GoDoc](https://pkg.go.dev/badge/github.com/johnjansen/buffkit)](https://pkg.go.dev/github.com/johnjansen/buffkit)
+
+[![Go Version](https://img.shields.io/github/go-mod/go-version/johnjansen/buffkit)](https://go.dev/)
+[![License](https://img.shields.io/github/license/johnjansen/buffkit)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/johnjansen/buffkit?include_prereleases&sort=semver)](https://github.com/johnjansen/buffkit/releases)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/johnjansen/buffkit/graphs/commit-activity)
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Contributors](https://img.shields.io/github/contributors/johnjansen/buffkit)](https://github.com/johnjansen/buffkit/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/johnjansen/buffkit)](https://github.com/johnjansen/buffkit/issues)
+[![Forks](https://img.shields.io/github/forks/johnjansen/buffkit)](https://github.com/johnjansen/buffkit/network/members)
+
+</div>
+
 > **⚠️ WARNING: EARLY DEVELOPMENT - NOT READY FOR USE**
 > 
 > This project is in very early development and is **NOT FUNCTIONAL** yet. The API is unstable, features are incomplete, and breaking changes will occur frequently. Do not use this in any production or serious development work.
