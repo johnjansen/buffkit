@@ -1,53 +1,48 @@
 # Next Steps for Buffkit Development
 
 ## Current Status
-- **Scenarios Passing**: 18 out of 37 (48.6%)
+- **Scenarios Passing**: 19 out of 37 (51.4%)
 - **Test Coverage**: Growing from 24% baseline
-- **Last Implemented**: Development mail sender (logs and preview)
+- **Last Implemented**: HTML email storage and preview
 
-## Immediate Next Step: Implement HTML Email Storage
+## Immediate Next Step: Implement Authentication Scenarios
 
-### Target Scenario: "Development mail sender stores email content"
-Location: `features/development_mode.feature:31`
+### Target Scenario: "Protected routes require authentication"
+Location: `features/authentication.feature:24`
 
 ### Why This Is Next
-1. Builds directly on the mail sender we just implemented
-2. Small, focused change (add HTML handling)
-3. Already have the infrastructure in place
-4. Natural progression from text-only emails
+1. Core security feature of any web application
+2. Already have auth package with RequireLogin middleware
+3. Unlocks multiple related scenarios
+4. High value for framework users
 
 ### Implementation Checklist
 
-#### Step 1: Implement HTML Email Sending (5 min)
-- [ ] Update `iSendAnHTMLEmailWithContent()` in `features/steps_test.go`
-- [ ] Create mail.Message with HTML content
-- [ ] Send via ts.kit.Mail
+#### Step 1: Implement Protected Handler (10 min)
+- [ ] Implement `iHaveAHandlerThatRequiresLogin()` in `features/steps_test.go`
+- [ ] Create a test handler that uses auth.RequireLogin middleware
+- [ ] Store handler reference in TestSuite
 
-#### Step 2: Verify HTML Storage (5 min)
-- [ ] Implement `theEmailShouldBeStoredWithHTMLContent()`
-- [ ] Cast to DevSender and check GetMessages()
-- [ ] Verify HTML field is populated
+#### Step 2: Access Without Auth (5 min)
+- [ ] Implement `iAccessTheProtectedRouteWithoutAuthentication()`
+- [ ] Make request to protected route without session
+- [ ] Store response for verification
 
-#### Step 3: Preview Rendering Check (5 min)
-- [ ] Implement `iShouldBeAbleToPreviewTheRenderedHTML()`
-- [ ] Visit /__mail/preview endpoint
-- [ ] Check response contains the HTML content
-
-#### Step 4: Dual Format Verification (5 min)
-- [ ] Implement `theEmailShouldIncludeBothHTMLAndTextVersions()`
-- [ ] Verify message has both Text and HTML fields
-- [ ] Confirm preview shows both versions
+#### Step 3: Verify Redirect (5 min)
+- [ ] Implement `iShouldBeRedirectedToLogin()`
+- [ ] Check response status is 302 or 303
+- [ ] Verify Location header points to login path
 
 ### Test Command
 ```bash
 cd buffkit
-go test -v ./features -run "TestFeatures/Development_mail_sender_stores_email_content"
+go test -v ./features -run "TestFeatures/Protected_routes_require_authentication"
 ```
 
 ### Expected Outcome
-- Scenario passes with all 4 steps green
-- 19/37 scenarios passing (51.4%)
-- HTML emails visible in preview interface
+- Scenario passes with all 3 steps green
+- 20/37 scenarios passing (54.1%)
+- Authentication flow validated
 
 ## Following Scenarios (Priority Order)
 
@@ -80,16 +75,17 @@ These scenarios likely already work but need test implementation:
 ## Progress Tracking
 - [x] Mail preview in dev mode
 - [x] Mail sender logs emails
-- [ ] HTML email storage
-- [ ] Production mode safety
-- [ ] Authentication flows
+- [x] HTML email storage
+- [x] Production mode safety (already working)
+- [ ] Authentication flows (next target)
 - [ ] Security headers
 - [ ] SSE client management
 - [ ] Component expansion
 
 ## Success Metrics
-- **Today**: Reach 20/37 scenarios (54%)
-- **This Week**: Reach 25/37 scenarios (67%)
+- **Completed**: 19/37 scenarios (51.4%) ✓
+- **Today**: Reach 22/37 scenarios (59%)
+- **This Week**: Reach 28/37 scenarios (75%)
 - **Complete**: All 37 scenarios passing (100%)
 
 ## Remember

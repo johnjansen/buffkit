@@ -500,10 +500,108 @@ func (ts *TestSuite) thePreviewShouldShowBothEmailSubjects() error {
 	return nil
 }
 
+// Step: When I send an HTML email with content "..."
+func (ts *TestSuite) iSendAnHTMLEmailWithContent(content string) error {
+	if ts.kit == nil || ts.kit.Mail == nil {
+		return fmt.Errorf("mail sender not initialized")
+	}
+
+	msg := mail.Message{
+		To:      "test@example.com",
+		Subject: "HTML Test Email",
+		Text:    "This is the plain text version",
+		HTML:    content,
+	}
+
+	err := ts.kit.Mail.Send(context.Background(), msg)
+	if err != nil {
+		return fmt.Errorf("failed to send HTML email: %v", err)
+	}
+
+	return nil
+}
+
+// Step: Then the email should be stored with HTML content
+func (ts *TestSuite) theEmailShouldBeStoredWithHTMLContent() error {
+	if ts.kit == nil || ts.kit.Mail == nil {
+		return fmt.Errorf("mail sender not initialized")
+	}
+
+	devSender, ok := ts.kit.Mail.(*mail.DevSender)
+	if !ok {
+		return fmt.Errorf("expected DevSender but got %T", ts.kit.Mail)
+	}
+
+	messages := devSender.GetMessages()
+	if len(messages) == 0 {
+		return fmt.Errorf("no messages stored")
+	}
+
+	// Check the last message has HTML content
+	lastMsg := messages[len(messages)-1]
+	if lastMsg.HTML == "" {
+		return fmt.Errorf("email does not have HTML content")
+	}
+
+	return nil
+}
+
+// Step: Then I should be able to preview the rendered HTML
+func (ts *TestSuite) iShouldBeAbleToPreviewTheRenderedHTML() error {
+	// Visit the mail preview endpoint
+	req, err := http.NewRequest("GET", "/__mail/preview", nil)
+	if err != nil {
+		return err
+	}
+	ts.request = req
+	ts.response = httptest.NewRecorder()
+	ts.app.ServeHTTP(ts.response, req)
+
+	if ts.response.Code != http.StatusOK {
+		return fmt.Errorf("mail preview not accessible, got status %d", ts.response.Code)
+	}
+
+	// Check that HTML content is present in the preview
+	body := ts.response.Body.String()
+	if !strings.Contains(body, "HTML Body:") {
+		return fmt.Errorf("HTML body section not found in preview")
+	}
+
+	return nil
+}
+
+// Step: Then the email should include both HTML and text versions
+func (ts *TestSuite) theEmailShouldIncludeBothHTMLAndTextVersions() error {
+	if ts.kit == nil || ts.kit.Mail == nil {
+		return fmt.Errorf("mail sender not initialized")
+	}
+
+	devSender, ok := ts.kit.Mail.(*mail.DevSender)
+	if !ok {
+		return fmt.Errorf("expected DevSender but got %T", ts.kit.Mail)
+	}
+
+	messages := devSender.GetMessages()
+	if len(messages) == 0 {
+		return fmt.Errorf("no messages stored")
+	}
+
+	// Check the last message has both HTML and text
+	lastMsg := messages[len(messages)-1]
+	if lastMsg.HTML == "" {
+		return fmt.Errorf("email missing HTML version")
+	}
+	if lastMsg.Text == "" {
+		return fmt.Errorf("email missing text version")
+	}
+
+	return nil
+}
+
 // Step: Then the endpoint should not exist
 func (ts *TestSuite) theEndpointShouldNotExist() error {
 	if ts.response.Code != http.StatusNotFound {
-		return fmt.Errorf("expected endpoint not to exist (404), but got %d", ts.response.Code)
+		return fmt.Errorf("expected 404, but got %d", ts.response.Code)
 	}
 	return nil
 }
@@ -610,10 +708,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the emails should be logged instead of sent$`, ts.theEmailsShouldBeLoggedInsteadOfSent)
 	ctx.Step(`^I should be able to view them in the mail preview$`, ts.iShouldBeAbleToViewThemInTheMailPreview)
 	ctx.Step(`^the preview should show both email subjects$`, ts.thePreviewShouldShowBothEmailSubjects)
-	ctx.Step(`^I send an HTML email with content "([^"]*)"$`, func(content string) error { return ts.skipStep("send HTML email") })
-	ctx.Step(`^the email should be stored with HTML content$`, func() error { return ts.skipStep("stored HTML") })
-	ctx.Step(`^I should be able to preview the rendered HTML$`, func() error { return ts.skipStep("preview HTML") })
-	ctx.Step(`^the email should include both HTML and text versions$`, func() error { return ts.skipStep("HTML and text") })
+	ctx.Step(`^I send an HTML email with content "([^"]*)"$`, ts.iSendAnHTMLEmailWithContent)
+	ctx.Step(`^the email should be stored with HTML content$`, ts.theEmailShouldBeStoredWithHTMLContent)
+	ctx.Step(`^I should be able to preview the rendered HTML$`, ts.iShouldBeAbleToPreviewTheRenderedHTML)
+	ctx.Step(`^the email should include both HTML and text versions$`, ts.theEmailShouldIncludeBothHTMLAndTextVersions)
 	ctx.Step(`^the application is running in development mode$`, func() error { return ts.skipStep("dev mode running") })
 	ctx.Step(`^I make a request to any endpoint$`, func() error { return ts.skipStep("make request") })
 	ctx.Step(`^the security headers should be present but relaxed$`, func() error { return ts.skipStep("relaxed headers") })
