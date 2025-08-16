@@ -5,11 +5,29 @@ run:
   timeout: 5m
   go: "1.21"
   tests: true
-  skip-dirs:
+
+issues:
+  exclude-dirs:
     - vendor
     - examples/vendor
-  skip-files:
+  exclude-files:
     - ".*_test.go"
+  # Maximum issues count per one linter
+  max-issues-per-linter: 50
+  # Maximum count of issues with the same text
+  max-same-issues: 3
+  exclude-rules:
+    # Exclude some linters from running on test files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+    # Exclude known linters from partially hard-to-fix issues
+    - linters:
+        - errcheck
+      text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
 
 linters-settings:
   gofmt:
@@ -50,6 +68,13 @@ linters-settings:
       - ifElseChain
       - octalLiteral
       - whyNoLint
+  revive:
+    severity: warning
+    rules:
+      - name: exported
+        severity: error
+      - name: unreachable-code
+        severity: error
 
 linters:
   enable:
@@ -72,49 +97,7 @@ linters:
     - gocritic
     - gosec
     - revive
-  disable:
-    - deadcode    # deprecated
-    - varcheck    # deprecated
-    - structcheck # deprecated
-    - scopelint   # deprecated
-    - interfacer  # deprecated
-    - maligned    # deprecated
-    - golint      # deprecated
-
-issues:
-  exclude-rules:
-    # Exclude some linters from running on tests files
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - dupl
-        - gosec
-    # Exclude known linters from partially hard-to-fix issues
-    - linters:
-        - errcheck
-      text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
-    # Exclude linters from generated files
-    - path: ".*\\.pb\\.go"
-      linters:
-        - all
-
-  # Maximum issues count per one linter
-  max-issues-per-linter: 50
-
-  # Maximum count of issues with the same text
-  max-same-issues: 3
-
-  # Show only new issues created in git patch with revgrep
-  new-from-rev: ""
 
 severity:
   default-severity: error
   case-sensitive: false
-  rules:
-    - linters:
-        - revive
-      severity: warning
-    - linters:
-        - gocritic
-      severity: info
