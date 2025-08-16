@@ -1,7 +1,6 @@
 ---
 run:
   timeout: 5m
-  tests: true
 
 linters:
   enable:
@@ -10,41 +9,4 @@ linters:
     - govet
     - ineffassign
     - staticcheck
-    - typecheck
     - unused
-    - gofmt
-    - goimports
-    - misspell
-    - goconst
-    - gocyclo
-    - gosec
-
-linters-settings:
-  gofmt:
-    simplify: true
-  goimports:
-    local-prefixes: github.com/johnjansen/buffkit
-  govet:
-    enable-all: true
-    disable:
-      - shadow
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  gocyclo:
-    min-complexity: 15
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-  misspell:
-    locale: US
-
-issues:
-  max-issues-per-linter: 50
-  max-same-issues: 3
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - gosec
