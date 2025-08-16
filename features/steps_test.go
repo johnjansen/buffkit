@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,10 +12,29 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/buffalo/render"
 	"github.com/johnjansen/buffkit"
+	"github.com/johnjansen/buffkit/auth"
 	"github.com/johnjansen/buffkit/mail"
 	"github.com/johnjansen/buffkit/ssr"
 )
+
+// Simple HTML renderer for tests
+type testRenderer struct {
+	html string
+}
+
+func (r testRenderer) ContentType() string {
+	return "text/html; charset=utf-8"
+}
+
+func (r testRenderer) Render(w io.Writer, data render.Data) error {
+	if hw, ok := w.(http.ResponseWriter); ok {
+		hw.Header().Set("Content-Type", r.ContentType())
+	}
+	_, err := w.Write([]byte(r.html))
+	return err
+}
 
 // TestSuite holds the test context and state
 type TestSuite struct {
@@ -28,6 +48,7 @@ type TestSuite struct {
 	broker      *ssr.Broker
 	clients     map[string]*ssr.Client
 	clientCount int
+	handler     buffalo.Handler
 }
 
 // Reset clears the test state between scenarios
@@ -598,6 +619,324 @@ func (ts *TestSuite) theEmailShouldIncludeBothHTMLAndTextVersions() error {
 	return nil
 }
 
+// Step: Given I have a handler that requires login
+func (ts *TestSuite) iHaveAHandlerThatRequiresLogin() error {
+	// Ensure we have an app with auth configured
+	if ts.app == nil {
+		ts.app = buffalo.New(buffalo.Options{
+			Env: "test",
+		})
+		ts.config = buffkit.Config{
+			AuthSecret: []byte("test-secret-key-32-chars-long-enough"),
+			DevMode:    false,
+		}
+		kit, err := buffkit.Wire(ts.app, ts.config)
+		if err != nil {
+			return fmt.Errorf("failed to wire Buffkit: %v", err)
+		}
+		ts.kit = kit
+	}
+
+	// Create a protected handler that requires login
+	protectedHandler := buffkit.RequireLogin(func(c buffalo.Context) error {
+		return c.Render(http.StatusOK, testRenderer{html: "<h1>Protected Content</h1>"})
+	})
+
+	// Mount the protected handler
+	ts.app.GET("/protected", protectedHandler)
+
+	return nil
+}
+
+// Step: When I access the protected route without authentication
+func (ts *TestSuite) iAccessTheProtectedRouteWithoutAuthentication() error {
+	req, err := http.NewRequest("GET", "/protected", nil)
+	if err != nil {
+		return err
+	}
+	ts.request = req
+	ts.response = httptest.NewRecorder()
+	ts.app.ServeHTTP(ts.response, req)
+	return nil
+}
+
+// Step: Then I should be redirected to login
+func (ts *TestSuite) iShouldBeRedirectedToLogin() error {
+	// Check for redirect status (302 or 303)
+	if ts.response.Code != http.StatusSeeOther && ts.response.Code != http.StatusFound {
+		return fmt.Errorf("expected redirect (302 or 303), got %d", ts.response.Code)
+	}
+
+	// Check Location header points to login
+	location := ts.response.Header().Get("Location")
+	if location != "/login" {
+		return fmt.Errorf("expected redirect to /login, got %s", location)
+	}
+
+	return nil
+}
+
+// Step: When I apply the RequireLogin middleware to a handler
+func (ts *TestSuite) iApplyTheRequireLoginMiddlewareToAHandler() error {
+	// Create a simple handler
+	simpleHandler := func(c buffalo.Context) error {
+		return c.Render(http.StatusOK, testRenderer{html: "<h1>Content</h1>"})
+	}
+
+	// Apply RequireLogin middleware
+	ts.handler = buffkit.RequireLogin(simpleHandler)
+
+	if ts.handler == nil {
+		return fmt.Errorf("RequireLogin returned nil handler")
+	}
+
+	return nil
+}
+
+// Step: Then the middleware should be callable
+func (ts *TestSuite) theMiddlewareShouldBeCallable() error {
+	if ts.handler == nil {
+		return fmt.Errorf("no handler available to test")
+	}
+
+	// Ensure we have an app
+	if ts.app == nil {
+		ts.app = buffalo.New(buffalo.Options{
+			Env: "test",
+		})
+	}
+
+	// Create a test request and response
+	req, _ := http.NewRequest("GET", "/test", nil)
+	resp := httptest.NewRecorder()
+
+	// Mount the handler temporarily and call it
+	ts.app.GET("/middleware-test", ts.handler)
+	ts.app.ServeHTTP(resp, req)
+
+	// We don't care about the response (might redirect), just that it's callable
+	return nil
+}
+
+// Step: And it should return a handler function
+func (ts *TestSuite) itShouldReturnAHandlerFunction() error {
+	if ts.handler == nil {
+		return fmt.Errorf("RequireLogin did not return a handler")
+	}
+
+	// Check that it's a buffalo.Handler type
+	var _ buffalo.Handler = ts.handler
+
+	return nil
+}
+
+// Step: Given I am logged in as a valid user
+func (ts *TestSuite) iAmLoggedInAsAValidUser() error {
+	// Ensure we have an app with auth configured
+	if ts.app == nil {
+		// Set up a memory store before wiring to ensure consistency
+		memStore := auth.NewMemoryStore()
+		auth.UseStore(memStore)
+
+		ts.app = buffalo.New(buffalo.Options{
+			Env:         "test",
+			SessionName: "_buffkit_session",
+		})
+		ts.config = buffkit.Config{
+			AuthSecret: []byte("test-secret-key-32-chars-long-enough"),
+			DevMode:    false,
+		}
+		kit, err := buffkit.Wire(ts.app, ts.config)
+		if err != nil {
+			return fmt.Errorf("failed to wire Buffkit: %v", err)
+		}
+		ts.kit = kit
+	}
+
+	// Get the store we set up
+	store := auth.GetStore()
+
+	// Create a test user
+	user := &auth.User{
+		Email: "test@example.com",
+	}
+
+	// Add user to the store (Create will generate the ID)
+	ctx := context.Background()
+	err := store.Create(ctx, user)
+	if err != nil && err != auth.ErrUserExists {
+		return fmt.Errorf("failed to create test user: %v", err)
+	}
+
+	// If user already exists, fetch it to get the ID
+	if err == auth.ErrUserExists {
+		user, err = store.ByEmail(ctx, "test@example.com")
+		if err != nil {
+			return fmt.Errorf("failed to get existing user: %v", err)
+		}
+	}
+
+	// Create a handler that sets the session
+	ts.app.GET("/test-login", func(c buffalo.Context) error {
+		c.Session().Set("user_id", user.ID)
+		c.Session().Save()
+		return c.Render(http.StatusOK, testRenderer{html: "Logged in"})
+	})
+
+	// Make request to set session
+	req, _ := http.NewRequest("GET", "/test-login", nil)
+	resp := httptest.NewRecorder()
+	ts.app.ServeHTTP(resp, req)
+
+	// Extract and store cookies for future requests
+	cookies := resp.Result().Cookies()
+	if len(cookies) > 0 {
+		// Store the cookie header for reuse
+		cookieHeader := ""
+		for _, cookie := range cookies {
+			if cookieHeader != "" {
+				cookieHeader += "; "
+			}
+			cookieHeader += cookie.Name + "=" + cookie.Value
+		}
+		// Create a request with the cookie header set
+		ts.request = &http.Request{Header: make(http.Header)}
+		ts.request.Header.Set("Cookie", cookieHeader)
+	}
+
+	return nil
+}
+
+// Step: When I access a protected route
+func (ts *TestSuite) iAccessAProtectedRoute() error {
+	// Create a protected handler if not already done
+	protectedHandler := buffkit.RequireLogin(func(c buffalo.Context) error {
+		return c.Render(http.StatusOK, testRenderer{html: "<h1>Protected Content</h1>"})
+	})
+
+	// Mount the protected handler
+	ts.app.GET("/protected-auth", protectedHandler)
+
+	// Create request with session cookie
+	req, err := http.NewRequest("GET", "/protected-auth", nil)
+	if err != nil {
+		return err
+	}
+
+	// Add session cookie if we have one
+	if ts.request != nil && ts.request.Header.Get("Cookie") != "" {
+		req.Header.Set("Cookie", ts.request.Header.Get("Cookie"))
+	}
+
+	ts.request = req
+	ts.response = httptest.NewRecorder()
+	ts.app.ServeHTTP(ts.response, req)
+
+	return nil
+}
+
+// Step: Then I should see the protected content
+func (ts *TestSuite) iShouldSeeTheProtectedContent() error {
+	if ts.response.Code != http.StatusOK {
+		return fmt.Errorf("expected status 200, got %d", ts.response.Code)
+	}
+
+	body := ts.response.Body.String()
+	if !strings.Contains(body, "Protected Content") {
+		return fmt.Errorf("protected content not found in response")
+	}
+
+	return nil
+}
+
+// Step: Then I should not be redirected
+func (ts *TestSuite) iShouldNotBeRedirected() error {
+	if ts.response.Code == http.StatusFound || ts.response.Code == http.StatusSeeOther {
+		return fmt.Errorf("unexpected redirect with status %d", ts.response.Code)
+	}
+
+	return nil
+}
+
+// Step: Then the current user should be available in the context
+func (ts *TestSuite) theCurrentUserShouldBeAvailableInTheContext() error {
+	// Create a handler that checks for user in context
+	checkUserHandler := buffkit.RequireLogin(func(c buffalo.Context) error {
+		user, err := auth.CurrentUser(c)
+		if err != nil {
+			return c.Error(http.StatusInternalServerError, fmt.Errorf("user not in context: %v", err))
+		}
+		if user == nil {
+			return c.Error(http.StatusInternalServerError, fmt.Errorf("user is nil"))
+		}
+		return c.Render(http.StatusOK, testRenderer{html: fmt.Sprintf("User: %s", user.ID)})
+	})
+
+	// Mount and test the handler
+	ts.app.GET("/check-user", checkUserHandler)
+
+	req, err := http.NewRequest("GET", "/check-user", nil)
+	if err != nil {
+		return err
+	}
+
+	// Add session cookie if we have one
+	if ts.request != nil && ts.request.Header.Get("Cookie") != "" {
+		req.Header.Set("Cookie", ts.request.Header.Get("Cookie"))
+	}
+
+	resp := httptest.NewRecorder()
+	ts.app.ServeHTTP(resp, req)
+
+	if resp.Code != http.StatusOK {
+		return fmt.Errorf("user not available in context, got status %d", resp.Code)
+	}
+
+	return nil
+}
+
+// Step: Then I can access user information
+func (ts *TestSuite) iCanAccessUserInformation() error {
+	// Similar to above but checks we can read user properties
+	checkUserHandler := buffkit.RequireLogin(func(c buffalo.Context) error {
+		user, err := auth.CurrentUser(c)
+		if err != nil {
+			return c.Error(http.StatusInternalServerError, err)
+		}
+		if user.Email == "" {
+			return c.Error(http.StatusInternalServerError, fmt.Errorf("user email is empty"))
+		}
+		return c.Render(http.StatusOK, testRenderer{html: user.Email})
+	})
+
+	// Mount and test the handler
+	ts.app.GET("/user-info", checkUserHandler)
+
+	req, err := http.NewRequest("GET", "/user-info", nil)
+	if err != nil {
+		return err
+	}
+
+	// Add session cookie if we have one
+	if ts.request != nil && ts.request.Header.Get("Cookie") != "" {
+		req.Header.Set("Cookie", ts.request.Header.Get("Cookie"))
+	}
+
+	resp := httptest.NewRecorder()
+	ts.app.ServeHTTP(resp, req)
+
+	if resp.Code != http.StatusOK {
+		return fmt.Errorf("cannot access user information, got status %d", resp.Code)
+	}
+
+	body := resp.Body.String()
+	if !strings.Contains(body, "@") {
+		return fmt.Errorf("user email not found in response")
+	}
+
+	return nil
+}
+
 // Step: Then the endpoint should not exist
 func (ts *TestSuite) theEndpointShouldNotExist() error {
 	if ts.response.Code != http.StatusNotFound {
@@ -669,19 +1008,19 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I should see a list of sent emails$`, ts.iShouldSeeAListOfSentEmails)
 	ctx.Step(`^the endpoint should not exist$`, ts.theEndpointShouldNotExist)
 
-	// Skipped/pending steps for unimplemented features
-	ctx.Step(`^I have a handler that requires login$`, func() error { return ts.skipStep("handler with auth") })
-	ctx.Step(`^I access the protected route without authentication$`, func() error { return ts.skipStep("unauth access") })
-	ctx.Step(`^I should be redirected to login$`, func() error { return ts.skipStep("redirect check") })
-	ctx.Step(`^I apply the RequireLogin middleware to a handler$`, func() error { return ts.skipStep("middleware test") })
-	ctx.Step(`^the middleware should be callable$`, func() error { return ts.skipStep("middleware callable") })
-	ctx.Step(`^it should return a handler function$`, func() error { return ts.skipStep("handler return") })
-	ctx.Step(`^I am logged in as a valid user$`, func() error { return ts.skipStep("login simulation") })
-	ctx.Step(`^I access a protected route$`, func() error { return ts.skipStep("protected route access") })
-	ctx.Step(`^I should see the protected content$`, func() error { return ts.skipStep("content verification") })
-	ctx.Step(`^I should not be redirected$`, func() error { return ts.skipStep("no redirect check") })
-	ctx.Step(`^the current user should be available in the context$`, func() error { return ts.skipStep("user context") })
-	ctx.Step(`^I can access user information$`, func() error { return ts.skipStep("user info access") })
+	// Authentication middleware steps
+	ctx.Step(`^I have a handler that requires login$`, ts.iHaveAHandlerThatRequiresLogin)
+	ctx.Step(`^I access the protected route without authentication$`, ts.iAccessTheProtectedRouteWithoutAuthentication)
+	ctx.Step(`^I should be redirected to login$`, ts.iShouldBeRedirectedToLogin)
+	ctx.Step(`^I apply the RequireLogin middleware to a handler$`, ts.iApplyTheRequireLoginMiddlewareToAHandler)
+	ctx.Step(`^the middleware should be callable$`, ts.theMiddlewareShouldBeCallable)
+	ctx.Step(`^it should return a handler function$`, ts.itShouldReturnAHandlerFunction)
+	ctx.Step(`^I am logged in as a valid user$`, ts.iAmLoggedInAsAValidUser)
+	ctx.Step(`^I access a protected route$`, ts.iAccessAProtectedRoute)
+	ctx.Step(`^I should see the protected content$`, ts.iShouldSeeTheProtectedContent)
+	ctx.Step(`^I should not be redirected$`, ts.iShouldNotBeRedirected)
+	ctx.Step(`^the current user should be available in the context$`, ts.theCurrentUserShouldBeAvailableInTheContext)
+	ctx.Step(`^I can access user information$`, ts.iCanAccessUserInformation)
 
 	// Additional SSE steps (marked as pending for now)
 	ctx.Step(`^I have multiple clients connected to SSE$`, func() error { return ts.skipStep("multiple SSE clients") })

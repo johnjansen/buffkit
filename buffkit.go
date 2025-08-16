@@ -146,8 +146,15 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 	// Creates a SQL-based user store (or in-memory for development).
 	// The store handles user CRUD operations and password verification.
 	authStore := auth.NewSQLStore(cfg.DB, cfg.Dialect)
-	kit.AuthStore = authStore
-	auth.UseStore(authStore) // Set as global auth store for package-level functions
+	if authStore != nil {
+		kit.AuthStore = authStore
+		auth.UseStore(authStore) // Set as global auth store for package-level functions
+	} else {
+		// Use memory store when no database is configured
+		memStore := auth.NewMemoryStore()
+		kit.AuthStore = memStore
+		auth.UseStore(memStore)
+	}
 
 	// Mount authentication routes.
 	// These provide the standard login/logout flow:
