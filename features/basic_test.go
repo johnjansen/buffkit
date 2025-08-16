@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -78,8 +79,9 @@ func (bts *BasicTestSuite) iShouldGetANonEmptyVersionString() error {
 func InitializeBasicScenario(ctx *godog.ScenarioContext) {
 	bts := &BasicTestSuite{}
 
-	ctx.BeforeScenario(func(*godog.Scenario) {
+	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		bts.Reset()
+		return ctx, nil
 	})
 
 	ctx.Step(`^I have a Buffalo application$`, bts.iHaveABuffaloApplication)

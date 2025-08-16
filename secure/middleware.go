@@ -56,7 +56,7 @@ func DefaultOptions() Options {
 // Middleware returns security middleware for Buffalo
 func Middleware(opts Options) buffalo.MiddlewareFunc {
 	// Apply defaults
-	if opts.ContentTypeNosniff == false && opts.FrameDeny == false && opts.XSSProtection == false {
+	if !opts.ContentTypeNosniff && !opts.FrameDeny && !opts.XSSProtection {
 		opts = DefaultOptions()
 	}
 
@@ -144,7 +144,7 @@ func CSRFMiddleware() buffalo.MiddlewareFunc {
 				if sessionToken == nil {
 					newToken := generateCSRFToken()
 					c.Session().Set("csrf_token", newToken)
-					c.Session().Save()
+					_ = c.Session().Save()
 				}
 
 				// For non-AJAX requests, we might want to show a form

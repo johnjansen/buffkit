@@ -420,8 +420,9 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ts := &TestSuite{}
 
-	ctx.BeforeScenario(func(*godog.Scenario) {
+	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		ts.Reset()
+		return ctx, nil
 	})
 
 	// Buffkit Integration steps
@@ -597,8 +598,12 @@ func (ts *TestSuite) theClientCountShouldIncrease() error {
 
 // Step: Given I have an SSE broker with a connected client
 func (ts *TestSuite) iHaveAnSSEBrokerWithAConnectedClient() error {
-	ts.iHaveAnSSEBroker()
-	ts.iRegisterAMockClient()
+	if err := ts.iHaveAnSSEBroker(); err != nil {
+		return err
+	}
+	if err := ts.iRegisterAMockClient(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -629,7 +634,9 @@ func (ts *TestSuite) theClientCountShouldDecrease() error {
 
 // Step: Given I have an SSE broker with multiple clients
 func (ts *TestSuite) iHaveAnSSEBrokerWithMultipleClients() error {
-	ts.iHaveAnSSEBroker()
+	if err := ts.iHaveAnSSEBroker(); err != nil {
+		return err
+	}
 
 	// Create multiple mock clients
 	for i := 0; i < 3; i++ {

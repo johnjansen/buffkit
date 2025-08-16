@@ -343,12 +343,12 @@ func extractSlots(n *html.Node) map[string]string {
 			// Extract the slot's content
 			var slotBuf bytes.Buffer
 			for sc := c.FirstChild; sc != nil; sc = sc.NextSibling {
-				html.Render(&slotBuf, sc)
+				_ = html.Render(&slotBuf, sc)
 			}
 			slots[slotName] = slotBuf.String()
 		} else {
 			// Not a slot - this goes in the default slot
-			html.Render(&defaultSlot, c)
+			_ = html.Render(&defaultSlot, c)
 		}
 	}
 
