@@ -5,6 +5,12 @@
 - [x] Migration transaction support for Postgres, SQLite, MySQL
 - [x] Migration status tracking and rollback capabilities
 - [x] Comprehensive migration tests with SQLite
+- [x] Import Maps - Full implementation with vendoring and SRI support
+- [x] Import map middleware for Buffalo integration
+- [x] Grift tasks for pin/unpin/vendor/update operations
+- [x] SHA-256 hashing and Subresource Integrity
+- [x] Development and production mode support
+- [x] Comprehensive import map tests
 
 ## SSE Reconnection Implementation
 

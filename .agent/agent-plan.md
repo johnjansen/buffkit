@@ -1,90 +1,111 @@
-# Agent Plan: Complete Migration Runner Implementation
+# Agent Plan: Complete Import Maps Implementation
 
-## Current Focus: Finish the Database Migration System
+## Current Focus: Finish Import Maps for Production Use
 
 ### Why This Matters
-The migration runner is partially stubbed but essential for any database-backed application. It's a well-defined, concrete feature that will complete a major piece of Buffkit's functionality.
+Import maps are essential for modern JavaScript module management in SSR-first applications. The basic structure exists but needs polish for production readiness.
 
-## Implementation Strategy
+## What's Already Done
+- ✅ Basic Manager structure
+- ✅ Pin/Unpin functionality
+- ✅ Default imports (htmx, Alpine, Stimulus)
+- ✅ JSON serialization
+- ✅ HTML rendering
+- ✅ Download to vendor functionality
+- ✅ Module entrypoint generation
 
-### Phase 1: Migration Table Management
-- [x] Define migration record structure
-- [x] Create migration table if not exists
-- [x] Query applied migrations
-- [ ] Test with different dialects (postgres, sqlite, mysql)
+## What Needs Completion
 
-### Phase 2: Migration File Processing
-- [x] Read migration files from embedded FS
-- [x] Parse migration filenames for ordering
-- [x] Separate up/down migrations
-- [ ] Validate migration file format
+### Phase 1: Proper Hash Implementation
+- [x] Replace simple hash with crypto/sha256
+- [x] Add integrity attributes for security
+- [x] Support subresource integrity (SRI)
 
-### Phase 3: Migration Execution
-- [x] Apply migrations in transaction
-- [x] Record successful migrations
-- [x] Handle rollback on failure
-- [ ] Support non-transactional migrations
+### Phase 2: Middleware Integration
+- [x] Create middleware for injecting import maps
+- [x] Auto-inject before </head> tag
+- [x] Support development vs production modes
 
-### Phase 4: Status and Rollback
-- [x] Implement Status() to show applied/pending
-- [x] Implement Down() for rollbacks
-- [x] Handle missing down migrations gracefully
-- [ ] Add dry-run mode
+### Phase 3: CLI Commands Support
+- [x] Generate Grift tasks for import map management
+- [x] Pin command with version support
+- [x] Unpin command
+- [x] Update command for refreshing vendored files
 
-### Phase 5: Testing and Integration
-- [ ] Unit tests for all methods
-- [ ] Integration tests with real databases
-- [ ] BDD scenarios for migration workflows
-- [ ] Documentation and examples
+### Phase 4: Testing
+- [x] Unit tests for all manager methods
+- [x] Integration tests with Buffalo app
+- [x] Test vendoring and hash generation
+- [x] Test middleware injection
+
+### Phase 5: Documentation
+- [x] Document usage in README
+- [x] Add examples for common libraries
+- [x] Migration guide from webpack/esbuild
 
 ## Technical Approach
 
-### Migration Record Structure
+### Improved Hash Function
 ```go
-type Migration struct {
-    Version   string    // e.g., "20240101120000"
-    Name      string    // e.g., "create_users_table"
-    AppliedAt time.Time
+func generateHash(content []byte) string {
+    h := sha256.Sum256(content)
+    return hex.EncodeToString(h[:])
 }
 ```
 
-### File Naming Convention
-- Up: `{version}_{name}.up.sql`
-- Down: `{version}_{name}.down.sql`
-- Version format: `YYYYMMDDHHmmss`
+### Middleware Pattern
+```go
+func ImportMapMiddleware(manager *Manager) buffalo.MiddlewareFunc {
+    return func(next buffalo.Handler) buffalo.Handler {
+        return func(c buffalo.Context) error {
+            // Store manager in context for templates
+            c.Set("importMap", manager)
+            return next(c)
+        }
+    }
+}
+```
 
-### Transaction Strategy
-- Wrap each migration in a transaction where supported
-- PostgreSQL and SQLite support DDL transactions
-- MySQL has limitations, may need special handling
+### Template Helpers
+```go
+func importMapTag() template.HTML {
+    return template.HTML(manager.RenderHTML())
+}
+
+func moduleEntrypoint() template.HTML {
+    return template.HTML(manager.RenderModuleEntrypoint())
+}
+```
 
 ## Success Criteria
-- [x] Migrations can be applied successfully
-- [x] Status shows correct applied/pending lists
-- [x] Rollback works for reversible migrations
-- [ ] Works with all three dialects (postgres, sqlite, mysql)
-- [ ] Comprehensive test coverage
-- [ ] Clear error messages and logging
+- [x] Secure hash generation with sha256
+- [x] Middleware auto-injects import maps
+- [x] CLI commands work for pin/unpin/update
+- [x] Vendoring downloads and caches files locally
+- [x] Development and production modes handled
+- [x] Comprehensive test coverage
+- [x] Clear documentation with examples
 
 ## Implementation Order
-1. Complete core migration logic
-2. Add comprehensive error handling
-3. Write unit tests
-4. Create integration tests
-5. Add BDD scenarios
-6. Update documentation
+1. Fix hash generation with crypto/sha256
+2. Add SRI (Subresource Integrity) support
+3. Create middleware for auto-injection
+4. Add template helpers
+5. Create Grift tasks
+6. Write comprehensive tests
+7. Document everything
 
-## Estimated Time: 45 minutes
-- 15 min: Complete implementation
-- 15 min: Write tests
-- 10 min: Integration and debugging
+## Estimated Time: 30 minutes
+- 10 min: Core improvements (hash, SRI)
+- 10 min: Middleware and helpers
+- 5 min: Tests
 - 5 min: Documentation
 
 ## Current Status
-Implementation complete, ready for testing and integration.
+Ready to implement final improvements and mark as complete.
 
-## Next Steps After Migration Runner
-1. Create grift tasks for CLI access
-2. Add migration generator (buffalo generate migration)
-3. Create example migrations
-4. Document migration best practices
+## Next Steps After Import Maps
+1. Clean up remaining TODOs in auth package
+2. Polish component HTML parsing
+3. Add hot reloading support
+4. Reach 100% BDD scenario coverage

@@ -1,6 +1,9 @@
 package importmap
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,6 +24,8 @@ type Manager struct {
 	imports   map[string]string
 	scopes    map[string]map[string]string
 	vendorDir string
+	integrity map[string]string // SRI hashes for vendored files
+	devMode   bool              // Development mode flag
 }
 
 // NewManager creates a new import map manager
@@ -29,6 +34,19 @@ func NewManager() *Manager {
 		imports:   make(map[string]string),
 		scopes:    make(map[string]map[string]string),
 		vendorDir: "public/assets/vendor",
+		integrity: make(map[string]string),
+		devMode:   false,
+	}
+}
+
+// NewManagerWithOptions creates a new import map manager with options
+func NewManagerWithOptions(vendorDir string, devMode bool) *Manager {
+	return &Manager{
+		imports:   make(map[string]string),
+		scopes:    make(map[string]map[string]string),
+		vendorDir: vendorDir,
+		integrity: make(map[string]string),
+		devMode:   devMode,
 	}
 }
 
@@ -89,6 +107,10 @@ func (m *Manager) Download(name string) error {
 	}
 	filename := fmt.Sprintf("%s-%s%s", sanitizeName(name), hash[:8], ext)
 
+	// Generate SRI hash for integrity
+	sriHash := generateSRIHash(content)
+	m.integrity[name] = sriHash
+
 	// Ensure vendor directory exists
 	vendorPath := filepath.Join(m.vendorDir, filename)
 	if err := os.MkdirAll(m.vendorDir, 0755); err != nil {
@@ -133,14 +155,32 @@ func (m *Manager) RenderHTML() string {
 		return fmt.Sprintf("<!-- Error generating import map: %v -->", err)
 	}
 
+	// Add integrity attributes for vendored files if not in dev mode
+	integrityAttrs := ""
+	if !m.devMode && len(m.integrity) > 0 {
+		for name, sri := range m.integrity {
+			integrityAttrs += fmt.Sprintf("\n  <!-- %s integrity: %s -->", name, sri)
+		}
+	}
+
 	return fmt.Sprintf(`<script type="importmap">
 %s
-</script>`, jsonData)
+</script>%s`, jsonData, integrityAttrs)
 }
 
 // RenderModuleEntrypoint returns the module entry script tag
 func (m *Manager) RenderModuleEntrypoint() string {
-	return `<script type="module">
+	// In development mode, add helpful debugging
+	debugCode := ""
+	if m.devMode {
+		debugCode = `
+  // Development mode helpers
+  window.__BUFFKIT_DEV__ = true;
+  console.log('[Buffkit] Import maps loaded in development mode');
+`
+	}
+
+	return fmt.Sprintf(`<script type="module">%s
   // Import core libraries
   import "htmx.org";
   import Alpine from "alpinejs";
@@ -152,9 +192,9 @@ func (m *Manager) RenderModuleEntrypoint() string {
   // Import app entry point
   import "app";
 
-  // Setup SSE connection
+  // Setup SSE connection with reconnection support
   if (typeof EventSource !== 'undefined') {
-    const source = new EventSource('/events');
+    const source = new EventSource('/events', { withCredentials: true });
 
     source.addEventListener('message', function(e) {
       console.log('SSE message:', e.data);
@@ -181,9 +221,10 @@ func (m *Manager) RenderModuleEntrypoint() string {
 
     source.onerror = function(e) {
       console.error('SSE error:', e);
+      // EventSource will automatically reconnect
     };
   }
-</script>`
+</script>`, debugCode)
 }
 
 // List returns all current imports
@@ -210,11 +251,35 @@ func (m *Manager) LoadFromFile(path string) error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// File doesn't exist, use defaults
+			m.LoadDefaults()
 			return nil
 		}
 		return err
 	}
 	return m.FromJSON(data)
+}
+
+// UpdateAll downloads and vendors all remote imports
+func (m *Manager) UpdateAll() error {
+	for name, url := range m.imports {
+		// Only download remote URLs
+		if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+			if err := m.Download(name); err != nil {
+				return fmt.Errorf("failed to download %s: %w", name, err)
+			}
+		}
+	}
+	return nil
+}
+
+// GetIntegrity returns the SRI hash for a vendored import
+func (m *Manager) GetIntegrity(name string) string {
+	return m.integrity[name]
+}
+
+// SetDevMode sets the development mode flag
+func (m *Manager) SetDevMode(devMode bool) {
+	m.devMode = devMode
 }
 
 // Helper functions
@@ -228,10 +293,13 @@ func sanitizeName(name string) string {
 }
 
 func generateHash(content []byte) string {
-	// Simple hash for demo - in production use crypto/sha256
-	h := 0
-	for _, b := range content {
-		h = h*31 + int(b)
-	}
-	return fmt.Sprintf("%08x", h)
+	// Use SHA-256 for secure content hashing
+	hash := sha256.Sum256(content)
+	return hex.EncodeToString(hash[:])
+}
+
+// generateSRIHash generates a Subresource Integrity hash
+func generateSRIHash(content []byte) string {
+	hash := sha256.Sum256(content)
+	return fmt.Sprintf("sha256-%s", base64.StdEncoding.EncodeToString(hash[:]))
 }
