@@ -13,8 +13,8 @@
 package buffkit
 
 import (
-	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 
 	"github.com/gobuffalo/buffalo"
@@ -23,6 +23,7 @@ import (
 	"github.com/johnjansen/buffkit/importmap"
 	"github.com/johnjansen/buffkit/jobs"
 	"github.com/johnjansen/buffkit/mail"
+	"github.com/johnjansen/buffkit/migrations"
 	"github.com/johnjansen/buffkit/secure"
 	"github.com/johnjansen/buffkit/ssr"
 )
@@ -334,48 +335,10 @@ type MigrationRunner struct {
 	Table string
 }
 
-// Migrate applies all pending migrations in order.
-// Migrations are read from embedded SQL files and applied transactionally
-// where possible. Each migration is recorded in the tracking table.
-//
-// This is typically called via the grift task: buffalo task buffkit:migrate
-func (r *MigrationRunner) Migrate(ctx context.Context) error {
-	// TODO: Implement migration logic
-	// 1. Create migrations table if not exists
-	// 2. Read all migration files from embedded FS
-	// 3. Filter to pending migrations (not in table)
-	// 4. Apply each migration in order
-	// 5. Record in migrations table
-	return nil
-}
-
-// Status returns the list of applied and pending migrations.
-// Useful for checking migration state before deployment:
-//
-//	applied, pending, err := runner.Status(ctx)
-//	fmt.Printf("Applied: %v\nPending: %v\n", applied, pending)
-//
-// This is exposed via: buffalo task buffkit:migrate:status
-func (r *MigrationRunner) Status(ctx context.Context) (applied, pending []string, err error) {
-	// TODO: Implement status logic
-	// 1. Read all migrations from embedded FS
-	// 2. Query migrations table for applied
-	// 3. Diff to find pending
-	return nil, nil, nil
-}
-
-// Down rolls back the last N migrations that have down files.
-// Not all migrations are reversible - only those with .down.sql files.
-// Use with caution as this can result in data loss.
-//
-// This is exposed via: buffalo task buffkit:migrate:down N
-func (r *MigrationRunner) Down(ctx context.Context, n int) error {
-	// TODO: Implement rollback logic
-	// 1. Get last N applied migrations from table
-	// 2. Check for corresponding .down.sql files
-	// 3. Apply down migrations in reverse order
-	// 4. Remove from migrations table
-	return nil
+// NewMigrationRunner creates a new migration runner.
+// It uses the new migrations package implementation.
+func NewMigrationRunner(db *sql.DB, migrationFS embed.FS, dialect string) *migrations.Runner {
+	return migrations.NewRunner(db, migrationFS, dialect)
 }
 
 // Version returns the current Buffkit version.

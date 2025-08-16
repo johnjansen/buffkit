@@ -1,83 +1,90 @@
-# Agent Plan: SSE Reconnection with State Recovery
+# Agent Plan: Complete Migration Runner Implementation
 
-## Problem Statement
-Implement a robust Server-Sent Events (SSE) reconnection mechanism with state recovery that handles:
-- Client disconnections (network issues, browser refresh, etc.)
-- Missed events during disconnection
-- Client identity persistence across reconnections
-- Event replay/catch-up on reconnection
-- Race conditions between disconnect and reconnect
+## Current Focus: Finish the Database Migration System
 
-## Why This Is Hard
-1. **State Management**: Need to track client state across disconnections
-2. **Event Buffering**: Must buffer events for disconnected clients without memory leaks
-3. **Identity**: Clients need persistent identity that survives reconnections
-4. **Timing**: Handle rapid disconnect/reconnect cycles gracefully
-5. **Cleanup**: Distinguish between temporary disconnects and permanent abandonment
+### Why This Matters
+The migration runner is partially stubbed but essential for any database-backed application. It's a well-defined, concrete feature that will complete a major piece of Buffkit's functionality.
 
 ## Implementation Strategy
 
-### Phase 1: Client Identity System
-- [ ] Implement persistent client IDs (using cookies/headers)
-- [ ] Create client session tracking
-- [ ] Build reconnection detection logic
+### Phase 1: Migration Table Management
+- [x] Define migration record structure
+- [x] Create migration table if not exists
+- [x] Query applied migrations
+- [ ] Test with different dialects (postgres, sqlite, mysql)
 
-### Phase 2: Event Buffering
-- [ ] Create per-client event buffer with size limits
-- [ ] Implement event sequence numbering
-- [ ] Add TTL (time-to-live) for buffered events
+### Phase 2: Migration File Processing
+- [x] Read migration files from embedded FS
+- [x] Parse migration filenames for ordering
+- [x] Separate up/down migrations
+- [ ] Validate migration file format
 
-### Phase 3: Reconnection Protocol
-- [ ] Detect reconnection attempts
-- [ ] Replay missed events from buffer
-- [ ] Handle "last-event-id" header for catch-up
+### Phase 3: Migration Execution
+- [x] Apply migrations in transaction
+- [x] Record successful migrations
+- [x] Handle rollback on failure
+- [ ] Support non-transactional migrations
 
-### Phase 4: Resource Management
-- [ ] Implement buffer cleanup strategies
-- [ ] Add configurable buffer sizes and TTLs
-- [ ] Create monitoring/metrics for buffer usage
+### Phase 4: Status and Rollback
+- [x] Implement Status() to show applied/pending
+- [x] Implement Down() for rollbacks
+- [x] Handle missing down migrations gracefully
+- [ ] Add dry-run mode
 
-### Phase 5: BDD Testing
-- [ ] Write comprehensive feature scenarios
-- [ ] Test edge cases (rapid reconnects, buffer overflow)
-- [ ] Validate memory usage and cleanup
+### Phase 5: Testing and Integration
+- [ ] Unit tests for all methods
+- [ ] Integration tests with real databases
+- [ ] BDD scenarios for migration workflows
+- [ ] Documentation and examples
 
 ## Technical Approach
 
-### Client Identity
+### Migration Record Structure
 ```go
-type ClientSession struct {
-    ID            string
-    LastEventID   string
-    LastSeen      time.Time
-    EventBuffer   *ring.Buffer
-    Reconnections int
+type Migration struct {
+    Version   string    // e.g., "20240101120000"
+    Name      string    // e.g., "create_users_table"
+    AppliedAt time.Time
 }
 ```
 
-### Event Buffering
-- Use ring buffer with configurable size (e.g., 1000 events)
-- Store events with timestamps and sequence numbers
-- Clean up buffers for clients gone > 5 minutes
+### File Naming Convention
+- Up: `{version}_{name}.up.sql`
+- Down: `{version}_{name}.down.sql`
+- Version format: `YYYYMMDDHHmmss`
 
-### Reconnection Flow
-1. Client connects with session cookie/header
-2. Server checks for existing session
-3. If reconnecting, replay buffered events
-4. Continue with live events
+### Transaction Strategy
+- Wrap each migration in a transaction where supported
+- PostgreSQL and SQLite support DDL transactions
+- MySQL has limitations, may need special handling
 
 ## Success Criteria
-- Clients can reconnect after network interruption
-- No events lost during brief disconnections (< 30s)
-- Memory usage remains bounded
-- Clean separation between temporary and permanent disconnects
-- Full BDD test coverage
+- [x] Migrations can be applied successfully
+- [x] Status shows correct applied/pending lists
+- [x] Rollback works for reversible migrations
+- [ ] Works with all three dialects (postgres, sqlite, mysql)
+- [ ] Comprehensive test coverage
+- [ ] Clear error messages and logging
 
-## Risks and Mitigations
-- **Memory leak**: Use ring buffers and TTLs
-- **Race conditions**: Use proper locking/channels
-- **Client spoofing**: Sign session IDs cryptographically
-- **Buffer overflow**: Drop oldest events, notify client
+## Implementation Order
+1. Complete core migration logic
+2. Add comprehensive error handling
+3. Write unit tests
+4. Create integration tests
+5. Add BDD scenarios
+6. Update documentation
+
+## Estimated Time: 45 minutes
+- 15 min: Complete implementation
+- 15 min: Write tests
+- 10 min: Integration and debugging
+- 5 min: Documentation
 
 ## Current Status
-Starting implementation - no code written yet
+Implementation complete, ready for testing and integration.
+
+## Next Steps After Migration Runner
+1. Create grift tasks for CLI access
+2. Add migration generator (buffalo generate migration)
+3. Create example migrations
+4. Document migration best practices

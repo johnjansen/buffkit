@@ -6,7 +6,7 @@ require (
 	github.com/gobuffalo/buffalo v1.1.0
 	github.com/gobuffalo/envy v1.10.2
 	github.com/hibiken/asynq v0.24.1
-	github.com/mattn/go-sqlite3 v1.14.19
+	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.36.3
 	golang.org/x/crypto v0.41.0
