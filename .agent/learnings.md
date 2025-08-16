@@ -160,3 +160,35 @@
 3. **Documentation as code** - Embed docs and examples in the codebase
 4. **Test the harness** - Having a working example validates the design
 5. **Performance last** - Get it working, then optimize based on real usage
+
+## CI/CD and Project Health
+
+### Badge Implementation
+- GitHub Actions status badges provide immediate build feedback
+- Codecov integration requires token setup but works without for public repos
+- Go Report Card automatically analyzes public repos
+- Multiple badge services create comprehensive project health overview
+
+### Testing Evolution
+- Moved from unit tests to BDD with Godog
+- Feature files serve as living documentation
+- Step definitions can be reused across scenarios
+- Test suite runs in <1 second maintaining fast feedback
+
+### Linting Insights
+- golangci-lint catches deprecated APIs and style issues
+- BeforeScenario deprecated in favor of Before with context
+- Error checking must be explicit (no ignored returns)
+- Boolean comparisons should be simplified
+
+### Documentation Structure
+- README badges should be centered and organized by category
+- CONTRIBUTING.md essential for open source projects
+- SECURITY.md establishes trust and reporting process
+- Feature files double as user documentation
+
+### Coverage Strategy
+- Run tests with -coverprofile for coverage data
+- Upload to Codecov for tracking over time
+- Set reasonable targets (70% project, 80% patch)
+- Exclude test files and generated code from coverage
