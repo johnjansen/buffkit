@@ -3,31 +3,29 @@
 
 run:
   timeout: 5m
-  go: "1.21"
   tests: true
 
-issues:
-  exclude-dirs:
-    - vendor
-    - examples/vendor
-  exclude-files:
-    - ".*_test.go"
-  # Maximum issues count per one linter
-  max-issues-per-linter: 50
-  # Maximum count of issues with the same text
-  max-same-issues: 3
-  exclude-rules:
-    # Exclude some linters from running on test files
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - dupl
-        - gosec
-    # Exclude known linters from partially hard-to-fix issues
-    - linters:
-        - errcheck
-      text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
+linters:
+  enable:
+    - bodyclose
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - misspell
+    - goconst
+    - gocyclo
+    - unparam
+    - nakedret
+    - prealloc
+    - gocritic
+    - gosec
+    - revive
 
 linters-settings:
   gofmt:
@@ -68,36 +66,23 @@ linters-settings:
       - ifElseChain
       - octalLiteral
       - whyNoLint
-  revive:
-    severity: warning
-    rules:
-      - name: exported
-        severity: error
-      - name: unreachable-code
-        severity: error
 
-linters:
-  enable:
-    - bodyclose
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
-    - gofmt
-    - goimports
-    - misspell
-    - goconst
-    - gocyclo
-    - unparam
-    - nakedret
-    - prealloc
-    - gocritic
-    - gosec
-    - revive
+issues:
+  exclude-dirs:
+    - vendor
+    - examples/vendor
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+    - linters:
+        - errcheck
+      text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
+  max-issues-per-linter: 50
+  max-same-issues: 3
 
 severity:
   default-severity: error
-  case-sensitive: false
