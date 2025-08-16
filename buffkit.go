@@ -186,6 +186,9 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 		kit.Mail = mail.NewDevSender()
 	}
 
+	// Set the global mail sender so mail.Send() works
+	mail.UseSender(kit.Mail)
+
 	// Mount mail preview endpoint in development mode.
 	// This allows developers to see sent emails at /__mail/preview
 	// without actually sending them through SMTP.

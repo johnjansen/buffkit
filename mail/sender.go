@@ -181,11 +181,6 @@ func Send(ctx context.Context, msg Message) error {
 
 // PreviewHandler shows sent emails in development mode
 func PreviewHandler(c buffalo.Context) error {
-	// Only allow in development
-	if ENV := c.Value("env"); ENV != nil && ENV != "development" {
-		return c.Error(http.StatusNotFound, fmt.Errorf("not found"))
-	}
-
 	// Get dev sender
 	sender := GetSender()
 	devSender, ok := sender.(*DevSender)

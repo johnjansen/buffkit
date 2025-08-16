@@ -1,85 +1,108 @@
 # Buffkit Implementation Plan
 
-## Phase 1: Core Structure & Wire Function
-1. Create main `buffkit.go` with Wire() function and Config struct
-2. Define Kit struct to hold references to all subsystems
-3. Implement basic error handling and initialization
+## Current Sprint: Implement Simplest Pending BDD Scenario
 
-## Phase 2: Package Stubs (Minimal Working Implementation)
-### 2.1 SSR Package (`ssr/`)
-- [ ] Create Broker struct with channels for clients
-- [ ] Implement SSE endpoint handler
-- [ ] Add heartbeat ticker (25s default)
-- [ ] Create RenderPartial helper
-- [ ] Stub SSE client JavaScript
+### Target: "Mail preview endpoint is available in dev mode"
 
-### 2.2 Auth Package (`auth/`)
-- [ ] Define User struct and UserStore interface
-- [ ] Create default SQL store implementation
-- [ ] Implement RequireLogin middleware
-- [ ] Add login/logout handlers
-- [ ] Create login template
+This is the simplest pending scenario because:
+- Clear, single responsibility (show mail preview in dev mode)
+- No complex dependencies (just needs basic routing and template)
+- Testable in isolation
+- Foundation for other mail features
 
-### 2.3 Jobs Package (`jobs/`)
-- [ ] Wrap Asynq client/server/mux
-- [ ] Create Runtime struct
-- [ ] Add basic enqueue helpers
-- [ ] Implement worker task
+### Implementation Steps
 
-### 2.4 Mail Package (`mail/`)
-- [ ] Define Message struct and Sender interface
-- [ ] Implement SMTPSender (stub)
-- [ ] Add dev preview handler
-- [ ] Create basic mail templates
+#### Step 1: Create Mail Preview Handler
+**What**: Create a handler that serves the mail preview interface at `/__mail/preview`
+**How**: 
+1. Create `mail/preview_handler.go`
+2. Define `PreviewHandler` function that returns `buffalo.Handler`
+3. Check if DevMode is enabled, return 404 if not
+4. For now, return a simple HTML template with mock data
 
-### 2.5 Import Maps Package (`importmap/`)
-- [ ] Create importmap.json structure
-- [ ] Implement pin/unpin tasks
-- [ ] Add print functionality
-- [ ] Generate script tags
+**Why**: This establishes the endpoint and conditional dev-mode behavior
 
-### 2.6 Secure Package (`secure/`)
-- [ ] Add security headers middleware
-- [ ] Integrate CSRF protection
-- [ ] Set secure defaults
+#### Step 2: Create Mail Preview Template
+**What**: Create an embedded HTML template for the preview interface
+**How**:
+1. Create `mail/templates/preview.html`
+2. Use Go's `embed` package to embed the template
+3. Create a basic HTML page with:
+   - Title: "Mail Preview"
+   - Empty list placeholder for emails
+   - Basic styling
 
-### 2.7 Components Package (`components/`)
-- [ ] Create component registry
-- [ ] Implement expansion middleware
-- [ ] Add basic components (button, card, dropdown)
-- [ ] Handle slots parsing
+**Why**: Provides visual feedback that the endpoint works
 
-## Phase 3: Database & Migrations
-- [ ] Create migration runner
-- [ ] Add migration tracking table
-- [ ] Implement up/down/status commands
-- [ ] Create initial migration files
+#### Step 3: Wire Preview Handler into Buffkit
+**What**: Register the preview handler when DevMode is true
+**How**:
+1. In `buffkit.go`, add preview handler registration in `Wire()`
+2. Only register if `config.DevMode == true`
+3. Mount at `GET /__mail/preview`
 
-## Phase 4: Harness Application
-- [ ] Create `harness/` directory with minimal Buffalo app
-- [ ] Wire in Buffkit
-- [ ] Add example routes showing each feature
-- [ ] Create templates demonstrating components
-- [ ] Add Makefile for easy testing
+**Why**: Integrates the feature into the main wiring flow
 
-## Phase 5: Testing & Documentation
-- [ ] Unit tests for critical paths
-- [ ] Integration test for harness
-- [ ] Update README with actual examples
-- [ ] Add inline documentation
+#### Step 4: Update Test Implementation
+**What**: Implement the pending test steps
+**How**:
+1. Update `features/steps_test.go`
+2. Implement `iVisit()` to make HTTP GET request
+3. Implement `iShouldSeeTheMailPreviewInterface()` to check response body
+4. Implement `theResponseStatusShouldBe()` to verify status code
+5. Implement `iShouldSeeAListOfSentEmails()` to check for list element
 
-## Current Focus: Phase 1 & 2 Stubs
-Start with minimal implementations that compile and can be wired together, even if they don't fully function yet.
+**Why**: Makes the BDD scenario pass and validates our implementation
 
-## Success Criteria
-- [ ] `go build` succeeds
-- [ ] Harness app starts without errors
-- [ ] Can navigate to login page
-- [ ] SSE endpoint responds (even if empty)
-- [ ] Components render (even if not expanded)
-- [ ] Import map script tag appears in HTML
+#### Step 5: Run and Verify
+**What**: Execute the specific BDD scenario
+**How**:
+```bash
+cd buffkit
+go test -v ./features -run "TestFeatures/Mail_preview_endpoint_is_available_in_dev_mode"
+```
 
-## Architecture Decisions
+**Why**: Confirms implementation meets requirements
+
+### Success Criteria
+- [x] Scenario "Mail preview endpoint is available in dev mode" passes
+- [x] Endpoint returns 200 in dev mode
+- [x] Endpoint returns 404 in production mode
+- [x] Basic HTML interface is displayed
+
+### Code Locations
+- `mail/preview_handler.go` - Handler implementation
+- `mail/templates/preview.html` - Embedded template
+- `buffkit.go` - Wiring logic
+- `features/steps_test.go` - Test step implementations
+
+### Estimated Time: 30 minutes
+- 10 min: Handler and template
+- 10 min: Wiring and integration
+- 10 min: Test implementation and verification
+
+## Next Simplest Scenarios (Priority Order)
+1. "Mail preview endpoint is not available in production" - Complement to current
+2. "Development mail sender logs emails" - Build on preview foundation
+3. "Development mail sender stores email content" - Extend mail storage
+
+## Previous Implementation Plan (Archive)
+
+### Phase 1: Core Structure & Wire Function ✅
+- Created main `buffkit.go` with Wire() function and Config struct
+- Defined Kit struct to hold references to all subsystems
+- Implemented basic error handling and initialization
+
+### Phase 2: Package Stubs (In Progress)
+- SSR Package (`ssr/`) - Partially complete
+- Auth Package (`auth/`) - Partially complete
+- Jobs Package (`jobs/`) - Pending
+- Mail Package (`mail/`) - Current focus
+- Import Maps Package (`importmap/`) - Pending
+- Secure Package (`secure/`) - Partially complete
+- Components Package (`components/`) - Pending
+
+### Architecture Decisions
 - Use embedded files for default templates
 - Keep interfaces minimal and clear
 - Avoid external dependencies where possible

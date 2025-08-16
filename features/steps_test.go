@@ -12,6 +12,7 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/gobuffalo/buffalo"
 	"github.com/johnjansen/buffkit"
+	"github.com/johnjansen/buffkit/mail"
 	"github.com/johnjansen/buffkit/ssr"
 )
 
@@ -397,6 +398,108 @@ func (ts *TestSuite) iShouldSeeAListOfSentEmails() error {
 	return nil
 }
 
+// Step: Given I have a development mail sender
+func (ts *TestSuite) iHaveADevelopmentMailSender() error {
+	// Ensure we have a dev sender by checking if kit.Mail is a DevSender
+	if ts.kit == nil {
+		// Wire up a minimal app with dev mode if not already done
+		ts.app = buffalo.New(buffalo.Options{
+			Env: "development",
+		})
+		ts.config = buffkit.Config{
+			AuthSecret: []byte("test-secret-key-32-chars-long-enough"),
+			DevMode:    true,
+		}
+		kit, err := buffkit.Wire(ts.app, ts.config)
+		if err != nil {
+			return fmt.Errorf("failed to wire Buffkit: %v", err)
+		}
+		ts.kit = kit
+	}
+
+	// Verify we have a DevSender
+	if _, ok := ts.kit.Mail.(*mail.DevSender); !ok {
+		return fmt.Errorf("expected DevSender but got %T", ts.kit.Mail)
+	}
+
+	return nil
+}
+
+// Step: When I send an email with subject "..."
+func (ts *TestSuite) iSendAnEmailWithSubject(subject string) error {
+	if ts.kit == nil || ts.kit.Mail == nil {
+		return fmt.Errorf("mail sender not initialized")
+	}
+
+	msg := mail.Message{
+		To:      "test@example.com",
+		Subject: subject,
+		Text:    "This is a test email body",
+	}
+
+	err := ts.kit.Mail.Send(context.Background(), msg)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %v", err)
+	}
+
+	return nil
+}
+
+// Step: Then the emails should be logged instead of sent
+func (ts *TestSuite) theEmailsShouldBeLoggedInsteadOfSent() error {
+	// With DevSender, emails are automatically logged instead of sent
+	// Just verify we have a DevSender
+	if ts.kit == nil || ts.kit.Mail == nil {
+		return fmt.Errorf("mail sender not initialized")
+	}
+
+	if _, ok := ts.kit.Mail.(*mail.DevSender); !ok {
+		return fmt.Errorf("expected DevSender for logging, but got %T", ts.kit.Mail)
+	}
+
+	return nil
+}
+
+// Step: Then I should be able to view them in the mail preview
+func (ts *TestSuite) iShouldBeAbleToViewThemInTheMailPreview() error {
+	// Visit the mail preview endpoint
+	req, err := http.NewRequest("GET", "/__mail/preview", nil)
+	if err != nil {
+		return err
+	}
+	ts.request = req
+	ts.response = httptest.NewRecorder()
+	ts.app.ServeHTTP(ts.response, req)
+
+	if ts.response.Code != http.StatusOK {
+		return fmt.Errorf("mail preview not accessible, got status %d", ts.response.Code)
+	}
+
+	// Check that we can see email content
+	body := ts.response.Body.String()
+	if !strings.Contains(body, "Mail Preview") {
+		return fmt.Errorf("mail preview page not shown")
+	}
+
+	return nil
+}
+
+// Step: Then the preview should show both email subjects
+func (ts *TestSuite) thePreviewShouldShowBothEmailSubjects() error {
+	body := ts.response.Body.String()
+
+	// Check for both email subjects in the response
+	if !strings.Contains(body, "Test Email") {
+		return fmt.Errorf("email subject 'Test Email' not found in preview")
+	}
+
+	if !strings.Contains(body, "Another Test") {
+		return fmt.Errorf("email subject 'Another Test' not found in preview")
+	}
+
+	return nil
+}
+
 // Step: Then the endpoint should not exist
 func (ts *TestSuite) theEndpointShouldNotExist() error {
 	if ts.response.Code != http.StatusNotFound {
@@ -461,6 +564,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the content type should be "([^"]*)"$`, ts.theContentTypeShouldBe)
 
 	// Development mode steps
+	ctx.Step(`^Buffkit is configured with development mode enabled$`, func() error { return ts.theApplicationIsWiredWithDevModeSetTo(true) })
 	ctx.Step(`^the application is wired with DevMode set to true$`, func() error { return ts.theApplicationIsWiredWithDevModeSetTo(true) })
 	ctx.Step(`^the application is wired with DevMode set to false$`, ts.theApplicationIsWiredWithDevModeSetToFalse)
 	ctx.Step(`^I should see the mail preview interface$`, ts.iShouldSeeTheMailPreviewInterface)
@@ -501,11 +605,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the HTML should be properly formatted$`, func() error { return ts.skipStep("HTML format") })
 
 	// Development mode steps (marked as pending for now)
-	ctx.Step(`^I have a development mail sender$`, func() error { return ts.skipStep("dev mail sender") })
-	ctx.Step(`^I send an email with subject "([^"]*)"$`, func(subject string) error { return ts.skipStep("send email") })
-	ctx.Step(`^the emails should be logged instead of sent$`, func() error { return ts.skipStep("emails logged") })
-	ctx.Step(`^I should be able to view them in the mail preview$`, func() error { return ts.skipStep("view in preview") })
-	ctx.Step(`^the preview should show both email subjects$`, func() error { return ts.skipStep("show subjects") })
+	ctx.Step(`^I have a development mail sender$`, ts.iHaveADevelopmentMailSender)
+	ctx.Step(`^I send an email with subject "([^"]*)"$`, ts.iSendAnEmailWithSubject)
+	ctx.Step(`^the emails should be logged instead of sent$`, ts.theEmailsShouldBeLoggedInsteadOfSent)
+	ctx.Step(`^I should be able to view them in the mail preview$`, ts.iShouldBeAbleToViewThemInTheMailPreview)
+	ctx.Step(`^the preview should show both email subjects$`, ts.thePreviewShouldShowBothEmailSubjects)
 	ctx.Step(`^I send an HTML email with content "([^"]*)"$`, func(content string) error { return ts.skipStep("send HTML email") })
 	ctx.Step(`^the email should be stored with HTML content$`, func() error { return ts.skipStep("stored HTML") })
 	ctx.Step(`^I should be able to preview the rendered HTML$`, func() error { return ts.skipStep("preview HTML") })

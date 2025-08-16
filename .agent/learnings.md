@@ -192,3 +192,29 @@
 - Upload to Codecov for tracking over time
 - Set reasonable targets (70% project, 80% patch)
 - Exclude test files and generated code from coverage
+
+## BDD Testing Implementation
+
+### Mail Preview Feature
+- PreviewHandler was already implemented but had redundant environment check
+- Handler is conditionally mounted based on DevMode flag during wiring
+- Global mail sender must be set during Wire() for mail.Send() to work
+- Test environment differs from development environment in Buffalo app setup
+
+### Test Step Implementation Patterns
+- Missing step definitions cause "pending" status in scenarios
+- Step functions can be simple wrappers (e.g., checking DevMode flag)
+- HTTP testing uses httptest.NewRecorder() for response capture
+- Response body inspection validates feature functionality
+
+### Progressive Scenario Implementation
+- Started with 15/37 scenarios passing (24% coverage)
+- Implemented mail preview: 17/37 scenarios passing
+- Implemented mail logging: 18/37 scenarios passing
+- Each scenario builds on existing infrastructure
+
+### Key Testing Discoveries
+- Step registration must match exact Gherkin text including "And/Given/When/Then"
+- Buffalo app environment ("test" vs "development") affects behavior
+- DevSender automatically stores messages for preview functionality
+- Test isolation requires resetting suite state between scenarios
