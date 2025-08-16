@@ -1,0 +1,120 @@
+# golangci-lint configuration for buffkit
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  go: "1.21"
+  tests: true
+  skip-dirs:
+    - vendor
+    - examples/vendor
+  skip-files:
+    - ".*_test.go"
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/johnjansen/buffkit
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  gocyclo:
+    min-complexity: 15
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  misspell:
+    locale: US
+  unparam:
+    check-exported: false
+  nakedret:
+    max-func-lines: 30
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+
+linters:
+  enable:
+    - bodyclose
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - misspell
+    - goconst
+    - gocyclo
+    - unparam
+    - nakedret
+    - prealloc
+    - gocritic
+    - gosec
+    - revive
+  disable:
+    - deadcode    # deprecated
+    - varcheck    # deprecated
+    - structcheck # deprecated
+    - scopelint   # deprecated
+    - interfacer  # deprecated
+    - maligned    # deprecated
+    - golint      # deprecated
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+    # Exclude known linters from partially hard-to-fix issues
+    - linters:
+        - errcheck
+      text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
+    # Exclude linters from generated files
+    - path: ".*\\.pb\\.go"
+      linters:
+        - all
+
+  # Maximum issues count per one linter
+  max-issues-per-linter: 50
+
+  # Maximum count of issues with the same text
+  max-same-issues: 3
+
+  # Show only new issues created in git patch with revgrep
+  new-from-rev: ""
+
+severity:
+  default-severity: error
+  case-sensitive: false
+  rules:
+    - linters:
+        - revive
+      severity: warning
+    - linters:
+        - gocritic
+      severity: info
