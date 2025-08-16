@@ -2,6 +2,9 @@
 
 ## Completed
 - [x] Configure Codecov integration with token
+- [x] Fix coverage reporting to capture actual package coverage (24% from feature tests)
+- [x] Add proper -coverpkg flags to test commands
+- [x] Create initial unit test for Version() function
 
 ## High Priority
 - [ ] Fix import issues - auth.r{} renderer struct conflicts with package imports
@@ -46,13 +49,14 @@
 - [ ] Create more default components
 
 ## Testing Gaps
-- [ ] Unit tests for all packages
+- [ ] Unit tests for all packages (currently 24% coverage from feature tests)
 - [ ] Integration tests for middleware chain
-- [ ] SSE connection tests
+- [ ] SSE connection tests (partially covered by feature tests)
 - [ ] Component rendering tests
 - [ ] Auth flow tests
 - [ ] Job processing tests
 - [ ] Email sending tests
+- [ ] Increase coverage to 70%+ target
 
 ## Documentation Needs
 - [ ] API documentation for each package
