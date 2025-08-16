@@ -1,0 +1,82 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+coverage.txt
+coverage.html
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Build directories
+/bin/
+/dist/
+/build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Buffalo/Buffkit specific
+database.yml
+.buffalo.dev.yml
+.env
+.env.*
+!.env.example
+logs/
+tmp/
+node_modules/
+public/assets/vendor/
+public/webpack/
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Session files
+sessions/
+
+# Uploaded files
+uploads/
+
+# Agent/development files
+.agent/scripts/
+*.log
+
+# Testing
+testdata/tmp/
+
+# Local development
+local/
+.local/
