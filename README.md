@@ -1,5 +1,11 @@
 # Buffkit
 
+> **⚠️ WARNING: EARLY DEVELOPMENT - NOT READY FOR USE**
+> 
+> This project is in very early development and is **NOT FUNCTIONAL** yet. The API is unstable, features are incomplete, and breaking changes will occur frequently. Do not use this in any production or serious development work.
+> 
+> This README documents the intended design and API, not the current implementation.
+
 An opinionated SSR-first stack for Buffalo (Go) that brings Rails-like batteries to server-rendered applications — without the bloat.
 
 ## What is Buffkit?
