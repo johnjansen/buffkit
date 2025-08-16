@@ -60,3 +60,27 @@ Feature: Server-Sent Events (SSE)
     Then it should start the message handling goroutine
     And it should initialize the client tracking systems
     And it should be ready to accept connections
+
+  Scenario: Direct broker testing - client registration
+    Given I have an SSE broker
+    When I register a mock client
+    Then the broker should track the client
+    And the client count should increase
+
+  Scenario: Direct broker testing - client unregistration
+    Given I have an SSE broker with a connected client
+    When I unregister the client
+    Then the broker should remove the client
+    And the client count should decrease
+
+  Scenario: Direct broker testing - event broadcasting
+    Given I have an SSE broker with multiple clients
+    When I broadcast an event directly to the broker
+    Then all clients should receive the event in their channels
+    And the event should contain the correct data
+
+  Scenario: Direct broker testing - heartbeat system
+    Given I have an SSE broker with connected clients
+    When the heartbeat timer triggers
+    Then all clients should receive a heartbeat event
+    And connections should remain alive
