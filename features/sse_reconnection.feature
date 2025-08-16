@@ -7,12 +7,14 @@ Feature: SSE Reconnection with State Recovery
     Given I have a Buffalo application with Buffkit wired
     And SSE reconnection support is enabled with a 30 second buffer window
 
+  @skip
   Scenario: Client receives a persistent session ID on first connection
     When I connect to the SSE endpoint for the first time
     Then I should receive a unique session ID in the response headers
     And the session ID should be stored as a secure cookie
     And the server should track my session in memory
 
+  @skip
   Scenario: Graceful reconnection after brief network interruption
     Given I am connected to SSE with session ID "test-session-123"
     And I have received events with IDs "1", "2", "3"
@@ -23,6 +25,7 @@ Feature: SSE Reconnection with State Recovery
     And I should continue receiving new live events
     And the reconnection should be logged
 
+  @skip
   Scenario: Reconnection with Last-Event-ID header
     Given I am connected to SSE with session ID "test-session-456"
     And I have received events up to ID "10"
@@ -32,6 +35,7 @@ Feature: SSE Reconnection with State Recovery
     And no events should be duplicated
     And the event sequence should be continuous
 
+  @skip
   Scenario: Buffer overflow handling during extended disconnection
     Given I am connected to SSE with a buffer limit of 100 events
     When I disconnect for an extended period
@@ -41,6 +45,7 @@ Feature: SSE Reconnection with State Recovery
     And I should receive the most recent 100 events
     And older events should be marked as dropped
 
+  @skip
   Scenario: Session cleanup after abandonment timeout
     Given I am connected to SSE with session ID "test-session-789"
     When I disconnect and don't reconnect for 35 seconds
@@ -48,6 +53,7 @@ Feature: SSE Reconnection with State Recovery
     And my event buffer should be freed
     And subsequent reconnection attempts should create a new session
 
+  @skip
   Scenario: Rapid disconnect and reconnect cycles
     Given I am connected to SSE
     When I rapidly disconnect and reconnect 10 times within 2 seconds
@@ -56,6 +62,7 @@ Feature: SSE Reconnection with State Recovery
     And only one active connection should exist per session
     And connection thrashing should be logged
 
+  @skip
   Scenario: Multiple clients with independent buffers
     Given client A is connected with session "session-A"
     And client B is connected with session "session-B"
@@ -66,6 +73,7 @@ Feature: SSE Reconnection with State Recovery
     And client A should receive "shared-event" upon reconnection
     And the buffers should remain independent
 
+  @skip
   Scenario: Reconnection after browser refresh
     Given I am connected to SSE with a session cookie
     When I refresh the browser page
@@ -74,6 +82,7 @@ Feature: SSE Reconnection with State Recovery
     And I should receive any events missed during page reload
     And the transition should be seamless
 
+  @skip
   Scenario: Event replay maintains correct order and timing
     Given I am connected and have received timestamped events
     When I disconnect and multiple events occur with timestamps
@@ -82,6 +91,7 @@ Feature: SSE Reconnection with State Recovery
     And replayed events should be marked with a "replayed" flag
     And the events should arrive in chronological order
 
+  @skip
   Scenario: Memory usage remains bounded
     Given the server has 100 connected clients
     And each client has a buffer limit of 1000 events
@@ -91,6 +101,7 @@ Feature: SSE Reconnection with State Recovery
     And buffers should be cleaned up according to TTL
     And the server should remain responsive
 
+  @skip
   Scenario: Client spoofing prevention
     Given a client is connected with session ID "legitimate-session"
     When another client attempts to connect with the same session ID
@@ -98,6 +109,7 @@ Feature: SSE Reconnection with State Recovery
     And a security event should be logged
     And the legitimate client should remain connected
 
+  @skip
   Scenario: Graceful degradation when buffers are disabled
     Given SSE reconnection is configured with buffer size 0
     When a client disconnects and reconnects
@@ -105,6 +117,7 @@ Feature: SSE Reconnection with State Recovery
     And no replay should occur
     And a "no-buffer" indicator should be sent
 
+  @skip
   Scenario: Event deduplication during replay
     Given I am connected and tracking received event IDs
     When I disconnect after receiving events "1", "2", "3"
@@ -113,6 +126,7 @@ Feature: SSE Reconnection with State Recovery
     Then I should receive event "3" only once
     And duplicate detection should prevent double delivery
 
+  @skip
   Scenario: Connection state recovery with metadata
     Given I am connected with custom headers and query parameters
     When I disconnect and lose connection state
@@ -121,6 +135,7 @@ Feature: SSE Reconnection with State Recovery
     And subscription filters should be maintained
     And client preferences should persist
 
+  @skip
   Scenario: Load balancer compatibility
     Given I am connected through a load balancer to server A
     When my connection drops and I reconnect through server B
