@@ -1,0 +1,49 @@
+---
+# yamllint configuration for buffkit
+# https://yamllint.readthedocs.io/en/stable/configuration.html
+
+extends: default
+
+rules:
+  # Allow longer lines for configuration files
+  line-length:
+    max: 120
+    level: error
+
+  # Allow truthy values like 'yes', 'no', 'on', 'off'
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    check-keys: false
+
+  # Be more lenient with comments
+  comments:
+    min-spaces-from-content: 1
+
+  # Allow empty values
+  empty-values:
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: false
+
+  # Document start is required
+  document-start:
+    present: true
+
+  # Document end is not required
+  document-end:
+    present: false
+
+  # Allow some indentation flexibility
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Allow brackets for lists when needed
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Allow braces for objects when needed
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1

@@ -59,9 +59,17 @@ clean: ## Clean build artifacts
 	go clean -cache
 
 .PHONY: lint
-lint: ## Run linter
+lint: ## Run Go linter
 	@which golangci-lint > /dev/null || (echo "Installing golangci-lint..." && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
 	golangci-lint run ./...
+
+.PHONY: lint-yaml
+lint-yaml: ## Run YAML linter
+	@which yamllint > /dev/null || (echo "Installing yamllint..." && pip3 install yamllint)
+	yamllint -c .yamllint.yml .
+
+.PHONY: lint-all
+lint-all: lint lint-yaml ## Run all linters
 
 .PHONY: fmt
 fmt: ## Format code

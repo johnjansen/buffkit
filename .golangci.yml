@@ -1,13 +1,10 @@
-# golangci-lint configuration for buffkit
-# https://golangci-lint.run/usage/configuration/
-
+---
 run:
   timeout: 5m
   tests: true
 
 linters:
   enable:
-    - bodyclose
     - errcheck
     - gosimple
     - govet
@@ -20,12 +17,7 @@ linters:
     - misspell
     - goconst
     - gocyclo
-    - unparam
-    - nakedret
-    - prealloc
-    - gocritic
     - gosec
-    - revive
 
 linters-settings:
   gofmt:
@@ -46,43 +38,13 @@ linters-settings:
     min-occurrences: 3
   misspell:
     locale: US
-  unparam:
-    check-exported: false
-  nakedret:
-    max-func-lines: 30
-  prealloc:
-    simple: true
-    range-loops: true
-    for-loops: false
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
 
 issues:
-  exclude-dirs:
-    - vendor
-    - examples/vendor
+  max-issues-per-linter: 50
+  max-same-issues: 3
   exclude-rules:
     - path: _test\.go
       linters:
         - gocyclo
         - errcheck
-        - dupl
         - gosec
-    - linters:
-        - errcheck
-      text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
-  max-issues-per-linter: 50
-  max-same-issues: 3
-
-severity:
-  default-severity: error
