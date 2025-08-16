@@ -218,3 +218,42 @@
 - Buffalo app environment ("test" vs "development") affects behavior
 - DevSender automatically stores messages for preview functionality
 - Test isolation requires resetting suite state between scenarios
+
+### Authentication Implementation Insights
+
+#### Session Management
+- Buffalo sessions require explicit Save() call to persist changes
+- Session cookies must be properly extracted and passed between test requests
+- Cookie header format: "name=value; name2=value2" (semicolon separated)
+- Test apps need SessionName configured for consistent cookie handling
+
+#### Store Configuration
+- Wire() was overwriting memory store with nil when no DB configured
+- Solution: Check if SQLStore is nil before setting, fallback to MemoryStore
+- GetStore() creates new MemoryStore instance each time if store is nil
+- Must use consistent store instance across test lifecycle
+
+#### User Model
+- User struct is minimal: ID, Email, PasswordDigest, timestamps
+- No Name field - keep user data lean
+- PasswordDigest has json:"-" tag to prevent accidental exposure
+- Create() generates UUID for user ID automatically
+
+#### Testing Authentication Flow
+1. Set up MemoryStore before Wire() to ensure consistency
+2. Create user in store with Create() to get generated ID
+3. Set user_id in session to simulate login
+4. Extract session cookie from response for subsequent requests
+5. Pass cookie header in protected route requests
+
+#### Middleware Testing
+- RequireLogin returns buffalo.Handler wrapper
+- Middleware redirects with StatusSeeOther (303) for POST-to-GET
+- Can test middleware is callable without full request cycle
+- Protected handlers need auth context from session
+
+#### Progress Acceleration
+- Implemented 4 authentication scenarios in one session
+- Jumped from 19/37 to 23/37 scenarios (62.2%)
+- Authentication unlocks many dependent scenarios
+- Proper test infrastructure accelerates future implementations

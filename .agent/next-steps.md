@@ -1,65 +1,65 @@
 # Next Steps for Buffkit Development
 
 ## Current Status
-- **Scenarios Passing**: 19 out of 37 (51.4%)
+- **Scenarios Passing**: 23 out of 37 (62.2%)
 - **Test Coverage**: Growing from 24% baseline
-- **Last Implemented**: HTML email storage and preview
+- **Last Implemented**: Authentication scenarios (protected routes, middleware, user context)
 
-## Immediate Next Step: Implement Authentication Scenarios
+## Immediate Next Step: Implement SSE Client Management
 
-### Target Scenario: "Protected routes require authentication"
-Location: `features/authentication.feature:24`
+### Target Scenario: "Broadcasting events to all clients"
+Location: `features/server_sent_events.feature:15`
 
 ### Why This Is Next
-1. Core security feature of any web application
-2. Already have auth package with RequireLogin middleware
-3. Unlocks multiple related scenarios
-4. High value for framework users
+1. SSE broker is already implemented and working
+2. Just need to implement test steps for multi-client scenarios
+3. High value feature for real-time applications
+4. Builds on existing SSE infrastructure
 
 ### Implementation Checklist
 
-#### Step 1: Implement Protected Handler (10 min)
-- [ ] Implement `iHaveAHandlerThatRequiresLogin()` in `features/steps_test.go`
-- [ ] Create a test handler that uses auth.RequireLogin middleware
-- [ ] Store handler reference in TestSuite
+#### Step 1: Implement Multiple Client Connection (10 min)
+- [ ] Implement `iHaveMultipleClientsConnectedToSSE()` in `features/steps_test.go`
+- [ ] Create multiple SSE client connections
+- [ ] Store client references in TestSuite
 
-#### Step 2: Access Without Auth (5 min)
-- [ ] Implement `iAccessTheProtectedRouteWithoutAuthentication()`
-- [ ] Make request to protected route without session
-- [ ] Store response for verification
+#### Step 2: Broadcast Event (5 min)
+- [ ] Implement `iBroadcastAnEventWithData()`
+- [ ] Use broker to send event to all clients
+- [ ] Verify event is queued for delivery
 
-#### Step 3: Verify Redirect (5 min)
-- [ ] Implement `iShouldBeRedirectedToLogin()`
-- [ ] Check response status is 302 or 303
-- [ ] Verify Location header points to login path
+#### Step 3: Verify Client Receipt (10 min)
+- [ ] Implement `allConnectedClientsShouldReceiveTheEvent()`
+- [ ] Check each client received the event
+- [ ] Verify event type and data match
 
 ### Test Command
 ```bash
 cd buffkit
-go test -v ./features -run "TestFeatures/Protected_routes_require_authentication"
+go test -v ./features -run "TestFeatures/Broadcasting_events_to_all_clients"
 ```
 
 ### Expected Outcome
 - Scenario passes with all 3 steps green
-- 20/37 scenarios passing (54.1%)
-- Authentication flow validated
+- 24/37 scenarios passing (64.9%)
+- Multi-client SSE broadcasting validated
 
 ## Following Scenarios (Priority Order)
 
-### 1. "Mail preview endpoint is not available in production"
-- **Why**: Complement to dev mode test, security validation
-- **Effort**: Very Low (10 min)
-- **Impact**: Validates production safety
-
-### 2. "Protected routes require authentication"
-- **Why**: Core security feature
-- **Effort**: Medium (30 min)
-- **Impact**: Unlocks auth-related scenarios
-
-### 3. "RequireLogin middleware exists"
-- **Why**: Validates middleware API
+### 1. "Client connection management"
+- **Why**: Validates SSE connection lifecycle
 - **Effort**: Low (15 min)
-- **Impact**: Documents middleware usage
+- **Impact**: Ensures proper resource management
+
+### 2. "Connection cleanup on disconnect"
+- **Why**: Prevents memory leaks
+- **Effort**: Low (15 min)
+- **Impact**: Production stability
+
+### 3. "Broadcasting HTML fragments"
+- **Why**: Core SSR+SSE feature
+- **Effort**: Medium (20 min)
+- **Impact**: Enables HTMX-style updates
 
 ### 4. "Security headers are relaxed in dev mode"
 - **Why**: Already have secure middleware
@@ -76,16 +76,19 @@ These scenarios likely already work but need test implementation:
 - [x] Mail preview in dev mode
 - [x] Mail sender logs emails
 - [x] HTML email storage
-- [x] Production mode safety (already working)
-- [ ] Authentication flows (next target)
+- [x] Production mode safety
+- [x] Protected routes require authentication
+- [x] RequireLogin middleware exists
+- [x] Authenticated users can access protected routes
+- [x] User context is available in protected routes
+- [ ] SSE client management (next target)
 - [ ] Security headers
-- [ ] SSE client management
 - [ ] Component expansion
 
 ## Success Metrics
-- **Completed**: 19/37 scenarios (51.4%) ✓
-- **Today**: Reach 22/37 scenarios (59%)
-- **This Week**: Reach 28/37 scenarios (75%)
+- **Completed**: 23/37 scenarios (62.2%) ✓
+- **Today**: Reach 26/37 scenarios (70%)
+- **This Week**: Reach 32/37 scenarios (86%)
 - **Complete**: All 37 scenarios passing (100%)
 
 ## Remember
