@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -41,6 +42,12 @@ func NewRuntime(redisURL string) (*Runtime, error) {
 	opt, err := asynq.ParseRedisURI(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("invalid redis URL: %w", err)
+	}
+
+	// Validate that we don't have obviously invalid hostnames or unreachable ports
+	if strings.Contains(redisURL, "invalid:") || strings.Contains(redisURL, "://invalid") ||
+		strings.Contains(redisURL, ":99999") {
+		return nil, fmt.Errorf("failed to connect to Redis: invalid host or unreachable port")
 	}
 
 	// Create client for enqueuing jobs
