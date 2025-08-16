@@ -64,24 +64,34 @@ jobs:
       - name: Run BDD feature tests with coverage
         run: |
           cd features
-          go test -v -coverprofile=../features-coverage.txt -covermode=atomic -coverpkg=github.com/johnjansen/buffkit/... .
+          go test -v -coverprofile=../features-coverage.out -covermode=atomic -coverpkg=github.com/johnjansen/buffkit,github.com/johnjansen/buffkit/auth,github.com/johnjansen/buffkit/secure,github.com/johnjansen/buffkit/ssr,github.com/johnjansen/buffkit/mail,github.com/johnjansen/buffkit/jobs,github.com/johnjansen/buffkit/components,github.com/johnjansen/buffkit/importmap .
+          cd ..
         env:
           REDIS_URL: redis://localhost:6379/0
 
-      - name: Run all tests with coverage
-        run: go test -v ./... -coverprofile=coverage.txt -covermode=atomic -coverpkg=./...
+      - name: Run unit tests with coverage
+        run: |
+          go test -v -coverprofile=unit-coverage.out -covermode=atomic ./...
         env:
           REDIS_URL: redis://localhost:6379/0
+
+      - name: Merge coverage files
+        run: |
+          echo "mode: atomic" > coverage.out
+          tail -n +2 features-coverage.out >> coverage.out
+          tail -n +2 unit-coverage.out >> coverage.out 2>/dev/null || true
+          go tool cover -func=coverage.out
 
       - name: Upload coverage to Codecov
         if: matrix.go-version == '1.22'
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage.txt,./features-coverage.txt
+          file: ./coverage.out
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
 
   lint:
     runs-on: ubuntu-latest
