@@ -65,16 +65,24 @@ jobs:
         run: |
           # Run feature tests with cross-package coverage
           cd features
-          go test -coverprofile=../coverage.out -covermode=atomic \
+          go test -coverprofile=../coverage.tmp -covermode=atomic \
             -coverpkg=github.com/johnjansen/buffkit,github.com/johnjansen/buffkit/auth,github.com/johnjansen/buffkit/secure,github.com/johnjansen/buffkit/ssr,github.com/johnjansen/buffkit/mail,github.com/johnjansen/buffkit/jobs,github.com/johnjansen/buffkit/components,github.com/johnjansen/buffkit/importmap .
           cd ..
+
+          # Fix paths in coverage file to match repository structure
+          # Remove the module path prefix so Codecov can find the files
+          sed 's|^github.com/johnjansen/buffkit/||g' coverage.tmp > coverage.out
+          rm coverage.tmp
         env:
           REDIS_URL: redis://localhost:6379/0
 
       - name: Display coverage summary
         run: |
+          # Need to add module prefix back for go tool
+          sed 's|^|github.com/johnjansen/buffkit/|g' coverage.out | sed '1s|github.com/johnjansen/buffkit/||' > coverage.tmp
           echo "Coverage Summary:"
-          go tool cover -func=coverage.out | tail -5
+          go tool cover -func=coverage.tmp | tail -5
+          rm coverage.tmp
 
       - name: Upload coverage to Codecov
         if: matrix.go-version == '1.22'
