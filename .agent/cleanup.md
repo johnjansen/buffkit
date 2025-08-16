@@ -1,5 +1,8 @@
 # Buffkit Cleanup Tasks
 
+## Completed
+- [x] Configure Codecov integration with token
+
 ## High Priority
 - [ ] Fix import issues - auth.r{} renderer struct conflicts with package imports
 - [ ] Add proper Buffalo renderer integration instead of stub renderers
