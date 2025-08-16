@@ -1,70 +1,74 @@
 # Next Steps for Buffkit Development
 
 ## Current Status
-- **Scenarios Passing**: 23 out of 37 (62.2%)
+- **Scenarios Passing**: 27 out of 37 (73.0%)
 - **Test Coverage**: Growing from 24% baseline
-- **Last Implemented**: Authentication scenarios (protected routes, middleware, user context)
+- **Last Implemented**: SSE client management scenarios (broadcasting, connections, cleanup, HTML fragments)
 
-## Immediate Next Step: Implement SSE Client Management
+## Immediate Next Step: Implement Remaining Pending Scenarios
 
-### Target Scenario: "Broadcasting events to all clients"
-Location: `features/server_sent_events.feature:15`
+### Target Scenarios: Development Mode Features
+Location: `features/development_mode.feature`
 
 ### Why This Is Next
-1. SSE broker is already implemented and working
-2. Just need to implement test steps for multi-client scenarios
-3. High value feature for real-time applications
-4. Builds on existing SSE infrastructure
+1. Only 4 pending scenarios remain (plus 8 undefined)
+2. Development mode features are partially implemented
+3. Most infrastructure already exists
+4. Quick wins to reach 80%+ completion
 
-### Implementation Checklist
+### Pending Scenarios to Complete
 
-#### Step 1: Implement Multiple Client Connection (10 min)
-- [ ] Implement `iHaveMultipleClientsConnectedToSSE()` in `features/steps_test.go`
-- [ ] Create multiple SSE client connections
-- [ ] Store client references in TestSuite
+#### 1. "Security headers are relaxed in dev mode" (10 min)
+- Implement `theApplicationIsRunningInDevelopmentMode()`
+- Implement `iMakeARequestToAnyEndpoint()`
+- Implement `theSecurityHeadersShouldBePresentButRelaxed()`
 
-#### Step 2: Broadcast Event (5 min)
-- [ ] Implement `iBroadcastAnEventWithData()`
-- [ ] Use broker to send event to all clients
-- [ ] Verify event is queued for delivery
+#### 2. "Error messages are verbose in dev mode" (10 min)
+- Implement `anErrorOccursDuringRequestProcessing()`
+- Implement `iShouldSeeDetailedErrorMessages()`
+- Implement `stackTracesShouldBeIncluded()`
 
-#### Step 3: Verify Client Receipt (10 min)
-- [ ] Implement `allConnectedClientsShouldReceiveTheEvent()`
-- [ ] Check each client received the event
-- [ ] Verify event type and data match
+#### 3. "Hot reloading compatibility" (15 min)
+- Implement `iMakeChangesToTemplatesOrAssets()`
+- Implement `theChangesShouldBeReflectedWithoutRestart()`
+- Implement `theImportMapsShouldSupportDevelopmentWorkflows()`
+
+#### 4. "Development diagnostics" (15 min)
+- Implement `iAccessDiagnosticEndpoints()`
+- Implement `iShouldSeeInformationAbout()` with table parsing
 
 ### Test Command
 ```bash
 cd buffkit
-go test -v ./features -run "TestFeatures/Broadcasting_events_to_all_clients"
+go test -v ./features -run "TestFeatures/Security_headers" 
 ```
 
 ### Expected Outcome
-- Scenario passes with all 3 steps green
-- 24/37 scenarios passing (64.9%)
-- Multi-client SSE broadcasting validated
+- 4+ more scenarios passing
+- 31/37 scenarios passing (83.8%)
+- Development mode features complete
 
 ## Following Scenarios (Priority Order)
 
-### 1. "Client connection management"
-- **Why**: Validates SSE connection lifecycle
-- **Effort**: Low (15 min)
-- **Impact**: Ensures proper resource management
-
-### 2. "Connection cleanup on disconnect"
-- **Why**: Prevents memory leaks
-- **Effort**: Low (15 min)
-- **Impact**: Production stability
-
-### 3. "Broadcasting HTML fragments"
-- **Why**: Core SSR+SSE feature
+### 1. "Development vs production mail behavior"
+- **Why**: Validates environment-specific behavior
 - **Effort**: Medium (20 min)
-- **Impact**: Enables HTMX-style updates
+- **Impact**: Ensures proper mail handling
 
-### 4. "Security headers are relaxed in dev mode"
-- **Why**: Already have secure middleware
-- **Effort**: Low (20 min)
-- **Impact**: Validates dev/prod differences
+### 2. "Development-only middleware"
+- **Why**: Validates middleware stack differences
+- **Effort**: Low (15 min)
+- **Impact**: Documents dev mode features
+
+### 3. "Event filtering and targeting"
+- **Why**: Advanced SSE feature
+- **Effort**: Medium (25 min)
+- **Impact**: Enables targeted updates
+
+### 4. "SSE with htmx integration"
+- **Why**: Key integration point
+- **Effort**: Medium (30 min)
+- **Impact**: Validates real-world usage
 
 ## Quick Wins Available
 These scenarios likely already work but need test implementation:
@@ -81,14 +85,18 @@ These scenarios likely already work but need test implementation:
 - [x] RequireLogin middleware exists
 - [x] Authenticated users can access protected routes
 - [x] User context is available in protected routes
-- [ ] SSE client management (next target)
-- [ ] Security headers
+- [x] SSE broadcasting to all clients
+- [x] SSE client connection management
+- [x] SSE connection cleanup on disconnect
+- [x] SSE broadcasting HTML fragments
+- [ ] Security headers (next target)
+- [ ] Development diagnostics
 - [ ] Component expansion
 
 ## Success Metrics
-- **Completed**: 23/37 scenarios (62.2%) ✓
-- **Today**: Reach 26/37 scenarios (70%)
-- **This Week**: Reach 32/37 scenarios (86%)
+- **Completed**: 27/37 scenarios (73.0%) ✓✓
+- **Today**: Reach 31/37 scenarios (83%)
+- **This Week**: Reach 35/37 scenarios (94%)
 - **Complete**: All 37 scenarios passing (100%)
 
 ## Remember
