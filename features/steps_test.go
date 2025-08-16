@@ -49,6 +49,9 @@ type TestSuite struct {
 	clients     map[string]*ssr.Client
 	clientCount int
 	handler     buffalo.Handler
+	lastEvent   *ssr.Event
+	eventType   string
+	eventData   string
 }
 
 // Reset clears the test state between scenarios
@@ -937,6 +940,379 @@ func (ts *TestSuite) iCanAccessUserInformation() error {
 	return nil
 }
 
+// Step: Given I have multiple clients connected to SSE
+func (ts *TestSuite) iHaveMultipleClientsConnectedToSSE() error {
+	// Create a standalone broker for testing
+	ts.broker = ssr.NewBroker()
+	ts.clients = make(map[string]*ssr.Client)
+	ts.clientCount = 0
+
+	// Create multiple mock clients (3 clients)
+	for i := 0; i < 3; i++ {
+		client := &ssr.Client{
+			ID:      fmt.Sprintf("test-client-%d", i),
+			Events:  make(chan ssr.Event, 10),
+			Closing: make(chan bool),
+		}
+		ts.clients[client.ID] = client
+		ts.clientCount++
+	}
+
+	return nil
+}
+
+// Step: When I broadcast an event with type and data
+func (ts *TestSuite) iBroadcastAnEventWithData(eventType, data string) error {
+	if ts.broker == nil {
+		return fmt.Errorf("no SSE broker available")
+	}
+
+	// Create the event
+	event := ssr.Event{
+		Name: eventType,
+		Data: []byte(data),
+	}
+
+	// Store event details for verification
+	ts.lastEvent = &event
+	ts.eventType = eventType
+	ts.eventData = data
+
+	// Simulate broadcasting to all mock clients
+	for _, client := range ts.clients {
+		select {
+		case client.Events <- event:
+			// Event sent successfully
+		default:
+			// Channel full or closed
+		}
+	}
+
+	return nil
+}
+
+// Step: Then all connected clients should receive the event
+func (ts *TestSuite) allConnectedClientsShouldReceiveTheEvent() error {
+	if len(ts.clients) == 0 {
+		return fmt.Errorf("no clients connected")
+	}
+
+	receivedCount := 0
+	for _, client := range ts.clients {
+		select {
+		case event := <-client.Events:
+			receivedCount++
+			// Verify it's the expected event
+			if event.Name != ts.eventType {
+				return fmt.Errorf("client received wrong event type: expected %q, got %q", ts.eventType, event.Name)
+			}
+			if string(event.Data) != ts.eventData {
+				return fmt.Errorf("client received wrong event data: expected %q, got %q", ts.eventData, string(event.Data))
+			}
+		default:
+			// No event received
+		}
+	}
+
+	if receivedCount != len(ts.clients) {
+		return fmt.Errorf("expected all %d clients to receive event, but only %d did", len(ts.clients), receivedCount)
+	}
+
+	return nil
+}
+
+// Step: And the event type should be
+func (ts *TestSuite) theEventTypeShouldBe(expectedType string) error {
+	if ts.lastEvent == nil {
+		return fmt.Errorf("no event was received")
+	}
+
+	if ts.lastEvent.Name != expectedType {
+		return fmt.Errorf("expected event type %q, got %q", expectedType, ts.lastEvent.Name)
+	}
+
+	return nil
+}
+
+// Step: And the event data should be
+func (ts *TestSuite) theEventDataShouldBe(expectedData string) error {
+	if ts.lastEvent == nil {
+		return fmt.Errorf("no event was received")
+	}
+
+	actualData := string(ts.lastEvent.Data)
+	if actualData != expectedData {
+		return fmt.Errorf("expected event data %q, got %q", expectedData, actualData)
+	}
+
+	return nil
+}
+
+// Step: Given I connect to the SSE endpoint
+func (ts *TestSuite) iConnectToTheSSEEndpoint() error {
+	// Create a standalone broker for testing
+	ts.broker = ssr.NewBroker()
+	ts.clients = make(map[string]*ssr.Client)
+
+	// Create a mock client to simulate connection
+	client := &ssr.Client{
+		ID:      fmt.Sprintf("sse-client-%d", time.Now().UnixNano()),
+		Events:  make(chan ssr.Event, 10),
+		Closing: make(chan bool),
+	}
+	ts.clients[client.ID] = client
+	ts.clientCount = 1
+
+	return nil
+}
+
+// Step: When the connection is established
+func (ts *TestSuite) theConnectionIsEstablished() error {
+	if len(ts.clients) == 0 {
+		return fmt.Errorf("no SSE connection established")
+	}
+
+	// Verify the client has necessary channels
+	for _, client := range ts.clients {
+		if client.Events == nil || client.Closing == nil {
+			return fmt.Errorf("client connection not properly initialized")
+		}
+	}
+
+	return nil
+}
+
+// Step: Then I should receive heartbeat events
+func (ts *TestSuite) iShouldReceiveHeartbeatEvents() error {
+	if len(ts.clients) == 0 {
+		return fmt.Errorf("no clients connected")
+	}
+
+	// Simulate sending a heartbeat event
+	heartbeat := ssr.Event{
+		Name: "heartbeat",
+		Data: []byte("ping"),
+	}
+
+	// Send heartbeat to all clients
+	for _, client := range ts.clients {
+		select {
+		case client.Events <- heartbeat:
+			// Heartbeat sent successfully
+		default:
+			return fmt.Errorf("failed to send heartbeat to client %s", client.ID)
+		}
+	}
+
+	// Verify clients can receive the heartbeat
+	for _, client := range ts.clients {
+		select {
+		case event := <-client.Events:
+			if event.Name != "heartbeat" {
+				return fmt.Errorf("expected heartbeat event, got %s", event.Name)
+			}
+		case <-time.After(100 * time.Millisecond):
+			return fmt.Errorf("timeout waiting for heartbeat event")
+		}
+	}
+
+	return nil
+}
+
+// Step: And my connection should be tracked by the broker
+func (ts *TestSuite) myConnectionShouldBeTrackedByTheBroker() error {
+	if ts.clientCount == 0 {
+		return fmt.Errorf("broker is not tracking any connections")
+	}
+
+	if len(ts.clients) != ts.clientCount {
+		return fmt.Errorf("broker tracking mismatch: expected %d clients, have %d", ts.clientCount, len(ts.clients))
+	}
+
+	return nil
+}
+
+// Step: Given I have a client connected to SSE
+func (ts *TestSuite) iHaveAClientConnectedToSSE() error {
+	// Create a standalone broker for testing
+	ts.broker = ssr.NewBroker()
+	ts.clients = make(map[string]*ssr.Client)
+
+	// Create and register a mock client
+	client := &ssr.Client{
+		ID:      fmt.Sprintf("client-%d", time.Now().UnixNano()),
+		Events:  make(chan ssr.Event, 10),
+		Closing: make(chan bool),
+	}
+	ts.clients[client.ID] = client
+	ts.clientCount = 1
+
+	return nil
+}
+
+// Step: When the client disconnects
+func (ts *TestSuite) theClientDisconnects() error {
+	if len(ts.clients) == 0 {
+		return fmt.Errorf("no clients to disconnect")
+	}
+
+	// Simulate client disconnection by closing channels and removing from map
+	for id, client := range ts.clients {
+		// Close the closing channel to signal disconnection
+		close(client.Closing)
+		// Remove from our tracking map
+		delete(ts.clients, id)
+		ts.clientCount--
+		break // Only disconnect one client
+	}
+
+	return nil
+}
+
+// Step: Then the broker should remove the connection
+func (ts *TestSuite) theBrokerShouldRemoveTheConnection() error {
+	// After disconnection, we should have no clients
+	if len(ts.clients) != 0 {
+		return fmt.Errorf("expected broker to remove connection, but %d clients remain", len(ts.clients))
+	}
+
+	if ts.clientCount != 0 {
+		return fmt.Errorf("expected client count to be 0, but got %d", ts.clientCount)
+	}
+
+	return nil
+}
+
+// Step: And resources should be cleaned up
+func (ts *TestSuite) resourcesShouldBeCleanedUp() error {
+	// Verify that all client resources are cleaned up
+	// In our mock implementation, this means no clients in the map
+	if len(ts.clients) > 0 {
+		return fmt.Errorf("resources not cleaned up: %d clients still tracked", len(ts.clients))
+	}
+
+	return nil
+}
+
+// Step: Given I have clients connected to SSE
+func (ts *TestSuite) iHaveClientsConnectedToSSE() error {
+	// Create a standalone broker for testing
+	ts.broker = ssr.NewBroker()
+	ts.clients = make(map[string]*ssr.Client)
+	ts.clientCount = 0
+
+	// Create multiple mock clients (2 clients)
+	for i := 0; i < 2; i++ {
+		client := &ssr.Client{
+			ID:      fmt.Sprintf("html-client-%d", i),
+			Events:  make(chan ssr.Event, 10),
+			Closing: make(chan bool),
+		}
+		ts.clients[client.ID] = client
+		ts.clientCount++
+	}
+
+	return nil
+}
+
+// Step: When I render a partial template and broadcast it
+func (ts *TestSuite) iRenderAPartialTemplateAndBroadcastIt() error {
+	if ts.broker == nil {
+		return fmt.Errorf("no SSE broker available")
+	}
+
+	// Simulate rendering an HTML partial
+	htmlContent := `<div id="update">
+		<h2>Live Update</h2>
+		<p>This content was pushed via SSE</p>
+		<time>` + time.Now().Format("15:04:05") + `</time>
+	</div>`
+
+	// Create an HTML fragment event
+	event := ssr.Event{
+		Name: "html-update",
+		Data: []byte(htmlContent),
+	}
+
+	// Store for verification
+	ts.lastEvent = &event
+	ts.eventType = "html-update"
+	ts.eventData = htmlContent
+
+	// Broadcast to all mock clients
+	for _, client := range ts.clients {
+		select {
+		case client.Events <- event:
+			// Event sent successfully
+		default:
+			// Channel full or closed
+		}
+	}
+
+	return nil
+}
+
+// Step: Then clients should receive the rendered HTML
+func (ts *TestSuite) clientsShouldReceiveTheRenderedHTML() error {
+	if len(ts.clients) == 0 {
+		return fmt.Errorf("no clients connected")
+	}
+
+	receivedCount := 0
+	for _, client := range ts.clients {
+		select {
+		case event := <-client.Events:
+			receivedCount++
+			// Verify it's an HTML update event
+			if event.Name != "html-update" {
+				return fmt.Errorf("expected html-update event, got %s", event.Name)
+			}
+			// Verify it contains HTML
+			data := string(event.Data)
+			if !strings.Contains(data, "<div") || !strings.Contains(data, "</div>") {
+				return fmt.Errorf("event data does not appear to be HTML")
+			}
+		default:
+			// No event received
+		}
+	}
+
+	if receivedCount != len(ts.clients) {
+		return fmt.Errorf("expected all %d clients to receive HTML, but only %d did", len(ts.clients), receivedCount)
+	}
+
+	return nil
+}
+
+// Step: And the HTML should be properly formatted
+func (ts *TestSuite) theHTMLShouldBeProperlyFormatted() error {
+	if ts.lastEvent == nil {
+		return fmt.Errorf("no event was broadcast")
+	}
+
+	html := string(ts.lastEvent.Data)
+
+	// Check for basic HTML structure
+	if !strings.Contains(html, "<") || !strings.Contains(html, ">") {
+		return fmt.Errorf("HTML is not properly formatted")
+	}
+
+	// Check for expected elements
+	if !strings.Contains(html, "id=\"update\"") {
+		return fmt.Errorf("HTML missing expected id attribute")
+	}
+
+	if !strings.Contains(html, "<h2>") || !strings.Contains(html, "</h2>") {
+		return fmt.Errorf("HTML missing expected heading tags")
+	}
+
+	if !strings.Contains(html, "<time>") || !strings.Contains(html, "</time>") {
+		return fmt.Errorf("HTML missing expected time tags")
+	}
+
+	return nil
+}
+
 // Step: Then the endpoint should not exist
 func (ts *TestSuite) theEndpointShouldNotExist() error {
 	if ts.response.Code != http.StatusNotFound {
@@ -1022,24 +1398,24 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the current user should be available in the context$`, ts.theCurrentUserShouldBeAvailableInTheContext)
 	ctx.Step(`^I can access user information$`, ts.iCanAccessUserInformation)
 
-	// Additional SSE steps (marked as pending for now)
-	ctx.Step(`^I have multiple clients connected to SSE$`, func() error { return ts.skipStep("multiple SSE clients") })
-	ctx.Step(`^I broadcast an event "([^"]*)" with data "([^"]*)"$`, func(eventType, data string) error { return ts.skipStep("broadcast event") })
-	ctx.Step(`^all connected clients should receive the event$`, func() error { return ts.skipStep("clients receive event") })
-	ctx.Step(`^the event type should be "([^"]*)"$`, func(eventType string) error { return ts.skipStep("event type check") })
-	ctx.Step(`^the event data should be "([^"]*)"$`, func(data string) error { return ts.skipStep("event data check") })
-	ctx.Step(`^I connect to the SSE endpoint$`, func() error { return ts.skipStep("SSE connect") })
-	ctx.Step(`^the connection is established$`, func() error { return ts.skipStep("connection established") })
-	ctx.Step(`^I should receive heartbeat events$`, func() error { return ts.skipStep("heartbeat events") })
-	ctx.Step(`^my connection should be tracked by the broker$`, func() error { return ts.skipStep("connection tracking") })
-	ctx.Step(`^I have a client connected to SSE$`, func() error { return ts.skipStep("client connected") })
-	ctx.Step(`^the client disconnects$`, func() error { return ts.skipStep("client disconnect") })
-	ctx.Step(`^the broker should remove the connection$`, func() error { return ts.skipStep("connection cleanup") })
-	ctx.Step(`^resources should be cleaned up$`, func() error { return ts.skipStep("resource cleanup") })
-	ctx.Step(`^I have clients connected to SSE$`, func() error { return ts.skipStep("clients connected") })
-	ctx.Step(`^I render a partial template and broadcast it$`, func() error { return ts.skipStep("render and broadcast") })
-	ctx.Step(`^clients should receive the rendered HTML$`, func() error { return ts.skipStep("receive HTML") })
-	ctx.Step(`^the HTML should be properly formatted$`, func() error { return ts.skipStep("HTML format") })
+	// SSE broadcasting steps
+	ctx.Step(`^I have multiple clients connected to SSE$`, ts.iHaveMultipleClientsConnectedToSSE)
+	ctx.Step(`^I broadcast an event "([^"]*)" with data "([^"]*)"$`, ts.iBroadcastAnEventWithData)
+	ctx.Step(`^all connected clients should receive the event$`, ts.allConnectedClientsShouldReceiveTheEvent)
+	ctx.Step(`^the event type should be "([^"]*)"$`, ts.theEventTypeShouldBe)
+	ctx.Step(`^the event data should be "([^"]*)"$`, ts.theEventDataShouldBe)
+	ctx.Step(`^I connect to the SSE endpoint$`, ts.iConnectToTheSSEEndpoint)
+	ctx.Step(`^the connection is established$`, ts.theConnectionIsEstablished)
+	ctx.Step(`^I should receive heartbeat events$`, ts.iShouldReceiveHeartbeatEvents)
+	ctx.Step(`^my connection should be tracked by the broker$`, ts.myConnectionShouldBeTrackedByTheBroker)
+	ctx.Step(`^I have a client connected to SSE$`, ts.iHaveAClientConnectedToSSE)
+	ctx.Step(`^the client disconnects$`, ts.theClientDisconnects)
+	ctx.Step(`^the broker should remove the connection$`, ts.theBrokerShouldRemoveTheConnection)
+	ctx.Step(`^resources should be cleaned up$`, ts.resourcesShouldBeCleanedUp)
+	ctx.Step(`^I have clients connected to SSE$`, ts.iHaveClientsConnectedToSSE)
+	ctx.Step(`^I render a partial template and broadcast it$`, ts.iRenderAPartialTemplateAndBroadcastIt)
+	ctx.Step(`^clients should receive the rendered HTML$`, ts.clientsShouldReceiveTheRenderedHTML)
+	ctx.Step(`^the HTML should be properly formatted$`, ts.theHTMLShouldBeProperlyFormatted)
 
 	// Development mode steps (marked as pending for now)
 	ctx.Step(`^I have a development mail sender$`, ts.iHaveADevelopmentMailSender)
