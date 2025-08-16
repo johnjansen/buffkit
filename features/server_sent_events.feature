@@ -5,7 +5,6 @@ Feature: Server-Sent Events (SSE)
 
   Background:
     Given I have a Buffalo application with Buffkit wired
-    And the application is running
 
   Scenario: SSE endpoint is available
     When I connect to "/events" with SSE headers

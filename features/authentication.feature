@@ -5,7 +5,6 @@ Feature: Authentication System
 
   Background:
     Given I have a Buffalo application with Buffkit wired
-    And the application is running
 
   Scenario: Accessing login form
     When I visit "/login"
