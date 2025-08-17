@@ -30,6 +30,20 @@
 
 We hope this will eventually become a useful tool, but for now it serves as a testbed for exploring how AI agents can effectively collaborate in complex software development tasks.
 
+### Our Agentic Development Process
+
+We've developed a structured 4-step approach for building features with AI agents:
+
+1. **High-Level Design & Problem Analysis** - Work with the LLM to think through the feature conceptually, discussing the big picture while diving into key details carefully. This mirrors a stand-up meeting or ideation workshop, identifying the feature's shape and potential challenges.
+
+2. **BDD Scenario Creation** - Have the LLM stub out features and scenarios in Gherkin format, translating the conceptual design into concrete, testable behaviors.
+
+3. **Human Review & Agreement** - Manually review the generated scenarios with your LLM pair to ensure the process makes sense and identify anything missing. This "we agree on the details" step is crucial before implementation begins.
+
+4. **Iterative Implementation** - Get busy implementing one feature at a time, using the agreed-upon BDD scenarios as the guiding specification.
+
+This process leverages the strengths of both human intuition and AI precision, ensuring features are well-thought-out before implementation while maintaining the rapid development cycles that agents enable.
+
 ---
 
 > **⚠️ ALPHA STATUS - v0.1.0-alpha**
