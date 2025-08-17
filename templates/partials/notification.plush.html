@@ -1,0 +1,6 @@
+<div class="notification <%= type %>" id="notification-<%= notificationID %>">
+    <p><%= message %></p>
+    <%= if (timestamp) { %>
+    <small><%= timestamp %></small>
+    <% } %>
+</div>

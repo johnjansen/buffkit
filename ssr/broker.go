@@ -15,12 +15,14 @@
 package ssr
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/buffalo/render"
 )
 
 // Event represents a server-sent event that will be sent to clients.
@@ -321,18 +323,64 @@ func (b *Broker) ServeHTTP(c buffalo.Context) error {
 // WHY: This prevents divergence between what's rendered for direct requests
 // versus what's pushed via SSE, ensuring consistency.
 func RenderPartial(c buffalo.Context, name string, data map[string]interface{}) ([]byte, error) {
-	// TODO: In production, this would use Buffalo's template renderer
-	// to actually render the named partial with the provided data.
-	// For now, we return a stub HTML fragment.
+	// Use Buffalo's template renderer to render the partial.
+	// This ensures consistency between SSE broadcasts and regular HTTP responses.
 
-	// Create a temporary rendering context
-	// In a real implementation, this would:
-	// 1. Load the template from templates/partials/{name}.html
-	// 2. Execute the template with the provided data
-	// 3. Return the rendered HTML
+	// Prepare the render data by merging context values with provided data
+	renderData := make(map[string]interface{})
 
-	// Stub implementation for demonstration
-	html := fmt.Sprintf(`<div data-partial="%s"><!-- Rendered partial: %s --></div>`, name, name)
+	// Copy commonly needed context values
+	if user := c.Value("current_user"); user != nil {
+		renderData["current_user"] = user
+	}
+	if csrf := c.Value("authenticity_token"); csrf != nil {
+		renderData["csrf"] = csrf
+	}
+	renderData["current_path"] = c.Request().URL.Path
 
-	return []byte(html), nil
+	// Add the provided data (overrides context data if keys conflict)
+	for k, v := range data {
+		renderData[k] = v
+	}
+
+	// Create a minimal HTML renderer for partials (no layout)
+	r := render.New(render.Options{
+		HTMLLayout: "", // No layout for partials
+	})
+
+	// Render the partial - Buffalo will look in templates/partials/
+	templateName := fmt.Sprintf("partials/%s.plush.html", name)
+
+	// Create a custom ResponseWriter to capture the output
+	var buf bytes.Buffer
+	captureWriter := &responseCaptureWriter{
+		Buffer: &buf,
+		header: make(http.Header),
+	}
+
+	// Render to our capture buffer
+	if err := r.HTML(templateName).Render(captureWriter, renderData); err != nil {
+		return nil, fmt.Errorf("failed to render partial %s: %w", name, err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+// responseCaptureWriter implements http.ResponseWriter to capture rendered output
+type responseCaptureWriter struct {
+	*bytes.Buffer
+	header     http.Header
+	statusCode int
+}
+
+func (w *responseCaptureWriter) Header() http.Header {
+	return w.header
+}
+
+func (w *responseCaptureWriter) WriteHeader(statusCode int) {
+	w.statusCode = statusCode
+}
+
+func (w *responseCaptureWriter) Write(b []byte) (int, error) {
+	return w.Buffer.Write(b)
 }
