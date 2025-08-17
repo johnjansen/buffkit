@@ -1,0 +1,2735 @@
+=== RUN   TestBasicFeatures
+[1;37mFeature:[0m Basic Buffkit Functionality
+  As a developer
+  I want to verify core Buffkit functionality works
+  So that I can build upon a solid foundation
+=== RUN   TestBasicFeatures/Wire_Buffkit_successfully
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application[0m             [1;30m# basic_test.go:87 -> *BasicTestSuite[0m
+
+  [1;37mScenario:[0m Wire Buffkit successfully              [1;30m# basic.feature:9[0m
+    [32mWhen[0m [32mI wire Buffkit with a valid configuration[0m [1;30m# basic_test.go:88 -> *BasicTestSuite[0m
+    [32mThen[0m [32mall components should be initialized[0m      [1;30m# basic_test.go:90 -> *BasicTestSuite[0m
+=== RUN   TestBasicFeatures/Get_version_information
+
+  [1;37mScenario:[0m Get version information              [1;30m# basic.feature:13[0m
+    [32mWhen[0m [32mI check the Buffkit version[0m             [1;30m# basic_test.go:89 -> *BasicTestSuite[0m
+    [32mThen[0m [32mI should get a non-empty version string[0m [1;30m# basic_test.go:91 -> *BasicTestSuite[0m
+
+2 scenarios ([32m2 passed[0m)
+6 steps ([32m6 passed[0m)
+3.715833ms
+--- PASS: TestBasicFeatures (0.00s)
+    --- PASS: TestBasicFeatures/Wire_Buffkit_successfully (0.00s)
+    --- PASS: TestBasicFeatures/Get_version_information (0.00s)
+=== RUN   TestFeatures
+[1;37mFeature:[0m Authentication System
+  As a web application user
+  I want to authenticate with the system
+  So that I can access protected resources
+=== RUN   TestFeatures/Accessing_login_form
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application with Buffkit wired[0m [1;30m# steps_test.go:1821 -> *TestSuite[0m
+[36mINFO[0m[2025-08-17T20:16:43+12:00] /login/ [36mduration[0m="718.583µs" [36mhuman_size[0m="0 B" [36mmethod[0m=GET [36mpath[0m=/login/ [36mrender[0m="696.333µs" [36mrequest_id[0m=df2cf773e903488134cc-32edc877e3dbc4035b9a [36msize[0m=0 [36mstatus[0m=200
+
+  [1;37mScenario:[0m Accessing login form                          [1;30m# authentication.feature:9[0m
+    [32mWhen[0m [32mI visit "/login"[0m                                 [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [32mThen[0m [32mI should see the login form[0m                      [1;30m# steps_test.go:1825 -> *TestSuite[0m
+    [32mAnd[0m [32mthe response status should be 200[0m                 [1;30m# steps_test.go:1826 -> *TestSuite[0m
+=== RUN   TestFeatures/Login_form_accepts_POST_requests
+[WARNING] Headers were already written. Wanted to override status code 422 with 200[36mINFO[0m[2025-08-17T20:16:43+12:00] /login/ [36mduration[0m="37.792µs" [36mhuman_size[0m="0 B" [36mmethod[0m=POST [36mpath[0m=/login/ [36mrender[0m="30µs" [36mrequest_id[0m=214d8e54a05fd259164c-a5e65cf17b880ea9fe80 [36msize[0m=0 [36mstatus[0m=422
+
+  [1;37mScenario:[0m Login form accepts POST requests              [1;30m# authentication.feature:14[0m
+    [32mWhen[0m [32mI submit a POST request to "/login"[0m              [1;30m# steps_test.go:1824 -> *TestSuite[0m
+    [32mThen[0m [32mthe route should exist[0m                           [1;30m# steps_test.go:1827 -> *TestSuite[0m
+    [32mAnd[0m [32mthe response should not be 404[0m                    [1;30m# steps_test.go:1828 -> *TestSuite[0m
+=== RUN   TestFeatures/Logout_accepts_POST_requests
+[WARNING] Headers were already written. Wanted to override status code 303 with 200[36mINFO[0m[2025-08-17T20:16:43+12:00] /logout/ [36mduration[0m="67.5µs" [36mhuman_size[0m="0 B" [36mmethod[0m=POST [36mpath[0m=/logout/ [36mrequest_id[0m=7a133ce27cadd2110727-a51a77c5528de97cc526 [36msize[0m=0 [36mstatus[0m=303
+
+  [1;37mScenario:[0m Logout accepts POST requests                  [1;30m# authentication.feature:19[0m
+    [32mWhen[0m [32mI submit a POST request to "/logout"[0m             [1;30m# steps_test.go:1824 -> *TestSuite[0m
+    [32mThen[0m [32mthe route should exist[0m                           [1;30m# steps_test.go:1827 -> *TestSuite[0m
+    [32mAnd[0m [32mthe response should not be 404[0m                    [1;30m# steps_test.go:1828 -> *TestSuite[0m
+=== RUN   TestFeatures/Protected_routes_require_authentication
+
+  [1;37mScenario:[0m Protected routes require authentication          [1;30m# authentication.feature:24[0m
+    [32mGiven[0m [32mI have a handler that requires login[0m               [1;30m# steps_test.go:1844 -> *TestSuite[0m
+[36mINFO[0m[2025-08-17T20:16:43+12:00] /test-protected/ [36mduration[0m="90.75µs" [36mhuman_size[0m="33 B" [36mmethod[0m=GET [36mpath[0m=/test-protected/ [36mrequest_id[0m=d2ccbed0579542190a8c-f94b323e6552e130b891 [36msize[0m=33 [36mstatus[0m=303
+    [32mWhen[0m [32mI access the protected route without authentication[0m [1;30m# steps_test.go:1845 -> *TestSuite[0m
+    [32mThen[0m [32mI should be redirected to login[0m                     [1;30m# steps_test.go:1846 -> *TestSuite[0m
+=== RUN   TestFeatures/RequireLogin_middleware_exists
+
+  [1;37mScenario:[0m RequireLogin middleware exists                [1;30m# authentication.feature:29[0m
+    [32mWhen[0m [32mI apply the RequireLogin middleware to a handler[0m [1;30m# steps_test.go:1847 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:43+12:00] could not find test [31mstatus[0m=404
+    [32mThen[0m [32mthe middleware should be callable[0m                [1;30m# steps_test.go:1848 -> *TestSuite[0m
+    [32mAnd[0m [32mit should return a handler function[0m               [1;30m# steps_test.go:1849 -> *TestSuite[0m
+=== RUN   TestFeatures/Authenticated_users_can_access_protected_routes
+[WARNING] Headers were already written. Wanted to override status code 303 with 200[36mINFO[0m[2025-08-17T20:16:44+12:00] /login/ [36mcontent_type[0m=application/x-www-form-urlencoded [36mduration[0m=58.8555ms [36mhuman_size[0m="0 B" [36mmethod[0m=POST [36mpath[0m=/login/ [36mrequest_id[0m=a6151ed8511da1db4e59-3556f9ea71bddf2393db [36msize[0m=0 [36mstatus[0m=303
+
+  [1;37mScenario:[0m Authenticated users can access protected routes [1;30m# authentication.feature:34[0m
+    [32mGiven[0m [32mI am logged in as a valid user[0m                    [1;30m# steps_test.go:1850 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:44+12:00] auth/profile.plush.html: no templates fs defined [31mrender[0m="8.5µs" [31mrequest_id[0m=a6151ed8511da1db4e59-a361275e13d3edf39183 [31mstatus[0m=500
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /profile/ [36mduration[0m="40.417µs" [36mhuman_size[0m="1.6 kB" [36mmethod[0m=GET [36mpath[0m=/profile/ [36mrender[0m="8.5µs" [36mrequest_id[0m=a6151ed8511da1db4e59-a361275e13d3edf39183 [36msize[0m=1587 [36mstatus[0m=500
+    [32mWhen[0m [32mI access a protected route[0m                         [1;30m# steps_test.go:1851 -> *TestSuite[0m
+    [32mThen[0m [32mI should see the protected content[0m                 [1;30m# steps_test.go:1852 -> *TestSuite[0m
+    [32mAnd[0m [32mI should not be redirected[0m                          [1;30m# steps_test.go:1853 -> *TestSuite[0m
+=== RUN   TestFeatures/User_context_is_available_in_protected_routes
+[WARNING] Headers were already written. Wanted to override status code 303 with 200[36mINFO[0m[2025-08-17T20:16:44+12:00] /login/ [36mcontent_type[0m=application/x-www-form-urlencoded [36mduration[0m=59.027291ms [36mhuman_size[0m="0 B" [36mmethod[0m=POST [36mpath[0m=/login/ [36mrequest_id[0m=64176bcaf000fa41d37d-0494a6f95fe5a6124241 [36msize[0m=0 [36mstatus[0m=303
+
+  [1;37mScenario:[0m User context is available in protected routes    [1;30m# authentication.feature:40[0m
+    [32mGiven[0m [32mI am logged in as a valid user[0m                     [1;30m# steps_test.go:1850 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:44+12:00] auth/profile.plush.html: no templates fs defined [31mrender[0m="9.209µs" [31mrequest_id[0m=64176bcaf000fa41d37d-62bae76b25f30225c724 [31mstatus[0m=500
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /profile/ [36mduration[0m="26.584µs" [36mhuman_size[0m="1.6 kB" [36mmethod[0m=GET [36mpath[0m=/profile/ [36mrender[0m="9.209µs" [36mrequest_id[0m=64176bcaf000fa41d37d-62bae76b25f30225c724 [36msize[0m=1587 [36mstatus[0m=500
+    [32mWhen[0m [32mI access a protected route[0m                          [1;30m# steps_test.go:1851 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:44+12:00] auth/sessions.plush.html: no templates fs defined [31mrender[0m="10.791µs" [31mrequest_id[0m=64176bcaf000fa41d37d-7eb37f83b52d01f5e958 [31mstatus[0m=500
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /sessions/ [36mduration[0m="26.875µs" [36mhuman_size[0m="1.6 kB" [36mmethod[0m=GET [36mpath[0m=/sessions/ [36mrender[0m="10.791µs" [36mrequest_id[0m=64176bcaf000fa41d37d-7eb37f83b52d01f5e958 [36msize[0m=1587 [36mstatus[0m=500
+    [32mThen[0m [32mthe current user should be available in the context[0m [1;30m# steps_test.go:1854 -> *TestSuite[0m
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /user-info/ [36mduration[0m="18.583µs" [36mhuman_size[0m="16 B" [36mmethod[0m=GET [36mpath[0m=/user-info/ [36mrender[0m="17.125µs" [36mrequest_id[0m=64176bcaf000fa41d37d-4b8484248c36d3ac9944 [36msize[0m=16 [36mstatus[0m=200
+    [32mAnd[0m [32mI can access user information[0m                        [1;30m# steps_test.go:1855 -> *TestSuite[0m
+
+[1;37mFeature:[0m Enhanced Authentication System
+  As a web application user
+  I want advanced authentication features
+  So that I can securely manage my account
+=== RUN   TestFeatures/User_registration_form_is_accessible
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application with Buffkit wired[0m [1;30m# steps_test.go:1821 -> *TestSuite[0m
+    [33mAnd[0m [33mI have an extended user store configured[0m
+
+  [1;37mScenario:[0m User registration form is accessible          [1;30m# authentication_enhanced.feature:11[0m
+    [36mWhen[0m [36mI visit "/register"[0m                              [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [33mThen[0m [33mI should see the registration form[0m
+    [36mAnd[0m [36mthe response status should be 200[0m                 [1;30m# steps_test.go:1826 -> *TestSuite[0m
+=== RUN   TestFeatures/User_can_register_with_valid_credentials
+
+  [1;37mScenario:[0m User can register with valid credentials                                            [1;30m# authentication_enhanced.feature:16[0m
+    [33mWhen[0m [33mI submit a registration with email "newuser@example.com" and password "SecurePass123!"[0m
+    [33mThen[0m [33ma new user account should be created[0m
+    [33mAnd[0m [33mI should receive a verification email[0m
+    [33mAnd[0m [33mI should be redirected to a success page[0m
+=== RUN   TestFeatures/Registration_fails_with_weak_password
+
+  [1;37mScenario:[0m Registration fails with weak password                                  [1;30m# authentication_enhanced.feature:22[0m
+    [33mWhen[0m [33mI submit a registration with email "user@example.com" and password "weak"[0m
+    [33mThen[0m [33mI should see an error message about password strength[0m
+    [33mAnd[0m [33mno user account should be created[0m
+=== RUN   TestFeatures/Registration_fails_with_duplicate_email
+
+  [1;37mScenario:[0m Registration fails with duplicate email                [1;30m# authentication_enhanced.feature:27[0m
+    [33mGiven[0m [33ma user exists with email "existing@example.com"[0m
+    [33mWhen[0m [33mI submit a registration with email "existing@example.com"[0m
+    [33mThen[0m [33mI should see an error message about email already taken[0m
+    [33mAnd[0m [33monly one user should exist with that email[0m
+=== RUN   TestFeatures/User_can_verify_email_with_valid_token
+
+  [1;37mScenario:[0m User can verify email with valid token        [1;30m# authentication_enhanced.feature:34[0m
+    [33mGiven[0m [33mI have registered but not verified my email[0m
+    [33mAnd[0m [33mI have a valid verification token[0m
+    [33mWhen[0m [33mI visit the verification link[0m
+    [33mThen[0m [33mmy account should be marked as verified[0m
+    [33mAnd[0m [33mI should see a success message[0m
+=== RUN   TestFeatures/Email_verification_fails_with_invalid_token
+
+  [1;37mScenario:[0m Email verification fails with invalid token   [1;30m# authentication_enhanced.feature:41[0m
+    [36mWhen[0m [36mI visit "/verify-email?token=invalid"[0m            [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [33mThen[0m [33mI should see an error message[0m
+    [33mAnd[0m [33mno accounts should be verified[0m
+=== RUN   TestFeatures/Email_verification_fails_with_expired_token
+
+  [1;37mScenario:[0m Email verification fails with expired token   [1;30m# authentication_enhanced.feature:46[0m
+    [33mGiven[0m [33mI have a verification token older than 24 hours[0m
+    [33mWhen[0m [33mI visit the verification link[0m
+    [33mThen[0m [33mI should see an expiration error message[0m
+    [33mAnd[0m [33mmy account should remain unverified[0m
+=== RUN   TestFeatures/Forgot_password_form_is_accessible
+
+  [1;37mScenario:[0m Forgot password form is accessible            [1;30m# authentication_enhanced.feature:53[0m
+    [36mWhen[0m [36mI visit "/forgot-password"[0m                       [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [33mThen[0m [33mI should see the forgot password form[0m
+    [36mAnd[0m [36mthe response status should be 200[0m                 [1;30m# steps_test.go:1826 -> *TestSuite[0m
+=== RUN   TestFeatures/User_can_request_password_reset
+
+  [1;37mScenario:[0m User can request password reset                       [1;30m# authentication_enhanced.feature:58[0m
+    [33mGiven[0m [33ma user exists with email "user@example.com"[0m
+    [33mWhen[0m [33mI submit a password reset request for "user@example.com"[0m
+    [33mThen[0m [33ma password reset email should be sent[0m
+    [33mAnd[0m [33ma reset token should be created[0m
+    [33mAnd[0m [33mI should see a success message[0m
+=== RUN   TestFeatures/Password_reset_silently_succeeds_for_non-existent_email
+
+  [1;37mScenario:[0m Password reset silently succeeds for non-existent email      [1;30m# authentication_enhanced.feature:65[0m
+    [33mWhen[0m [33mI submit a password reset request for "nonexistent@example.com"[0m
+    [33mThen[0m [33mI should see a success message[0m
+    [33mAnd[0m [33mno email should be sent[0m
+    [33mAnd[0m [33mno reset token should be created[0m
+=== RUN   TestFeatures/User_can_reset_password_with_valid_token
+
+  [1;37mScenario:[0m User can reset password with valid token      [1;30m# authentication_enhanced.feature:71[0m
+    [33mGiven[0m [33mI have a valid password reset token[0m
+    [33mWhen[0m [33mI visit the reset password link[0m
+    [33mAnd[0m [33mI submit a new password "NewSecurePass123!"[0m
+    [33mThen[0m [33mmy password should be updated[0m
+    [33mAnd[0m [33mthe reset token should be invalidated[0m
+    [36mAnd[0m [36mI should be redirected to login[0m                   [1;30m# steps_test.go:1846 -> *TestSuite[0m
+=== RUN   TestFeatures/Password_reset_fails_with_mismatched_passwords
+
+  [1;37mScenario:[0m Password reset fails with mismatched passwords  [1;30m# authentication_enhanced.feature:79[0m
+    [33mGiven[0m [33mI have a valid password reset token[0m
+    [33mWhen[0m [33mI visit the reset password link[0m
+    [33mAnd[0m [33mI submit mismatched passwords[0m
+    [33mThen[0m [33mI should see an error about passwords not matching[0m
+    [33mAnd[0m [33mmy password should not be changed[0m
+=== RUN   TestFeatures/Password_reset_fails_with_expired_token
+
+  [1;37mScenario:[0m Password reset fails with expired token       [1;30m# authentication_enhanced.feature:86[0m
+    [33mGiven[0m [33mI have a password reset token older than 1 hour[0m
+    [33mWhen[0m [33mI visit the reset password link[0m
+    [33mThen[0m [33mI should see an expiration error[0m
+    [33mAnd[0m [33mI should be redirected to forgot password[0m
+=== RUN   TestFeatures/User_can_view_their_profile
+
+  [1;37mScenario:[0m User can view their profile                   [1;30m# authentication_enhanced.feature:93[0m
+    [36mGiven[0m [36mI am logged in as a valid user[0m                  [1;30m# steps_test.go:1850 -> *TestSuite[0m
+    [36mWhen[0m [36mI visit "/profile"[0m                               [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [33mThen[0m [33mI should see my profile information[0m
+    [36mAnd[0m [36mthe response status should be 200[0m                 [1;30m# steps_test.go:1826 -> *TestSuite[0m
+=== RUN   TestFeatures/User_can_update_their_profile
+
+  [1;37mScenario:[0m User can update their profile                 [1;30m# authentication_enhanced.feature:99[0m
+    [36mGiven[0m [36mI am logged in as a valid user[0m                  [1;30m# steps_test.go:1850 -> *TestSuite[0m
+    [36mWhen[0m [36mI visit "/profile"[0m                               [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [33mAnd[0m [33mI update my name to "New Name"[0m
+    [33mAnd[0m [33mI submit the profile form[0m
+    [33mThen[0m [33mmy profile should be updated[0m
+    [33mAnd[0m [33mI should see a success message[0m
+=== RUN   TestFeatures/Profile_page_requires_authentication
+
+  [1;37mScenario:[0m Profile page requires authentication          [1;30m# authentication_enhanced.feature:107[0m
+    [33mGiven[0m [33mI am not logged in[0m
+    [36mWhen[0m [36mI visit "/profile"[0m                               [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [36mThen[0m [36mI should be redirected to login[0m                  [1;30m# steps_test.go:1846 -> *TestSuite[0m
+=== RUN   TestFeatures/User_can_view_active_sessions
+
+  [1;37mScenario:[0m User can view active sessions                   [1;30m# authentication_enhanced.feature:113[0m
+    [36mGiven[0m [36mI am logged in as a valid user[0m                    [1;30m# steps_test.go:1850 -> *TestSuite[0m
+    [36mWhen[0m [36mI visit "/sessions"[0m                                [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [33mThen[0m [33mI should see my active sessions[0m
+    [33mAnd[0m [33mI should see session details like IP and user agent[0m
+=== RUN   TestFeatures/User_can_revoke_a_session
+
+  [1;37mScenario:[0m User can revoke a session                     [1;30m# authentication_enhanced.feature:119[0m
+    [33mGiven[0m [33mI am logged in with multiple sessions[0m
+    [33mWhen[0m [33mI revoke a specific session[0m
+    [33mThen[0m [33mthat session should be invalidated[0m
+    [33mAnd[0m [33mI should see a success message[0m
+=== RUN   TestFeatures/Sessions_page_requires_authentication
+
+  [1;37mScenario:[0m Sessions page requires authentication         [1;30m# authentication_enhanced.feature:125[0m
+    [33mGiven[0m [33mI am not logged in[0m
+    [36mWhen[0m [36mI visit "/sessions"[0m                              [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [36mThen[0m [36mI should be redirected to login[0m                  [1;30m# steps_test.go:1846 -> *TestSuite[0m
+=== RUN   TestFeatures/Login_attempts_are_rate_limited
+
+  [1;37mScenario:[0m Login attempts are rate limited               [1;30m# authentication_enhanced.feature:131[0m
+    [33mWhen[0m [33mI make 5 failed login attempts within 1 minute[0m
+    [33mThen[0m [33msubsequent login attempts should be blocked[0m
+    [33mAnd[0m [33mI should see a rate limit error message[0m
+=== RUN   TestFeatures/Registration_attempts_are_rate_limited
+
+  [1;37mScenario:[0m Registration attempts are rate limited          [1;30m# authentication_enhanced.feature:136[0m
+    [33mWhen[0m [33mI make 3 registration attempts within 1 minute[0m
+    [33mThen[0m [33msubsequent registration attempts should be blocked[0m
+    [33mAnd[0m [33mI should see a rate limit error message[0m
+=== RUN   TestFeatures/Account_is_locked_after_too_many_failed_attempts
+
+  [1;37mScenario:[0m Account is locked after too many failed attempts [1;30m# authentication_enhanced.feature:142[0m
+    [33mGiven[0m [33ma user exists with email "user@example.com"[0m
+    [33mWhen[0m [33mI make 5 failed login attempts for that user[0m
+    [33mThen[0m [33mthe account should be locked[0m
+    [33mAnd[0m [33mvalid credentials should also fail[0m
+    [33mAnd[0m [33mI should see an account locked message[0m
+=== RUN   TestFeatures/Locked_account_is_unlocked_after_timeout
+
+  [1;37mScenario:[0m Locked account is unlocked after timeout      [1;30m# authentication_enhanced.feature:149[0m
+    [33mGiven[0m [33man account is locked until 5 minutes ago[0m
+    [33mWhen[0m [33mI attempt to login with valid credentials[0m
+    [33mThen[0m [33mthe login should succeed[0m
+    [33mAnd[0m [33mthe account should be unlocked[0m
+=== RUN   TestFeatures/Login_attempts_are_audit_logged
+
+  [1;37mScenario:[0m Login attempts are audit logged               [1;30m# authentication_enhanced.feature:156[0m
+    [33mWhen[0m [33mI attempt to login[0m
+    [33mThen[0m [33man audit log entry should be created[0m
+    [33mAnd[0m [33mit should include timestamp, IP, and result[0m
+=== RUN   TestFeatures/Password_changes_are_audit_logged
+
+  [1;37mScenario:[0m Password changes are audit logged             [1;30m# authentication_enhanced.feature:161[0m
+    [36mGiven[0m [36mI am logged in as a valid user[0m                  [1;30m# steps_test.go:1850 -> *TestSuite[0m
+    [33mWhen[0m [33mI change my password[0m
+    [33mThen[0m [33man audit log entry should be created[0m
+    [33mAnd[0m [33mit should record the password change event[0m
+=== RUN   TestFeatures/Session_cleanup_job_removes_expired_sessions
+
+  [1;37mScenario:[0m Session cleanup job removes expired sessions  [1;30m# authentication_enhanced.feature:168[0m
+    [33mGiven[0m [33mthere are expired sessions older than 24 hours[0m
+    [33mWhen[0m [33mthe session cleanup job runs[0m
+    [33mThen[0m [33mexpired sessions should be deleted[0m
+    [33mAnd[0m [33mactive sessions should remain[0m
+=== RUN   TestFeatures/Account_unlock_job_unlocks_expired_locks
+
+  [1;37mScenario:[0m Account unlock job unlocks expired locks      [1;30m# authentication_enhanced.feature:174[0m
+    [33mGiven[0m [33mthere are accounts with expired lock times[0m
+    [33mWhen[0m [33mthe account unlock job runs[0m
+    [33mThen[0m [33mthose accounts should be unlocked[0m
+    [33mAnd[0m [33mrecently locked accounts should remain locked[0m
+=== RUN   TestFeatures/Verification_emails_are_sent_through_mail_system
+
+  [1;37mScenario:[0m Verification emails are sent through mail system [1;30m# authentication_enhanced.feature:181[0m
+    [33mWhen[0m [33mI register a new account[0m
+    [33mThen[0m [33mthe mail system should receive a send request[0m
+    [33mAnd[0m [33mthe email should contain a verification link[0m
+=== RUN   TestFeatures/Password_reset_emails_are_sent_through_mail_system
+
+  [1;37mScenario:[0m Password reset emails are sent through mail system [1;30m# authentication_enhanced.feature:186[0m
+    [33mWhen[0m [33mI request a password reset[0m
+    [33mThen[0m [33mthe mail system should receive a send request[0m
+    [33mAnd[0m [33mthe email should contain a reset link[0m
+=== RUN   TestFeatures/Remember_me_cookie_extends_session
+
+  [1;37mScenario:[0m Remember me cookie extends session            [1;30m# authentication_enhanced.feature:192[0m
+    [33mWhen[0m [33mI login with remember me checked[0m
+    [33mThen[0m [33ma persistent cookie should be set[0m
+    [33mAnd[0m [33mmy session should persist across browser restarts[0m
+=== RUN   TestFeatures/Regular_login_creates_session_cookie_only
+
+  [1;37mScenario:[0m Regular login creates session cookie only     [1;30m# authentication_enhanced.feature:197[0m
+    [33mWhen[0m [33mI login without remember me checked[0m
+    [33mThen[0m [33monly a session cookie should be set[0m
+    [33mAnd[0m [33mmy session should end when browser closes[0m
+=== RUN   TestFeatures/Authentication_pages_have_security_headers
+
+  [1;37mScenario:[0m Authentication pages have security headers    [1;30m# authentication_enhanced.feature:203[0m
+    [36mWhen[0m [36mI visit "/login"[0m                                 [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [33mThen[0m [33mthe response should include security headers[0m
+    [33mAnd[0m [33mCSP should prevent inline scripts[0m
+    [33mAnd[0m [33mX-Frame-Options should prevent clickjacking[0m
+=== RUN   TestFeatures/Password_strength_is_validated_on_registration
+
+  [1;37mScenario:[0m Password strength is validated on registration [1;30m# authentication_enhanced.feature:210[0m
+    [33mWhen[0m [33mI try to register with password "password"[0m
+    [33mThen[0m [33mI should see password strength requirements[0m
+    [33mAnd[0m [33mthe registration should fail[0m
+=== RUN   TestFeatures/Password_strength_is_validated_on_reset
+
+  [1;37mScenario:[0m Password strength is validated on reset       [1;30m# authentication_enhanced.feature:215[0m
+    [33mGiven[0m [33mI have a valid password reset token[0m
+    [33mWhen[0m [33mI try to set password "12345678"[0m
+    [33mThen[0m [33mI should see password strength requirements[0m
+    [33mAnd[0m [33mthe password should not be changed[0m
+=== RUN   TestFeatures/User_can_be_logged_in_on_multiple_devices
+
+  [1;37mScenario:[0m User can be logged in on multiple devices     [1;30m# authentication_enhanced.feature:222[0m
+    [33mGiven[0m [33mI am logged in on device A[0m
+    [33mWhen[0m [33mI login on device B[0m
+    [33mThen[0m [33mboth sessions should be active[0m
+    [33mAnd[0m [33mI should see both devices in sessions list[0m
+=== RUN   TestFeatures/Revoking_session_logs_out_specific_device
+
+  [1;37mScenario:[0m Revoking session logs out specific device     [1;30m# authentication_enhanced.feature:228[0m
+    [33mGiven[0m [33mI am logged in on multiple devices[0m
+    [33mWhen[0m [33mI revoke the session for device B[0m
+    [33mThen[0m [33mdevice B should be logged out[0m
+    [33mAnd[0m [33mdevice A should remain logged in[0m
+
+[1;37mFeature:[0m Basic Buffkit Functionality
+  As a developer
+  I want to verify core Buffkit functionality works
+  So that I can build upon a solid foundation
+=== RUN   TestFeatures/Wire_Buffkit_successfully
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application[0m             [1;30m# steps_test.go:1801 -> *TestSuite[0m
+
+  [1;37mScenario:[0m Wire Buffkit successfully              [1;30m# basic.feature:9[0m
+    [32mWhen[0m [32mI wire Buffkit with a valid configuration[0m [1;30m# steps_test.go:1802 -> *TestSuite[0m
+    [32mThen[0m [32mall components should be initialized[0m      [1;30m# steps_test.go:1808 -> *TestSuite[0m
+=== RUN   TestFeatures/Get_version_information
+
+  [1;37mScenario:[0m Get version information              [1;30m# basic.feature:13[0m
+    [32mWhen[0m [32mI check the Buffkit version[0m             [1;30m# steps_test.go:1806 -> *TestSuite[0m
+    [32mThen[0m [32mI should get a non-empty version string[0m [1;30m# steps_test.go:1817 -> *TestSuite[0m
+
+[1;37mFeature:[0m Buffkit Integration
+  As a developer using Buffalo
+  I want to integrate Buffkit into my application
+  So that I can get SSR-first features out of the box
+=== RUN   TestFeatures/Successfully_wiring_Buffkit_with_valid_configuration
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application[0m                           [1;30m# steps_test.go:1801 -> *TestSuite[0m
+
+  [1;37mScenario:[0m Successfully wiring Buffkit with valid configuration [1;30m# buffkit_integration.feature:9[0m
+    [32mWhen[0m [32mI wire Buffkit with a valid configuration[0m               [1;30m# steps_test.go:1802 -> *TestSuite[0m
+    [32mThen[0m [32mall components should be initialized[0m                    [1;30m# steps_test.go:1808 -> *TestSuite[0m
+    [32mAnd[0m [32mthe Kit should contain a broker[0m                          [1;30m# steps_test.go:1809 -> *TestSuite[0m
+    [32mAnd[0m [32mthe Kit should contain an auth store[0m                     [1;30m# steps_test.go:1810 -> *TestSuite[0m
+    [32mAnd[0m [32mthe Kit should contain a mail sender[0m                     [1;30m# steps_test.go:1811 -> *TestSuite[0m
+    [32mAnd[0m [32mthe Kit should contain an import map manager[0m             [1;30m# steps_test.go:1812 -> *TestSuite[0m
+    [32mAnd[0m [32mthe Kit should contain a component registry[0m              [1;30m# steps_test.go:1813 -> *TestSuite[0m
+=== RUN   TestFeatures/Rejecting_configuration_with_missing_auth_secret
+
+  [1;37mScenario:[0m Rejecting configuration with missing auth secret [1;30m# buffkit_integration.feature:18[0m
+    [32mWhen[0m [32mI wire Buffkit with an empty auth secret[0m            [1;30m# steps_test.go:1803 -> *TestSuite[0m
+    [32mThen[0m [32mI should get an error "AuthSecret is required"[0m      [1;30m# steps_test.go:1815 -> *TestSuite[0m
+=== RUN   TestFeatures/Rejecting_configuration_with_nil_auth_secret
+
+  [1;37mScenario:[0m Rejecting configuration with nil auth secret [1;30m# buffkit_integration.feature:22[0m
+    [32mWhen[0m [32mI wire Buffkit with a nil auth secret[0m           [1;30m# steps_test.go:1804 -> *TestSuite[0m
+    [32mThen[0m [32mI should get an error "AuthSecret is required"[0m  [1;30m# steps_test.go:1815 -> *TestSuite[0m
+=== RUN   TestFeatures/Handling_invalid_Redis_configuration
+
+  [1;37mScenario:[0m Handling invalid Redis configuration                            [1;30m# buffkit_integration.feature:26[0m
+    [32mWhen[0m [32mI wire Buffkit with an invalid Redis URL "redis://invalid:99999/0"[0m [1;30m# steps_test.go:1805 -> *TestSuite[0m
+    [32mThen[0m [32mI should get an error containing "failed to initialize jobs"[0m       [1;30m# steps_test.go:1816 -> *TestSuite[0m
+=== RUN   TestFeatures/Providing_version_information
+
+  [1;37mScenario:[0m Providing version information        [1;30m# buffkit_integration.feature:30[0m
+    [32mWhen[0m [32mI check the Buffkit version[0m             [1;30m# steps_test.go:1806 -> *TestSuite[0m
+    [32mThen[0m [32mI should get a non-empty version string[0m [1;30m# steps_test.go:1817 -> *TestSuite[0m
+    [32mAnd[0m [32mthe version should contain "alpha"[0m       [1;30m# steps_test.go:1818 -> *TestSuite[0m
+
+[1;37mFeature:[0m Component System
+  As a developer
+  I want to use server-side components that can be progressively enhanced
+  So that I can build rich, accessible UIs that work without JavaScript
+=== RUN   TestFeatures/Render_a_simple_button_component
+
+  [1;37mBackground:[0m
+    [33mGiven[0m [33mthe component registry is initialized[0m
+    [33mAnd[0m [33mthe component expansion middleware is active[0m
+
+  [1;37mScenario:[0m Render a simple button component                        [1;30m# components.feature:11[0m
+    [33mGiven[0m [33mI have registered a button component[0m
+    [33mWhen[0m [33mI render HTML containing "<bk-button>Click me</bk-button>"[0m
+    [33mThen[0m [33mthe output should contain "<button"[0m
+    [33mAnd[0m [33mthe output should contain "Click me</button>"[0m
+    [33mAnd[0m [33mthe output should not contain "bk-button"[0m
+=== RUN   TestFeatures/Render_component_with_attributes
+
+  [1;37mScenario:[0m Render component with attributes                                                     [1;30m# components.feature:18[0m
+    [33mGiven[0m [33mI have registered a button component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-button variant="primary" size="large">Submit</bk-button>'[0m
+    [33mThen[0m [33mthe output should contain 'class="'[0m
+    [33mAnd[0m [33mthe output should contain "primary"[0m
+    [33mAnd[0m [33mthe output should contain "large"[0m
+    [33mAnd[0m [33mthe output should contain "Submit</button>"[0m
+=== RUN   TestFeatures/Pass_through_data_attributes
+
+  [1;37mScenario:[0m Pass through data attributes                                                                        [1;30m# components.feature:26[0m
+    [33mGiven[0m [33mI have registered a dropdown component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-dropdown data-test-id="menu" data-track-event="open">Menu</bk-dropdown>'[0m
+    [33mThen[0m [33mthe output should contain 'data-test-id="menu"'[0m
+    [33mAnd[0m [33mthe output should contain 'data-track-event="open"'[0m
+    [33mAnd[0m [33mthe output should contain 'data-component="dropdown"'[0m
+=== RUN   TestFeatures/Component_with_named_slots
+
+  [1;37mScenario:[0m Component with named slots                        [1;30m# components.feature:34[0m
+    [33mGiven[0m [33mI have registered a card component with named slots[0m
+    [33mWhen[0m [33mI render HTML containing:[0m
+      [36m"""[0m
+      [36m<bk-card>[0m
+      [36m  <div slot="header">Card Title</div>[0m
+      [36m  <div slot="body">Card content goes here</div>[0m
+      [36m  <div slot="footer">Card actions</div>[0m
+      [36m</bk-card>[0m
+      [36m"""[0m
+    [33mThen[0m [33mthe output should contain "Card Title"[0m
+    [33mAnd[0m [33mthe output should contain "Card content goes here"[0m
+    [33mAnd[0m [33mthe output should contain "Card actions"[0m
+    [33mAnd[0m [33mthe output should be properly structured HTML[0m
+=== RUN   TestFeatures/Component_with_default_slot
+
+  [1;37mScenario:[0m Component with default slot                                            [1;30m# components.feature:49[0m
+    [33mGiven[0m [33mI have registered an alert component[0m
+    [33mWhen[0m [33mI render HTML containing "<bk-alert>This is a warning message</bk-alert>"[0m
+    [33mThen[0m [33mthe output should contain "This is a warning message"[0m
+    [33mAnd[0m [33mthe output should contain appropriate alert styling[0m
+=== RUN   TestFeatures/Render_nested_components
+
+  [1;37mScenario:[0m Render nested components                   [1;30m# components.feature:56[0m
+    [33mGiven[0m [33mI have registered button and card components[0m
+    [33mWhen[0m [33mI render HTML containing:[0m
+      [36m"""[0m
+      [36m<bk-card>[0m
+      [36m  <div slot="body">[0m
+      [36m    <p>Card content</p>[0m
+      [36m    <bk-button>Action</bk-button>[0m
+      [36m  </div>[0m
+      [36m</bk-card>[0m
+      [36m"""[0m
+    [33mThen[0m [33mthe output should contain expanded card HTML[0m
+    [33mAnd[0m [33mthe output should contain expanded button HTML[0m
+    [33mAnd[0m [33mthe output should not contain "bk-card"[0m
+    [33mAnd[0m [33mthe output should not contain "bk-button"[0m
+=== RUN   TestFeatures/Interactive_component_includes_enhancement_data
+
+  [1;37mScenario:[0m Interactive component includes enhancement data         [1;30m# components.feature:73[0m
+    [33mGiven[0m [33mI have registered a dropdown component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-dropdown>Menu</bk-dropdown>'[0m
+    [33mThen[0m [33mthe output should contain 'data-component="dropdown"'[0m
+    [33mAnd[0m [33mthe output should contain 'data-state="closed"'[0m
+    [33mAnd[0m [33mthe output should contain 'aria-expanded="false"'[0m
+    [33mAnd[0m [33mthe output should be accessible without JavaScript[0m
+=== RUN   TestFeatures/Form_component_with_validation_attributes
+
+  [1;37mScenario:[0m Form component with validation attributes                                    [1;30m# components.feature:81[0m
+    [33mGiven[0m [33mI have registered an input component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-input type="email" required name="user_email" />'[0m
+    [33mThen[0m [33mthe output should contain 'type="email"'[0m
+    [33mAnd[0m [33mthe output should contain "required"[0m
+    [33mAnd[0m [33mthe output should contain 'name="user_email"'[0m
+    [33mAnd[0m [33mthe output should contain appropriate ARIA labels[0m
+=== RUN   TestFeatures/Handle_unregistered_component_gracefully
+
+  [1;37mScenario:[0m Handle unregistered component gracefully                  [1;30m# components.feature:90[0m
+    [33mWhen[0m [33mI render HTML containing "<bk-unknown>Content</bk-unknown>"[0m
+    [33mThen[0m [33mthe output should contain "<bk-unknown>Content</bk-unknown>"[0m
+    [33mAnd[0m [33mno error should be raised[0m
+=== RUN   TestFeatures/Handle_malformed_component_HTML
+
+  [1;37mScenario:[0m Handle malformed component HTML                 [1;30m# components.feature:95[0m
+    [33mGiven[0m [33mI have registered a button component[0m
+    [33mWhen[0m [33mI render HTML containing "<bk-button>Unclosed tag"[0m
+    [33mThen[0m [33mthe component should not be expanded[0m
+    [33mAnd[0m [33mthe original HTML should be preserved[0m
+=== RUN   TestFeatures/Prevent_XSS_in_component_attributes
+
+  [1;37mScenario:[0m Prevent XSS in component attributes                                     [1;30m# components.feature:102[0m
+    [33mGiven[0m [33mI have registered a button component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-button onclick="alert(1)">Click</bk-button>'[0m
+    [33mThen[0m [33mthe output should not contain "onclick"[0m
+    [33mAnd[0m [33mthe output should contain sanitized content[0m
+=== RUN   TestFeatures/Escape_user_content_properly
+
+  [1;37mScenario:[0m Escape user content properly                                             [1;30m# components.feature:108[0m
+    [33mGiven[0m [33mI have registered a text component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-text><script>alert("XSS")</script></bk-text>'[0m
+    [33mThen[0m [33mthe output should contain "&lt;script&gt;"[0m
+    [33mAnd[0m [33mthe output should not contain an actual script tag[0m
+=== RUN   TestFeatures/Handle_large_pages_efficiently
+
+  [1;37mScenario:[0m Handle large pages efficiently           [1;30m# components.feature:115[0m
+    [33mGiven[0m [33mI have registered multiple components[0m
+    [33mWhen[0m [33mI render HTML with 100 component instances[0m
+    [33mThen[0m [33mthe expansion should complete within 100ms[0m
+    [33mAnd[0m [33mall components should be properly expanded[0m
+=== RUN   TestFeatures/Skip_expansion_for_non-HTML_responses
+
+  [1;37mScenario:[0m Skip expansion for non-HTML responses        [1;30m# components.feature:121[0m
+    [33mGiven[0m [33mI have a JSON API endpoint[0m
+    [33mWhen[0m [33mthe response content-type is "application/json"[0m
+    [33mThen[0m [33mthe component expansion should be skipped[0m
+    [33mAnd[0m [33mthe JSON should be returned unchanged[0m
+=== RUN   TestFeatures/Preserve_custom_HTML_attributes
+
+  [1;37mScenario:[0m Preserve custom HTML attributes                                                          [1;30m# components.feature:128[0m
+    [33mGiven[0m [33mI have registered a button component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-button id="submit-btn" data-turbo="false">Submit</bk-button>'[0m
+    [33mThen[0m [33mthe output should contain 'id="submit-btn"'[0m
+    [33mAnd[0m [33mthe output should contain 'data-turbo="false"'[0m
+=== RUN   TestFeatures/Handle_boolean_attributes
+
+  [1;37mScenario:[0m Handle boolean attributes                                      [1;30m# components.feature:134[0m
+    [33mGiven[0m [33mI have registered an input component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-input disabled readonly checked />'[0m
+    [33mThen[0m [33mthe output should contain "disabled"[0m
+    [33mAnd[0m [33mthe output should contain "readonly"[0m
+    [33mAnd[0m [33mthe output should contain "checked"[0m
+=== RUN   TestFeatures/Render_component_variants
+
+  [1;37mScenario Outline:[0m Render component variants                                        [1;30m# components.feature:142[0m
+    [36mGiven[0m 
+    [36mAnd[0m 
+    [36mGiven[0m 
+    [36mWhen[0m 
+    [36mThen[0m 
+
+    [1;37mExamples:[0m
+      | [36mvariant[0m   |
+      | [33mprimary[0m   |
+=== RUN   TestFeatures/Render_component_variants#01
+      | [33msecondary[0m |
+=== RUN   TestFeatures/Render_component_variants#02
+      | [33mdanger[0m    |
+=== RUN   TestFeatures/Render_component_variants#03
+      | [33mghost[0m     |
+=== RUN   TestFeatures/Ensure_ARIA_attributes_are_properly_set
+
+  [1;37mScenario:[0m Ensure ARIA attributes are properly set                                    [1;30m# components.feature:155[0m
+    [33mGiven[0m [33mI have registered a modal component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-modal title="Confirm">Are you sure?</bk-modal>'[0m
+    [33mThen[0m [33mthe output should contain 'role="dialog"'[0m
+    [33mAnd[0m [33mthe output should contain 'aria-modal="true"'[0m
+    [33mAnd[0m [33mthe output should contain 'aria-labelledby='[0m
+=== RUN   TestFeatures/Generate_unique_IDs_for_accessibility
+
+  [1;37mScenario:[0m Generate unique IDs for accessibility                                  [1;30m# components.feature:162[0m
+    [33mGiven[0m [33mI have registered a form field component[0m
+    [33mWhen[0m [33mI render HTML containing multiple '<bk-input label="Email" />' components[0m
+    [33mThen[0m [33meach input should have a unique ID[0m
+    [33mAnd[0m [33meach label should have a matching "for" attribute[0m
+=== RUN   TestFeatures/Work_with_HTMX_attributes
+
+  [1;37mScenario:[0m Work with HTMX attributes                                                                   [1;30m# components.feature:169[0m
+    [33mGiven[0m [33mI have registered a button component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-button hx-post="/api/save" hx-target="#result">Save</bk-button>'[0m
+    [33mThen[0m [33mthe output should contain 'hx-post="/api/save"'[0m
+    [33mAnd[0m [33mthe output should contain 'hx-target="#result"'[0m
+=== RUN   TestFeatures/Work_with_Alpine.js_directives
+
+  [1;37mScenario:[0m Work with Alpine.js directives                                                   [1;30m# components.feature:175[0m
+    [33mGiven[0m [33mI have registered a dropdown component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-dropdown x-data="{ open: false }">Menu</bk-dropdown>'[0m
+    [33mThen[0m [33mthe output should contain 'x-data="{ open: false }"'[0m
+    [33mAnd[0m [33mthe output should contain data attributes for progressive enhancement[0m
+=== RUN   TestFeatures/List_all_registered_components
+
+  [1;37mScenario:[0m List all registered components                            [1;30m# components.feature:182[0m
+    [33mGiven[0m [33mI have registered button, card, and modal components[0m
+    [33mWhen[0m [33mI query the component registry[0m
+    [33mThen[0m [33mI should get a list containing "button", "card", and "modal"[0m
+=== RUN   TestFeatures/Override_default_component
+
+  [1;37mScenario:[0m Override default component                     [1;30m# components.feature:187[0m
+    [33mGiven[0m [33mI have registered a default button component[0m
+    [33mWhen[0m [33mI register a custom button component[0m
+    [33mThen[0m [33mthe custom component should be used for rendering[0m
+    [33mAnd[0m [33mthe default component should be replaced[0m
+=== RUN   TestFeatures/Show_component_boundaries_in_development
+
+  [1;37mScenario:[0m Show component boundaries in development                          [1;30m# components.feature:194[0m
+    [33mGiven[0m [33mthe application is in development mode[0m
+    [33mAnd[0m [33mI have registered a card component[0m
+    [33mWhen[0m [33mI render HTML containing "<bk-card>Content</bk-card>"[0m
+    [33mThen[0m [33mthe output should contain HTML comments marking component boundaries[0m
+    [33mAnd[0m [33mthe comments should include the component name[0m
+=== RUN   TestFeatures/Hide_component_boundaries_in_production
+
+  [1;37mScenario:[0m Hide component boundaries in production                [1;30m# components.feature:201[0m
+    [33mGiven[0m [33mthe application is in production mode[0m
+    [33mAnd[0m [33mI have registered a card component[0m
+    [33mWhen[0m [33mI render HTML containing "<bk-card>Content</bk-card>"[0m
+    [33mThen[0m [33mthe output should not contain component boundary comments[0m
+=== RUN   TestFeatures/Handle_self-closing_components
+
+  [1;37mScenario:[0m Handle self-closing components                   [1;30m# components.feature:208[0m
+    [33mGiven[0m [33mI have registered an icon component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-icon name="check" />'[0m
+    [33mThen[0m [33mthe output should contain the rendered icon HTML[0m
+=== RUN   TestFeatures/Handle_components_with_hyphenated_names
+
+  [1;37mScenario:[0m Handle components with hyphenated names                [1;30m# components.feature:213[0m
+    [33mGiven[0m [33mI have registered a component named "progress-bar"[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-progress-bar value="50" />'[0m
+    [33mThen[0m [33mthe component should be properly expanded[0m
+=== RUN   TestFeatures/Preserve_whitespace_in_pre_elements
+
+  [1;37mScenario:[0m Preserve whitespace in pre elements      [1;30m# components.feature:218[0m
+    [33mGiven[0m [33mI have registered a code component[0m
+    [33mWhen[0m [33mI render HTML containing:[0m
+      [36m"""[0m
+      [36m<bk-code>[0m
+      [36m  function example() {[0m
+      [36m    return true;[0m
+      [36m  }[0m
+      [36m</bk-code>[0m
+      [36m"""[0m
+    [33mThen[0m [33mthe output should preserve the indentation[0m
+    [33mAnd[0m [33mthe output should maintain line breaks[0m
+=== RUN   TestFeatures/Component_initialization_attributes
+
+  [1;37mScenario:[0m Component initialization attributes                            [1;30m# components.feature:232[0m
+    [33mGiven[0m [33mI have registered a tabs component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-tabs default-tab="2">...</bk-tabs>'[0m
+    [33mThen[0m [33mthe output should contain 'data-initial-tab="2"'[0m
+    [33mAnd[0m [33mthe second tab should be marked as active[0m
+=== RUN   TestFeatures/Component_with_conditional_rendering
+
+  [1;37mScenario:[0m Component with conditional rendering                                               [1;30m# components.feature:238[0m
+    [33mGiven[0m [33mI have registered a feature flag component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-feature flag="new-ui">New feature content</bk-feature>'[0m
+    [33mAnd[0m [33mthe "new-ui" flag is enabled[0m
+    [33mThen[0m [33mthe output should contain "New feature content"[0m
+=== RUN   TestFeatures/Component_with_server-side_data
+
+  [1;37mScenario:[0m Component with server-side data                     [1;30m# components.feature:244[0m
+    [33mGiven[0m [33mI have registered a user avatar component[0m
+    [33mWhen[0m [33mI render HTML containing '<bk-avatar user-id="123" />'[0m
+    [33mThen[0m [33mthe component should fetch user data during rendering[0m
+    [33mAnd[0m [33mthe output should contain the user's avatar URL[0m
+
+[1;37mFeature:[0m Development Mode Features
+  As a developer working on a Buffkit application
+  I want special development-mode features
+  So that I can debug and develop more efficiently
+=== RUN   TestFeatures/Mail_preview_endpoint_is_available_in_dev_mode
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application[0m                      [1;30m# steps_test.go:1801 -> *TestSuite[0m
+    [32mAnd[0m [32mBuffkit is configured with development mode enabled[0m [1;30m# steps_test.go:1836 -> github.com/johnjansen/buffkit/features.InitializeScenario.func2[0m
+
+  [1;37mScenario:[0m Mail preview endpoint is available in dev mode  [1;30m# development_mode.feature:10[0m
+    [32mGiven[0m [32mthe application is wired with DevMode set to true[0m [1;30m# steps_test.go:1837 -> github.com/johnjansen/buffkit/features.InitializeScenario.func3[0m
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /__mail/preview/ [36mduration[0m="77.375µs" [36mhuman_size[0m="39 B" [36mmethod[0m=GET [36mpath[0m=/__mail/preview/ [36mrender[0m="28.541µs" [36mrequest_id[0m=03759e258494a99250dd-d1b8fc8f8cc2d848ddc8 [36msize[0m=39 [36mstatus[0m=200
+    [32mWhen[0m [32mI visit "/__mail/preview"[0m                          [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [32mThen[0m [32mI should see the mail preview interface[0m            [1;30m# steps_test.go:1839 -> *TestSuite[0m
+    [32mAnd[0m [32mthe response status should be 200[0m                   [1;30m# steps_test.go:1826 -> *TestSuite[0m
+    [32mAnd[0m [32mI should see a list of sent emails[0m                  [1;30m# steps_test.go:1840 -> *TestSuite[0m
+=== RUN   TestFeatures/Mail_preview_endpoint_is_not_available_in_production
+
+  [1;37mScenario:[0m Mail preview endpoint is not available in production [1;30m# development_mode.feature:17[0m
+    [32mGiven[0m [32mthe application is wired with DevMode set to false[0m     [1;30m# steps_test.go:1838 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:44+12:00] could not find __mail/preview [31mstatus[0m=404
+    [32mWhen[0m [32mI visit "/__mail/preview"[0m                               [1;30m# steps_test.go:1823 -> *TestSuite[0m
+    [32mThen[0m [32mthe response status should be 404[0m                       [1;30m# steps_test.go:1826 -> *TestSuite[0m
+    [32mAnd[0m [32mthe endpoint should not exist[0m                            [1;30m# steps_test.go:1841 -> *TestSuite[0m
+=== RUN   TestFeatures/Development_mail_sender_logs_emails
+
+  [1;37mScenario:[0m Development mail sender logs emails             [1;30m# development_mode.feature:23[0m
+    [32mGiven[0m [32mI have a development mail sender[0m                  [1;30m# steps_test.go:1877 -> *TestSuite[0m
+2025/08/17 20:16:44 Mail (Dev): Would send email to test@example.com
+2025/08/17 20:16:44   Subject: Test Email
+2025/08/17 20:16:44   Text: This is a test email body
+    [32mWhen[0m [32mI send an email with subject "Test Email"[0m          [1;30m# steps_test.go:1878 -> *TestSuite[0m
+2025/08/17 20:16:44 Mail (Dev): Would send email to test@example.com
+2025/08/17 20:16:44   Subject: Another Test
+2025/08/17 20:16:44   Text: This is a test email body
+    [32mAnd[0m [32mI send an email with subject "Another Test"[0m         [1;30m# steps_test.go:1878 -> *TestSuite[0m
+    [32mThen[0m [32mthe emails should be logged instead of sent[0m        [1;30m# steps_test.go:1879 -> *TestSuite[0m
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /__mail/preview/ [36mduration[0m="32.209µs" [36mhuman_size[0m="39 B" [36mmethod[0m=GET [36mpath[0m=/__mail/preview/ [36mrender[0m="18.708µs" [36mrequest_id[0m=2e57cbe34e36356bd215-326a7e549ec1086e63e2 [36msize[0m=39 [36mstatus[0m=200
+    [32mAnd[0m [32mI should be able to view them in the mail preview[0m   [1;30m# steps_test.go:1880 -> *TestSuite[0m
+    [32mAnd[0m [32mthe preview should show both email subjects[0m         [1;30m# steps_test.go:1881 -> *TestSuite[0m
+=== RUN   TestFeatures/Development_mail_sender_stores_email_content
+
+  [1;37mScenario:[0m Development mail sender stores email content      [1;30m# development_mode.feature:31[0m
+    [32mGiven[0m [32mI have a development mail sender[0m                    [1;30m# steps_test.go:1877 -> *TestSuite[0m
+2025/08/17 20:16:44 Mail (Dev): Would send email to test@example.com
+2025/08/17 20:16:44   Subject: HTML Test Email
+2025/08/17 20:16:44   Text: This is the plain text version
+2025/08/17 20:16:44   HTML: <h1>Welcome</h1>
+    [32mWhen[0m [32mI send an HTML email with content "<h1>Welcome</h1>"[0m [1;30m# steps_test.go:1882 -> *TestSuite[0m
+    [32mThen[0m [32mthe email should be stored with HTML content[0m         [1;30m# steps_test.go:1883 -> *TestSuite[0m
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /__mail/preview/ [36mduration[0m="22.667µs" [36mhuman_size[0m="39 B" [36mmethod[0m=GET [36mpath[0m=/__mail/preview/ [36mrender[0m="15.542µs" [36mrequest_id[0m=6c47a240442f56d6ab9d-92d6159e7cfb8364b5bd [36msize[0m=39 [36mstatus[0m=200
+    [32mAnd[0m [32mI should be able to preview the rendered HTML[0m         [1;30m# steps_test.go:1884 -> *TestSuite[0m
+    [32mAnd[0m [32mthe email should include both HTML and text versions[0m  [1;30m# steps_test.go:1885 -> *TestSuite[0m
+=== RUN   TestFeatures/Security_headers_are_relaxed_in_dev_mode
+
+  [1;37mScenario:[0m Security headers are relaxed in dev mode               [1;30m# development_mode.feature:38[0m
+    [32mGiven[0m [32mthe application is running in development mode[0m           [1;30m# steps_test.go:1886 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:44+12:00] could not find test-headers [31mstatus[0m=404
+    [32mWhen[0m [32mI make a request to any endpoint[0m                          [1;30m# steps_test.go:1887 -> *TestSuite[0m
+    [32mThen[0m [32mthe security headers should be present but relaxed[0m        [1;30m# steps_test.go:1888 -> *TestSuite[0m
+    [32mAnd[0m [32mthe Content-Security-Policy should allow development tools[0m [1;30m# steps_test.go:1889 -> *TestSuite[0m
+    [32mAnd[0m [32mdebugging should be easier[0m                                 [1;30m# steps_test.go:1890 -> *TestSuite[0m
+=== RUN   TestFeatures/Error_messages_are_verbose_in_dev_mode
+
+  [1;37mScenario:[0m Error messages are verbose in dev mode          [1;30m# development_mode.feature:45[0m
+    [32mGiven[0m [32mthe application is running in development mode[0m    [1;30m# steps_test.go:1886 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:44+12:00] could not find error-test [31mstatus[0m=404
+    [32mWhen[0m [32man error occurs during request processing[0m          [1;30m# steps_test.go:1891 -> *TestSuite[0m
+    [32mThen[0m [32mI should see detailed error messages[0m               [1;30m# steps_test.go:1892 -> *TestSuite[0m
+    [32mAnd[0m [32mstack traces should be included[0m                     [1;30m# steps_test.go:1893 -> *TestSuite[0m
+    [32mAnd[0m [32mdebugging information should be available[0m           [1;30m# steps_test.go:1894 -> *TestSuite[0m
+=== RUN   TestFeatures/Hot_reloading_compatibility
+
+  [1;37mScenario:[0m Hot reloading compatibility                      [1;30m# development_mode.feature:52[0m
+    [32mGiven[0m [32mthe application is running in development mode[0m     [1;30m# steps_test.go:1886 -> *TestSuite[0m
+    [33mWhen[0m [33mI make changes to templates or assets[0m
+    [33mThen[0m [33mthe changes should be reflected without restart[0m
+    [33mAnd[0m [33mthe import maps should support development workflows[0m
+    [33mAnd[0m [33masset serving should prioritize development speed[0m
+=== RUN   TestFeatures/Development_vs_production_mail_behavior
+
+  [1;37mScenario:[0m Development vs production mail behavior         [1;30m# development_mode.feature:59[0m
+    [33mGiven[0m [33mI have the same Buffkit configuration[0m
+    [33mWhen[0m [33mDevMode is true and I send an email[0m
+    [33mThen[0m [33mthe email should be captured for preview[0m
+    [33mWhen[0m [33mDevMode is false and I send an email[0m
+    [33mThen[0m [33mthe email should be sent via SMTP[0m
+    [33mAnd[0m [33mno preview should be generated[0m
+=== RUN   TestFeatures/Development_diagnostics
+
+  [1;37mScenario:[0m Development diagnostics                         [1;30m# development_mode.feature:67[0m
+    [32mGiven[0m [32mthe application is running in development mode[0m    [1;30m# steps_test.go:1886 -> *TestSuite[0m
+    [33mWhen[0m [33mI access diagnostic endpoints[0m
+    [33mThen[0m [33mI should see information about:[0m
+      | [36mComponent[0m   | [36mStatus[0m                   |
+      | [36mSSE Broker[0m  | [36mActive connections count[0m |
+      | [36mAuth Store[0m  | [36mUser count[0m               |
+      | [36mJob Queue[0m   | [36mPending jobs[0m             |
+      | [36mImport Maps[0m | [36mLoaded dependencies[0m      |
+      | [36mComponents[0m  | [36mRegistered components[0m    |
+=== RUN   TestFeatures/Development-only_middleware
+
+  [1;37mScenario:[0m Development-only middleware                     [1;30m# development_mode.feature:78[0m
+    [32mGiven[0m [32mthe application is wired with development mode[0m    [1;30m# steps_test.go:1908 -> *TestSuite[0m
+[31mERRO[0m[2025-08-17T20:16:44+12:00] could not find middleware-check [31mstatus[0m=404
+    [32mWhen[0m [32mI inspect the middleware stack[0m                     [1;30m# steps_test.go:1909 -> *TestSuite[0m
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /__mail/preview/ [36mduration[0m="24.042µs" [36mhuman_size[0m="39 B" [36mmethod[0m=GET [36mpath[0m=/__mail/preview/ [36mrender[0m="16.25µs" [36mrequest_id[0m=62a1edd311a8bc36fc22-1238a25d4f2c5887e4cd [36msize[0m=39 [36mstatus[0m=200
+    [32mThen[0m [32mdevelopment-specific middleware should be present[0m  [1;30m# steps_test.go:1910 -> *TestSuite[0m
+    [32mAnd[0m [32mproduction optimizations should be disabled[0m         [1;30m# steps_test.go:1911 -> *TestSuite[0m
+    [32mAnd[0m [32mdebugging tools should be available[0m                 [1;30m# steps_test.go:1912 -> *TestSuite[0m
+
+[1;37mFeature:[0m Server-Sent Events (SSE)
+  As a web application developer
+  I want to send real-time updates to connected clients
+  So that I can provide live, interactive experiences
+=== RUN   TestFeatures/SSE_endpoint_is_available
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application with Buffkit wired[0m [1;30m# steps_test.go:1821 -> *TestSuite[0m
+2025/08/17 20:16:44 SSE: Client 1755418604269009000 connected. Total clients: 1
+2025/08/17 20:16:44 SSE: Client 1755418604269009000 disconnected. Total clients: 0
+[37mDEBU[0m[2025-08-17T20:16:44+12:00] warning: handler exited without setting the response status. 200 OK will be used. [37mrequest_id[0m=0413c6d06c7eac09c283-eb6af46281f019354e0f
+
+  [1;37mScenario:[0m SSE endpoint is available                     [1;30m# server_sent_events.feature:9[0m
+    [32mWhen[0m [32mI connect to "/events" with SSE headers[0m          [1;30m# steps_test.go:1831 -> *TestSuite[0m
+[36mINFO[0m[2025-08-17T20:16:44+12:00] /events/ [36mcontent_type[0m=text/event-stream [36mduration[0m=201.179834ms [36mhuman_size[0m="0 B" [36mmethod[0m=GET [36mpath[0m=/events/ [36mrequest_id[0m=0413c6d06c7eac09c283-eb6af46281f019354e0f [36msize[0m=0 [36mstatus[0m=200
+    [32mThen[0m [32mI should receive an SSE connection[0m               [1;30m# steps_test.go:1832 -> *TestSuite[0m
+    [32mAnd[0m [32mthe content type should be "text/event-stream"[0m    [1;30m# steps_test.go:1833 -> *TestSuite[0m
+    [32mAnd[0m [32mthe response status should be 200[0m                 [1;30m# steps_test.go:1826 -> *TestSuite[0m
+=== RUN   TestFeatures/Broadcasting_events_to_all_clients
+
+  [1;37mScenario:[0m Broadcasting events to all clients                      [1;30m# server_sent_events.feature:15[0m
+    [32mGiven[0m [32mI have multiple clients connected to SSE[0m                  [1;30m# steps_test.go:1858 -> *TestSuite[0m
+    [32mWhen[0m [32mI broadcast an event "user-update" with data "Hello World"[0m [1;30m# steps_test.go:1859 -> *TestSuite[0m
+    [32mThen[0m [32mall connected clients should receive the event[0m             [1;30m# steps_test.go:1860 -> *TestSuite[0m
+    [32mAnd[0m [32mthe event type should be "user-update"[0m                      [1;30m# steps_test.go:1861 -> *TestSuite[0m
+    [32mAnd[0m [32mthe event data should be "Hello World"[0m                      [1;30m# steps_test.go:1862 -> *TestSuite[0m
+=== RUN   TestFeatures/Client_connection_management
+
+  [1;37mScenario:[0m Client connection management                  [1;30m# server_sent_events.feature:22[0m
+    [32mGiven[0m [32mI connect to the SSE endpoint[0m                   [1;30m# steps_test.go:1863 -> *TestSuite[0m
+    [32mWhen[0m [32mthe connection is established[0m                    [1;30m# steps_test.go:1864 -> *TestSuite[0m
+    [32mThen[0m [32mI should receive heartbeat events[0m                [1;30m# steps_test.go:1865 -> *TestSuite[0m
+    [32mAnd[0m [32mmy connection should be tracked by the broker[0m     [1;30m# steps_test.go:1866 -> *TestSuite[0m
+=== RUN   TestFeatures/Connection_cleanup_on_disconnect
+
+  [1;37mScenario:[0m Connection cleanup on disconnect              [1;30m# server_sent_events.feature:28[0m
+    [32mGiven[0m [32mI have a client connected to SSE[0m                [1;30m# steps_test.go:1867 -> *TestSuite[0m
+    [32mWhen[0m [32mthe client disconnects[0m                           [1;30m# steps_test.go:1868 -> *TestSuite[0m
+    [32mThen[0m [32mthe broker should remove the connection[0m          [1;30m# steps_test.go:1869 -> *TestSuite[0m
+    [32mAnd[0m [32mresources should be cleaned up[0m                    [1;30m# steps_test.go:1870 -> *TestSuite[0m
+=== RUN   TestFeatures/Broadcasting_HTML_fragments
+
+  [1;37mScenario:[0m Broadcasting HTML fragments                   [1;30m# server_sent_events.feature:34[0m
+    [32mGiven[0m [32mI have clients connected to SSE[0m                 [1;30m# steps_test.go:1871 -> *TestSuite[0m
+    [32mWhen[0m [32mI render a partial template and broadcast it[0m     [1;30m# steps_test.go:1872 -> *TestSuite[0m
+    [32mThen[0m [32mclients should receive the rendered HTML[0m         [1;30m# steps_test.go:1873 -> *TestSuite[0m
+    [32mAnd[0m [32mthe HTML should be properly formatted[0m             [1;30m# steps_test.go:1874 -> *TestSuite[0m
+=== RUN   TestFeatures/Event_filtering_and_targeting
+
+  [1;37mScenario:[0m Event filtering and targeting                  [1;30m# server_sent_events.feature:40[0m
+    [33mGiven[0m [33mI have multiple clients with different interests[0m
+    [33mWhen[0m [33mI broadcast an event to specific clients[0m
+    [33mThen[0m [33monly targeted clients should receive the event[0m
+    [33mAnd[0m [33mother clients should not be affected[0m
+=== RUN   TestFeatures/SSE_with_htmx_integration
+
+  [1;37mScenario:[0m SSE with htmx integration                     [1;30m# server_sent_events.feature:46[0m
+    [33mGiven[0m [33mI have an htmx-enabled page connected to SSE[0m
+    [33mWhen[0m [33mI broadcast an update event[0m
+    [33mThen[0m [33mthe page content should update automatically[0m
+    [33mAnd[0m [33mno page refresh should be required[0m
+=== RUN   TestFeatures/Error_handling_in_SSE_connections
+
+  [1;37mScenario:[0m Error handling in SSE connections             [1;30m# server_sent_events.feature:52[0m
+    [32mGiven[0m [32mI have a client connected to SSE[0m                [1;30m# steps_test.go:1867 -> *TestSuite[0m
+    [32mWhen[0m [32ma broadcast error occurs[0m                         [1;30m# steps_test.go:1903 -> *TestSuite[0m
+    [32mThen[0m [32mthe client connection should remain stable[0m       [1;30m# steps_test.go:1904 -> *TestSuite[0m
+    [32mAnd[0m [32mthe error should be logged appropriately[0m          [1;30m# steps_test.go:1905 -> *TestSuite[0m
+=== RUN   TestFeatures/SSE_broker_lifecycle
+
+  [1;37mScenario:[0m SSE broker lifecycle                          [1;30m# server_sent_events.feature:58[0m
+    [32mWhen[0m [32mI initialize a new SSE broker[0m                    [1;30m# steps_test.go:1897 -> *TestSuite[0m
+    [32mThen[0m [32mit should start the message handling goroutine[0m   [1;30m# steps_test.go:1898 -> *TestSuite[0m
+    [32mAnd[0m [32mit should initialize the client tracking systems[0m  [1;30m# steps_test.go:1899 -> *TestSuite[0m
+    [32mAnd[0m [32mit should be ready to accept connections[0m          [1;30m# steps_test.go:1900 -> *TestSuite[0m
+=== RUN   TestFeatures/Direct_broker_testing_-_client_registration
+
+  [1;37mScenario:[0m Direct broker testing - client registration   [1;30m# server_sent_events.feature:64[0m
+    [32mGiven[0m [32mI have an SSE broker[0m                            [1;30m# steps_test.go:1915 -> *TestSuite[0m
+    [32mWhen[0m [32mI register a mock client[0m                         [1;30m# steps_test.go:1916 -> *TestSuite[0m
+    [32mThen[0m [32mthe broker should track the client[0m               [1;30m# steps_test.go:1917 -> *TestSuite[0m
+    [32mAnd[0m [32mthe client count should increase[0m                  [1;30m# steps_test.go:1918 -> *TestSuite[0m
+=== RUN   TestFeatures/Direct_broker_testing_-_client_unregistration
+
+  [1;37mScenario:[0m Direct broker testing - client unregistration [1;30m# server_sent_events.feature:70[0m
+    [32mGiven[0m [32mI have an SSE broker with a connected client[0m    [1;30m# steps_test.go:1919 -> *TestSuite[0m
+    [32mWhen[0m [32mI unregister the client[0m                          [1;30m# steps_test.go:1920 -> *TestSuite[0m
+    [32mThen[0m [32mthe broker should remove the client[0m              [1;30m# steps_test.go:1921 -> *TestSuite[0m
+    [32mAnd[0m [32mthe client count should decrease[0m                  [1;30m# steps_test.go:1922 -> *TestSuite[0m
+=== RUN   TestFeatures/Direct_broker_testing_-_event_broadcasting
+
+  [1;37mScenario:[0m Direct broker testing - event broadcasting          [1;30m# server_sent_events.feature:76[0m
+    [32mGiven[0m [32mI have an SSE broker with multiple clients[0m            [1;30m# steps_test.go:1923 -> *TestSuite[0m
+    [32mWhen[0m [32mI broadcast an event directly to the broker[0m            [1;30m# steps_test.go:1924 -> *TestSuite[0m
+    [32mThen[0m [32mall clients should receive the event in their channels[0m [1;30m# steps_test.go:1925 -> *TestSuite[0m
+    [32mAnd[0m [32mthe event should contain the correct data[0m               [1;30m# steps_test.go:1926 -> *TestSuite[0m
+=== RUN   TestFeatures/Direct_broker_testing_-_heartbeat_system
+
+  [1;37mScenario:[0m Direct broker testing - heartbeat system      [1;30m# server_sent_events.feature:82[0m
+    [32mGiven[0m [32mI have an SSE broker with connected clients[0m     [1;30m# steps_test.go:1927 -> *TestSuite[0m
+    [32mWhen[0m [32mthe heartbeat timer triggers[0m                     [1;30m# steps_test.go:1928 -> *TestSuite[0m
+    [32mThen[0m [32mall clients should receive a heartbeat event[0m     [1;30m# steps_test.go:1929 -> *TestSuite[0m
+    [32mAnd[0m [32mconnections should remain alive[0m                   [1;30m# steps_test.go:1930 -> *TestSuite[0m
+
+[1;37mFeature:[0m SSE Reconnection with State Recovery
+  As a web application user
+  I want my real-time connection to recover gracefully from disconnections
+  So that I don't miss important updates even during network interruptions
+=== RUN   TestFeatures/Client_receives_a_persistent_session_ID_on_first_connection
+
+  [1;37mBackground:[0m
+    [32mGiven[0m [32mI have a Buffalo application with Buffkit wired[0m                  [1;30m# steps_test.go:1821 -> *TestSuite[0m
+    [33mAnd[0m [33mSSE reconnection support is enabled with a 30 second buffer window[0m
+
+  [1;37mScenario:[0m Client receives a persistent session ID on first connection    [1;30m# sse_reconnection.feature:11[0m
+    [33mWhen[0m [33mI connect to the SSE endpoint for the first time[0m
+    [33mThen[0m [33mI should receive a unique session ID in the response headers[0m
+    [33mAnd[0m [33mthe session ID should be stored as a secure cookie[0m
+    [33mAnd[0m [33mthe server should track my session in memory[0m
+=== RUN   TestFeatures/Graceful_reconnection_after_brief_network_interruption
+
+  [1;37mScenario:[0m Graceful reconnection after brief network interruption         [1;30m# sse_reconnection.feature:18[0m
+    [33mGiven[0m [33mI am connected to SSE with session ID "test-session-123"[0m
+    [33mAnd[0m [33mI have received events with IDs "1", "2", "3"[0m
+    [33mWhen[0m [33mmy connection drops for 5 seconds[0m
+    [33mAnd[0m [33mevents "4", "5", "6" are broadcast during the disconnection[0m
+    [33mAnd[0m [33mI reconnect with the same session ID[0m
+    [33mThen[0m [33mI should receive the missed events "4", "5", "6" immediately[0m
+    [33mAnd[0m [33mI should continue receiving new live events[0m
+    [33mAnd[0m [33mthe reconnection should be logged[0m
+=== RUN   TestFeatures/Reconnection_with_Last-Event-ID_header
+
+  [1;37mScenario:[0m Reconnection with Last-Event-ID header                         [1;30m# sse_reconnection.feature:29[0m
+    [33mGiven[0m [33mI am connected to SSE with session ID "test-session-456"[0m
+    [33mAnd[0m [33mI have received events up to ID "10"[0m
+    [33mWhen[0m [33mI disconnect and events "11" through "15" are broadcast[0m
+    [33mAnd[0m [33mI reconnect with Last-Event-ID header set to "10"[0m
+    [33mThen[0m [33mI should receive events "11" through "15" in order[0m
+    [33mAnd[0m [33mno events should be duplicated[0m
+    [33mAnd[0m [33mthe event sequence should be continuous[0m
+=== RUN   TestFeatures/Buffer_overflow_handling_during_extended_disconnection
+
+  [1;37mScenario:[0m Buffer overflow handling during extended disconnection         [1;30m# sse_reconnection.feature:39[0m
+    [33mGiven[0m [33mI am connected to SSE with a buffer limit of 100 events[0m
+    [33mWhen[0m [33mI disconnect for an extended period[0m
+    [33mAnd[0m [33m150 events are broadcast while disconnected[0m
+    [33mAnd[0m [33mI reconnect with my session ID[0m
+    [33mThen[0m [33mI should receive a special "buffer-overflow" event[0m
+    [33mAnd[0m [33mI should receive the most recent 100 events[0m
+    [33mAnd[0m [33molder events should be marked as dropped[0m
+=== RUN   TestFeatures/Session_cleanup_after_abandonment_timeout
+
+  [1;37mScenario:[0m Session cleanup after abandonment timeout                      [1;30m# sse_reconnection.feature:49[0m
+    [33mGiven[0m [33mI am connected to SSE with session ID "test-session-789"[0m
+    [33mWhen[0m [33mI disconnect and don't reconnect for 35 seconds[0m
+    [33mThen[0m [33mmy session should be cleaned up after 30 seconds[0m
+    [33mAnd[0m [33mmy event buffer should be freed[0m
+    [33mAnd[0m [33msubsequent reconnection attempts should create a new session[0m
+=== RUN   TestFeatures/Rapid_disconnect_and_reconnect_cycles
+
+  [1;37mScenario:[0m Rapid disconnect and reconnect cycles                          [1;30m# sse_reconnection.feature:57[0m
+    [33mGiven[0m [33mI am connected to SSE[0m
+    [33mWhen[0m [33mI rapidly disconnect and reconnect 10 times within 2 seconds[0m
+    [33mThen[0m [33meach reconnection should be handled gracefully[0m
+    [33mAnd[0m [33mno events should be lost during the cycles[0m
+    [33mAnd[0m [33monly one active connection should exist per session[0m
+    [33mAnd[0m [33mconnection thrashing should be logged[0m
+=== RUN   TestFeatures/Multiple_clients_with_independent_buffers
+
+  [1;37mScenario:[0m Multiple clients with independent buffers                      [1;30m# sse_reconnection.feature:66[0m
+    [33mGiven[0m [33mclient A is connected with session "session-A"[0m
+    [33mAnd[0m [33mclient B is connected with session "session-B"[0m
+    [33mWhen[0m [33mclient A disconnects[0m
+    [33mAnd[0m [33man event "shared-event" is broadcast to all clients[0m
+    [33mAnd[0m [33mclient B remains connected[0m
+    [33mThen[0m [33mclient B should receive "shared-event" immediately[0m
+    [33mAnd[0m [33mclient A should receive "shared-event" upon reconnection[0m
+    [33mAnd[0m [33mthe buffers should remain independent[0m
+=== RUN   TestFeatures/Reconnection_after_browser_refresh
+
+  [1;37mScenario:[0m Reconnection after browser refresh                             [1;30m# sse_reconnection.feature:77[0m
+    [33mGiven[0m [33mI am connected to SSE with a session cookie[0m
+    [33mWhen[0m [33mI refresh the browser page[0m
+    [33mAnd[0m [33mthe page reloads and re-establishes SSE connection[0m
+    [33mThen[0m [33mI should reconnect with the same session ID from the cookie[0m
+    [33mAnd[0m [33mI should receive any events missed during page reload[0m
+    [33mAnd[0m [33mthe transition should be seamless[0m
+=== RUN   TestFeatures/Event_replay_maintains_correct_order_and_timing
+
+  [1;37mScenario:[0m Event replay maintains correct order and timing                [1;30m# sse_reconnection.feature:86[0m
+    [33mGiven[0m [33mI am connected and have received timestamped events[0m
+    [33mWhen[0m [33mI disconnect and multiple events occur with timestamps[0m
+    [33mAnd[0m [33mI reconnect requesting replay[0m
+    [33mThen[0m [33mreplayed events should maintain their original timestamps[0m
+    [33mAnd[0m [33mreplayed events should be marked with a "replayed" flag[0m
+    [33mAnd[0m [33mthe events should arrive in chronological order[0m
+=== RUN   TestFeatures/Memory_usage_remains_bounded
+
+  [1;37mScenario:[0m Memory usage remains bounded                                   [1;30m# sse_reconnection.feature:95[0m
+    [33mGiven[0m [33mthe server has 100 connected clients[0m
+    [33mAnd[0m [33meach client has a buffer limit of 1000 events[0m
+    [33mWhen[0m [33m50 clients disconnect simultaneously[0m
+    [33mAnd[0m [33mevents continue to be broadcast[0m
+    [33mThen[0m [33mmemory usage should not exceed expected bounds[0m
+    [33mAnd[0m [33mbuffers should be cleaned up according to TTL[0m
+    [33mAnd[0m [33mthe server should remain responsive[0m
+=== RUN   TestFeatures/Client_spoofing_prevention
+
+  [1;37mScenario:[0m Client spoofing prevention                                     [1;30m# sse_reconnection.feature:105[0m
+    [33mGiven[0m [33ma client is connected with session ID "legitimate-session"[0m
+    [33mWhen[0m [33manother client attempts to connect with the same session ID[0m
+    [33mThen[0m [33mthe connection attempt should be rejected[0m
+    [33mAnd[0m [33ma security event should be logged[0m
+    [33mAnd[0m [33mthe legitimate client should remain connected[0m
+=== RUN   TestFeatures/Graceful_degradation_when_buffers_are_disabled
+
+  [1;37mScenario:[0m Graceful degradation when buffers are disabled                 [1;30m# sse_reconnection.feature:113[0m
+    [33mGiven[0m [33mSSE reconnection is configured with buffer size 0[0m
+    [33mWhen[0m [33ma client disconnects and reconnects[0m
+    [33mThen[0m [33mthe client should receive only new events[0m
+    [33mAnd[0m [33mno replay should occur[0m
+    [33mAnd[0m [33ma "no-buffer" indicator should be sent[0m
+=== RUN   TestFeatures/Event_deduplication_during_replay
+
+  [1;37mScenario:[0m Event deduplication during replay                              [1;30m# sse_reconnection.feature:121[0m
+    [33mGiven[0m [33mI am connected and tracking received event IDs[0m
+    [33mWhen[0m [33mI disconnect after receiving events "1", "2", "3"[0m
+    [33mAnd[0m [33mevent "3" is still in the buffer when I reconnect[0m
+    [33mAnd[0m [33mI reconnect with Last-Event-ID "2"[0m
+    [33mThen[0m [33mI should receive event "3" only once[0m
+    [33mAnd[0m [33mduplicate detection should prevent double delivery[0m
+=== RUN   TestFeatures/Connection_state_recovery_with_metadata
+
+  [1;37mScenario:[0m Connection state recovery with metadata                        [1;30m# sse_reconnection.feature:130[0m
+    [33mGiven[0m [33mI am connected with custom headers and query parameters[0m
+    [33mWhen[0m [33mI disconnect and lose connection state[0m
+    [33mAnd[0m [33mI reconnect with my session ID[0m
+    [33mThen[0m [33mmy connection metadata should be restored[0m
+    [33mAnd[0m [33msubscription filters should be maintained[0m
+    [33mAnd[0m [33mclient preferences should persist[0m
+=== RUN   TestFeatures/Load_balancer_compatibility
+
+  [1;37mScenario:[0m Load balancer compatibility                                    [1;30m# sse_reconnection.feature:139[0m
+    [33mGiven[0m [33mI am connected through a load balancer to server A[0m
+    [33mWhen[0m [33mmy connection drops and I reconnect through server B[0m
+    [33mAnd[0m [33mboth servers share session state via Redis[0m
+    [33mThen[0m [33mI should successfully reconnect on server B[0m
+    [33mAnd[0m [33mmy buffered events should be available[0m
+    [33mAnd[0m [33mthe handoff should be transparent[0m
+
+122 scenarios ([32m32 passed[0m, [33m90 undefined[0m)
+735 steps ([32m223 passed[0m, [33m493 undefined[0m, [36m19 skipped[0m)
+629.323334ms
+
+[33mYou can implement step definitions for undefined steps with these snippets:[0m
+[33m
+func aClientDisconnectsAndReconnects() error {
+	return godog.ErrPending
+}
+
+func aClientIsConnectedWithSessionID(arg1 string) error {
+	return godog.ErrPending
+}
+
+func aIndicatorShouldBeSent(arg1 string) error {
+	return godog.ErrPending
+}
+
+func aNewUserAccountShouldBeCreated() error {
+	return godog.ErrPending
+}
+
+func aPasswordResetEmailShouldBeSent() error {
+	return godog.ErrPending
+}
+
+func aPersistentCookieShouldBeSet() error {
+	return godog.ErrPending
+}
+
+func aResetTokenShouldBeCreated() error {
+	return godog.ErrPending
+}
+
+func aSecurityEventShouldBeLogged() error {
+	return godog.ErrPending
+}
+
+func aUserExistsWithEmail(arg1 string) error {
+	return godog.ErrPending
+}
+
+func activeSessionsShouldRemain() error {
+	return godog.ErrPending
+}
+
+func allComponentsShouldBeProperlyExpanded() error {
+	return godog.ErrPending
+}
+
+func anAccountIsLockedUntilMinutesAgo(arg1 int) error {
+	return godog.ErrPending
+}
+
+func anAuditLogEntryShouldBeCreated() error {
+	return godog.ErrPending
+}
+
+func anEventIsBroadcastToAllClients(arg1 string) error {
+	return godog.ErrPending
+}
+
+func anotherClientAttemptsToConnectWithTheSameSessionID() error {
+	return godog.ErrPending
+}
+
+func assetServingShouldPrioritizeDevelopmentSpeed() error {
+	return godog.ErrPending
+}
+
+func bothServersShareSessionStateViaRedis() error {
+	return godog.ErrPending
+}
+
+func bothSessionsShouldBeActive() error {
+	return godog.ErrPending
+}
+
+func buffersShouldBeCleanedUpAccordingToTTL() error {
+	return godog.ErrPending
+}
+
+func cSPShouldPreventInlineScripts() error {
+	return godog.ErrPending
+}
+
+func clientADisconnects() error {
+	return godog.ErrPending
+}
+
+func clientAIsConnectedWithSession(arg1 string) error {
+	return godog.ErrPending
+}
+
+func clientAShouldReceiveUponReconnection(arg1 string) error {
+	return godog.ErrPending
+}
+
+func clientBIsConnectedWithSession(arg1 string) error {
+	return godog.ErrPending
+}
+
+func clientBRemainsConnected() error {
+	return godog.ErrPending
+}
+
+func clientBShouldReceiveImmediately(arg1 string) error {
+	return godog.ErrPending
+}
+
+func clientPreferencesShouldPersist() error {
+	return godog.ErrPending
+}
+
+func clientsDisconnectSimultaneously(arg1 int) error {
+	return godog.ErrPending
+}
+
+func connectionThrashingShouldBeLogged() error {
+	return godog.ErrPending
+}
+
+func devModeIsFalseAndISendAnEmail() error {
+	return godog.ErrPending
+}
+
+func devModeIsTrueAndISendAnEmail() error {
+	return godog.ErrPending
+}
+
+func deviceAShouldRemainLoggedIn() error {
+	return godog.ErrPending
+}
+
+func deviceBShouldBeLoggedOut() error {
+	return godog.ErrPending
+}
+
+func duplicateDetectionShouldPreventDoubleDelivery() error {
+	return godog.ErrPending
+}
+
+func eachClientHasABufferLimitOfEvents(arg1 int) error {
+	return godog.ErrPending
+}
+
+func eachInputShouldHaveAUniqueID() error {
+	return godog.ErrPending
+}
+
+func eachLabelShouldHaveAMatchingAttribute(arg1 string) error {
+	return godog.ErrPending
+}
+
+func eachReconnectionShouldBeHandledGracefully() error {
+	return godog.ErrPending
+}
+
+func eventIsStillInTheBufferWhenIReconnect(arg1 string) error {
+	return godog.ErrPending
+}
+
+func eventsAreBroadcastDuringTheDisconnection(arg1, arg2, arg3 string) error {
+	return godog.ErrPending
+}
+
+func eventsAreBroadcastWhileDisconnected(arg1 int) error {
+	return godog.ErrPending
+}
+
+func eventsContinueToBeBroadcast() error {
+	return godog.ErrPending
+}
+
+func expiredSessionsShouldBeDeleted() error {
+	return godog.ErrPending
+}
+
+func iAccessDiagnosticEndpoints() error {
+	return godog.ErrPending
+}
+
+func iAmConnectedAndHaveReceivedTimestampedEvents() error {
+	return godog.ErrPending
+}
+
+func iAmConnectedAndTrackingReceivedEventIDs() error {
+	return godog.ErrPending
+}
+
+func iAmConnectedThroughALoadBalancerToServerA() error {
+	return godog.ErrPending
+}
+
+func iAmConnectedToSSE() error {
+	return godog.ErrPending
+}
+
+func iAmConnectedToSSEWithABufferLimitOfEvents(arg1 int) error {
+	return godog.ErrPending
+}
+
+func iAmConnectedToSSEWithASessionCookie() error {
+	return godog.ErrPending
+}
+
+func iAmConnectedToSSEWithSessionID(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iAmConnectedWithCustomHeadersAndQueryParameters() error {
+	return godog.ErrPending
+}
+
+func iAmLoggedInOnDeviceA() error {
+	return godog.ErrPending
+}
+
+func iAmLoggedInOnMultipleDevices() error {
+	return godog.ErrPending
+}
+
+func iAmLoggedInWithMultipleSessions() error {
+	return godog.ErrPending
+}
+
+func iAmNotLoggedIn() error {
+	return godog.ErrPending
+}
+
+func iAttemptToLogin() error {
+	return godog.ErrPending
+}
+
+func iAttemptToLoginWithValidCredentials() error {
+	return godog.ErrPending
+}
+
+func iBroadcastAnEventToSpecificClients() error {
+	return godog.ErrPending
+}
+
+func iBroadcastAnUpdateEvent() error {
+	return godog.ErrPending
+}
+
+func iChangeMyPassword() error {
+	return godog.ErrPending
+}
+
+func iConnectToTheSSEEndpointForTheFirstTime() error {
+	return godog.ErrPending
+}
+
+func iDisconnectAfterReceivingEvents(arg1, arg2, arg3 string) error {
+	return godog.ErrPending
+}
+
+func iDisconnectAndDontReconnectForSeconds(arg1 int) error {
+	return godog.ErrPending
+}
+
+func iDisconnectAndEventsThroughAreBroadcast(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iDisconnectAndLoseConnectionState() error {
+	return godog.ErrPending
+}
+
+func iDisconnectAndMultipleEventsOccurWithTimestamps() error {
+	return godog.ErrPending
+}
+
+func iDisconnectForAnExtendedPeriod() error {
+	return godog.ErrPending
+}
+
+func iHaveAJSONAPIEndpoint() error {
+	return godog.ErrPending
+}
+
+func iHaveAPasswordResetTokenOlderThanHour(arg1 int) error {
+	return godog.ErrPending
+}
+
+func iHaveAValidPasswordResetToken() error {
+	return godog.ErrPending
+}
+
+func iHaveAValidVerificationToken() error {
+	return godog.ErrPending
+}
+
+func iHaveAVerificationTokenOlderThanHours(arg1 int) error {
+	return godog.ErrPending
+}
+
+func iHaveAnExtendedUserStoreConfigured() error {
+	return godog.ErrPending
+}
+
+func iHaveAnHtmxenabledPageConnectedToSSE() error {
+	return godog.ErrPending
+}
+
+func iHaveMultipleClientsWithDifferentInterests() error {
+	return godog.ErrPending
+}
+
+func iHaveReceivedEventsUpToID(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iHaveReceivedEventsWithIDs(arg1, arg2, arg3 string) error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAButtonComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAButtonComponentWithVariants() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredACardComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredACardComponentWithNamedSlots() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredACodeComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAComponentNamed(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredADefaultButtonComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredADropdownComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAFeatureFlagComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAFormFieldComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAModalComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredATabsComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredATextComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAUserAvatarComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAnAlertComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAnIconComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredAnInputComponent() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredButNotVerifiedMyEmail() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredButtonAndCardComponents() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredButtonCardAndModalComponents() error {
+	return godog.ErrPending
+}
+
+func iHaveRegisteredMultipleComponents() error {
+	return godog.ErrPending
+}
+
+func iHaveTheSameBuffkitConfiguration() error {
+	return godog.ErrPending
+}
+
+func iLoginOnDeviceB() error {
+	return godog.ErrPending
+}
+
+func iLoginWithRememberMeChecked() error {
+	return godog.ErrPending
+}
+
+func iLoginWithoutRememberMeChecked() error {
+	return godog.ErrPending
+}
+
+func iMakeChangesToTemplatesOrAssets() error {
+	return godog.ErrPending
+}
+
+func iMakeFailedLoginAttemptsForThatUser(arg1 int) error {
+	return godog.ErrPending
+}
+
+func iMakeFailedLoginAttemptsWithinMinute(arg1, arg2 int) error {
+	return godog.ErrPending
+}
+
+func iMakeRegistrationAttemptsWithinMinute(arg1, arg2 int) error {
+	return godog.ErrPending
+}
+
+func iQueryTheComponentRegistry() error {
+	return godog.ErrPending
+}
+
+func iRapidlyDisconnectAndReconnectTimesWithinSeconds(arg1, arg2 int) error {
+	return godog.ErrPending
+}
+
+func iReconnectRequestingReplay() error {
+	return godog.ErrPending
+}
+
+func iReconnectWithLastEventID(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iReconnectWithLastEventIDHeaderSetTo(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iReconnectWithMySessionID() error {
+	return godog.ErrPending
+}
+
+func iReconnectWithTheSameSessionID() error {
+	return godog.ErrPending
+}
+
+func iRefreshTheBrowserPage() error {
+	return godog.ErrPending
+}
+
+func iRegisterACustomButtonComponent() error {
+	return godog.ErrPending
+}
+
+func iRegisterANewAccount() error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContaining(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContaining(arg1 *godog.DocString) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkavatarUserid(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkbuttonHxpostHxtargetSavebkbutton(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkbuttonIdDataturboSubmitbkbutton(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkbuttonOnclickClickbkbutton(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkbuttonVariantClickbkbutton(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkbuttonVariantSizeSubmitbkbutton(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkdropdownDatatestidDatatrackeventMenubkdropdown(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkdropdownMenubkdropdown() error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkdropdownXdataMenubkdropdown(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkfeatureFlagNewFeatureContentbkfeature(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkiconName(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkinputDisabledReadonlyChecked() error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkinputTypeRequiredName(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkmodalTitleAreYouSurebkmodal(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBkprogressbarValue(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBktabsDefaulttabBktabs(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingBktextscriptalertScriptbktext(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLContainingMultipleBkinputLabelComponents(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iRenderHTMLWithComponentInstances(arg1 int) error {
+	return godog.ErrPending
+}
+
+func iRequestAPasswordReset() error {
+	return godog.ErrPending
+}
+
+func iRevokeASpecificSession() error {
+	return godog.ErrPending
+}
+
+func iRevokeTheSessionForDeviceB() error {
+	return godog.ErrPending
+}
+
+func iShouldBeRedirectedToASuccessPage() error {
+	return godog.ErrPending
+}
+
+func iShouldBeRedirectedToForgotPassword() error {
+	return godog.ErrPending
+}
+
+func iShouldContinueReceivingNewLiveEvents() error {
+	return godog.ErrPending
+}
+
+func iShouldGetAListContainingAnd(arg1, arg2, arg3 string) error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveASpecialEvent(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveAUniqueSessionIDInTheResponseHeaders() error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveAVerificationEmail() error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveAnyEventsMissedDuringPageReload() error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveEventOnlyOnce(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveEventsThroughInOrder(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveTheMissedEventsImmediately(arg1, arg2, arg3 string) error {
+	return godog.ErrPending
+}
+
+func iShouldReceiveTheMostRecentEvents(arg1 int) error {
+	return godog.ErrPending
+}
+
+func iShouldReconnectWithTheSameSessionIDFromTheCookie() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeARateLimitErrorMessage() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeASuccessMessage() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeAnAccountLockedMessage() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeAnErrorAboutPasswordsNotMatching() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeAnErrorMessage() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeAnErrorMessageAboutEmailAlreadyTaken() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeAnErrorMessageAboutPasswordStrength() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeAnExpirationError() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeAnExpirationErrorMessage() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeBothDevicesInSessionsList() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeInformationAbout(arg1 *godog.Table) error {
+	return godog.ErrPending
+}
+
+func iShouldSeeMyActiveSessions() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeMyProfileInformation() error {
+	return godog.ErrPending
+}
+
+func iShouldSeePasswordStrengthRequirements() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeSessionDetailsLikeIPAndUserAgent() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeTheForgotPasswordForm() error {
+	return godog.ErrPending
+}
+
+func iShouldSeeTheRegistrationForm() error {
+	return godog.ErrPending
+}
+
+func iShouldSuccessfullyReconnectOnServerB() error {
+	return godog.ErrPending
+}
+
+func iSubmitANewPassword(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iSubmitAPasswordResetRequestFor(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iSubmitARegistrationWithEmail(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iSubmitARegistrationWithEmailAndPassword(arg1, arg2 string) error {
+	return godog.ErrPending
+}
+
+func iSubmitMismatchedPasswords() error {
+	return godog.ErrPending
+}
+
+func iSubmitTheProfileForm() error {
+	return godog.ErrPending
+}
+
+func iTryToRegisterWithPassword(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iTryToSetPassword(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iUpdateMyNameTo(arg1 string) error {
+	return godog.ErrPending
+}
+
+func iVisitTheResetPasswordLink() error {
+	return godog.ErrPending
+}
+
+func iVisitTheVerificationLink() error {
+	return godog.ErrPending
+}
+
+func itShouldIncludeTimestampIPAndResult() error {
+	return godog.ErrPending
+}
+
+func itShouldRecordThePasswordChangeEvent() error {
+	return godog.ErrPending
+}
+
+func memoryUsageShouldNotExceedExpectedBounds() error {
+	return godog.ErrPending
+}
+
+func myAccountShouldBeMarkedAsVerified() error {
+	return godog.ErrPending
+}
+
+func myAccountShouldRemainUnverified() error {
+	return godog.ErrPending
+}
+
+func myBufferedEventsShouldBeAvailable() error {
+	return godog.ErrPending
+}
+
+func myConnectionDropsAndIReconnectThroughServerB() error {
+	return godog.ErrPending
+}
+
+func myConnectionDropsForSeconds(arg1 int) error {
+	return godog.ErrPending
+}
+
+func myConnectionMetadataShouldBeRestored() error {
+	return godog.ErrPending
+}
+
+func myEventBufferShouldBeFreed() error {
+	return godog.ErrPending
+}
+
+func myPasswordShouldBeUpdated() error {
+	return godog.ErrPending
+}
+
+func myPasswordShouldNotBeChanged() error {
+	return godog.ErrPending
+}
+
+func myProfileShouldBeUpdated() error {
+	return godog.ErrPending
+}
+
+func mySessionShouldBeCleanedUpAfterSeconds(arg1 int) error {
+	return godog.ErrPending
+}
+
+func mySessionShouldEndWhenBrowserCloses() error {
+	return godog.ErrPending
+}
+
+func mySessionShouldPersistAcrossBrowserRestarts() error {
+	return godog.ErrPending
+}
+
+func noAccountsShouldBeVerified() error {
+	return godog.ErrPending
+}
+
+func noEmailShouldBeSent() error {
+	return godog.ErrPending
+}
+
+func noErrorShouldBeRaised() error {
+	return godog.ErrPending
+}
+
+func noEventsShouldBeDuplicated() error {
+	return godog.ErrPending
+}
+
+func noEventsShouldBeLostDuringTheCycles() error {
+	return godog.ErrPending
+}
+
+func noPageRefreshShouldBeRequired() error {
+	return godog.ErrPending
+}
+
+func noPreviewShouldBeGenerated() error {
+	return godog.ErrPending
+}
+
+func noReplayShouldOccur() error {
+	return godog.ErrPending
+}
+
+func noResetTokenShouldBeCreated() error {
+	return godog.ErrPending
+}
+
+func noUserAccountShouldBeCreated() error {
+	return godog.ErrPending
+}
+
+func olderEventsShouldBeMarkedAsDropped() error {
+	return godog.ErrPending
+}
+
+func onlyASessionCookieShouldBeSet() error {
+	return godog.ErrPending
+}
+
+func onlyOneActiveConnectionShouldExistPerSession() error {
+	return godog.ErrPending
+}
+
+func onlyOneUserShouldExistWithThatEmail() error {
+	return godog.ErrPending
+}
+
+func onlyTargetedClientsShouldReceiveTheEvent() error {
+	return godog.ErrPending
+}
+
+func otherClientsShouldNotBeAffected() error {
+	return godog.ErrPending
+}
+
+func recentlyLockedAccountsShouldRemainLocked() error {
+	return godog.ErrPending
+}
+
+func replayedEventsShouldBeMarkedWithAFlag(arg1 string) error {
+	return godog.ErrPending
+}
+
+func replayedEventsShouldMaintainTheirOriginalTimestamps() error {
+	return godog.ErrPending
+}
+
+func sSEReconnectionIsConfiguredWithBufferSize(arg1 int) error {
+	return godog.ErrPending
+}
+
+func sSEReconnectionSupportIsEnabledWithASecondBufferWindow(arg1 int) error {
+	return godog.ErrPending
+}
+
+func subscriptionFiltersShouldBeMaintained() error {
+	return godog.ErrPending
+}
+
+func subsequentLoginAttemptsShouldBeBlocked() error {
+	return godog.ErrPending
+}
+
+func subsequentReconnectionAttemptsShouldCreateANewSession() error {
+	return godog.ErrPending
+}
+
+func subsequentRegistrationAttemptsShouldBeBlocked() error {
+	return godog.ErrPending
+}
+
+func thatSessionShouldBeInvalidated() error {
+	return godog.ErrPending
+}
+
+func theAccountShouldBeLocked() error {
+	return godog.ErrPending
+}
+
+func theAccountShouldBeUnlocked() error {
+	return godog.ErrPending
+}
+
+func theAccountUnlockJobRuns() error {
+	return godog.ErrPending
+}
+
+func theApplicationIsInDevelopmentMode() error {
+	return godog.ErrPending
+}
+
+func theApplicationIsInProductionMode() error {
+	return godog.ErrPending
+}
+
+func theBuffersShouldRemainIndependent() error {
+	return godog.ErrPending
+}
+
+func theChangesShouldBeReflectedWithoutRestart() error {
+	return godog.ErrPending
+}
+
+func theClientShouldReceiveOnlyNewEvents() error {
+	return godog.ErrPending
+}
+
+func theCommentsShouldIncludeTheComponentName() error {
+	return godog.ErrPending
+}
+
+func theComponentExpansionMiddlewareIsActive() error {
+	return godog.ErrPending
+}
+
+func theComponentExpansionShouldBeSkipped() error {
+	return godog.ErrPending
+}
+
+func theComponentRegistryIsInitialized() error {
+	return godog.ErrPending
+}
+
+func theComponentShouldBeProperlyExpanded() error {
+	return godog.ErrPending
+}
+
+func theComponentShouldFetchUserDataDuringRendering() error {
+	return godog.ErrPending
+}
+
+func theComponentShouldNotBeExpanded() error {
+	return godog.ErrPending
+}
+
+func theConnectionAttemptShouldBeRejected() error {
+	return godog.ErrPending
+}
+
+func theCustomComponentShouldBeUsedForRendering() error {
+	return godog.ErrPending
+}
+
+func theDefaultComponentShouldBeReplaced() error {
+	return godog.ErrPending
+}
+
+func theEmailShouldBeCapturedForPreview() error {
+	return godog.ErrPending
+}
+
+func theEmailShouldBeSentViaSMTP() error {
+	return godog.ErrPending
+}
+
+func theEmailShouldContainAResetLink() error {
+	return godog.ErrPending
+}
+
+func theEmailShouldContainAVerificationLink() error {
+	return godog.ErrPending
+}
+
+func theEventSequenceShouldBeContinuous() error {
+	return godog.ErrPending
+}
+
+func theEventsShouldArriveInChronologicalOrder() error {
+	return godog.ErrPending
+}
+
+func theExpansionShouldCompleteWithinMs(arg1 int) error {
+	return godog.ErrPending
+}
+
+func theFlagIsEnabled(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theHandoffShouldBeTransparent() error {
+	return godog.ErrPending
+}
+
+func theImportMapsShouldSupportDevelopmentWorkflows() error {
+	return godog.ErrPending
+}
+
+func theJSONShouldBeReturnedUnchanged() error {
+	return godog.ErrPending
+}
+
+func theLegitimateClientShouldRemainConnected() error {
+	return godog.ErrPending
+}
+
+func theLoginShouldSucceed() error {
+	return godog.ErrPending
+}
+
+func theMailSystemShouldReceiveASendRequest() error {
+	return godog.ErrPending
+}
+
+func theOriginalHTMLShouldBePreserved() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldBeAccessibleWithoutJavaScript() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldBeProperlyStructuredHTML() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContain(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainAppropriateARIALabels() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainAppropriateAlertStyling() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainAppropriateClassesFor(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainAriaexpanded(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainArialabelledby() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainAriamodal(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainClass() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainDataAttributesForProgressiveEnhancement() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainDatacomponent(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainDatainitialtab(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainDatastate(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainDatatestid(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainDatatrackevent(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainDataturbo(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainExpandedButtonHTML() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainExpandedCardHTML() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainHTMLCommentsMarkingComponentBoundaries() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainHxpost(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainHxtarget(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainId(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainName(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainRole(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainSanitizedContent() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainTheRenderedIconHTML() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainTheUsersAvatarURL() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainType(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldContainXdata(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldMaintainLineBreaks() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldNotContain(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theOutputShouldNotContainAnActualScriptTag() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldNotContainComponentBoundaryComments() error {
+	return godog.ErrPending
+}
+
+func theOutputShouldPreserveTheIndentation() error {
+	return godog.ErrPending
+}
+
+func thePageContentShouldUpdateAutomatically() error {
+	return godog.ErrPending
+}
+
+func thePageReloadsAndReestablishesSSEConnection() error {
+	return godog.ErrPending
+}
+
+func thePasswordShouldNotBeChanged() error {
+	return godog.ErrPending
+}
+
+func theReconnectionShouldBeLogged() error {
+	return godog.ErrPending
+}
+
+func theRegistrationShouldFail() error {
+	return godog.ErrPending
+}
+
+func theResetTokenShouldBeInvalidated() error {
+	return godog.ErrPending
+}
+
+func theResponseContenttypeIs(arg1 string) error {
+	return godog.ErrPending
+}
+
+func theResponseShouldIncludeSecurityHeaders() error {
+	return godog.ErrPending
+}
+
+func theSecondTabShouldBeMarkedAsActive() error {
+	return godog.ErrPending
+}
+
+func theServerHasConnectedClients(arg1 int) error {
+	return godog.ErrPending
+}
+
+func theServerShouldRemainResponsive() error {
+	return godog.ErrPending
+}
+
+func theServerShouldTrackMySessionInMemory() error {
+	return godog.ErrPending
+}
+
+func theSessionCleanupJobRuns() error {
+	return godog.ErrPending
+}
+
+func theSessionIDShouldBeStoredAsASecureCookie() error {
+	return godog.ErrPending
+}
+
+func theTransitionShouldBeSeamless() error {
+	return godog.ErrPending
+}
+
+func thereAreAccountsWithExpiredLockTimes() error {
+	return godog.ErrPending
+}
+
+func thereAreExpiredSessionsOlderThanHours(arg1 int) error {
+	return godog.ErrPending
+}
+
+func thoseAccountsShouldBeUnlocked() error {
+	return godog.ErrPending
+}
+
+func validCredentialsShouldAlsoFail() error {
+	return godog.ErrPending
+}
+
+func xFrameOptionsShouldPreventClickjacking() error {
+	return godog.ErrPending
+}
+
+func InitializeScenario(ctx *godog.ScenarioContext) {
+	ctx.Step(`^a client disconnects and reconnects$`, aClientDisconnectsAndReconnects)
+	ctx.Step(`^a client is connected with session ID "([^"]*)"$`, aClientIsConnectedWithSessionID)
+	ctx.Step(`^a "([^"]*)" indicator should be sent$`, aIndicatorShouldBeSent)
+	ctx.Step(`^a new user account should be created$`, aNewUserAccountShouldBeCreated)
+	ctx.Step(`^a password reset email should be sent$`, aPasswordResetEmailShouldBeSent)
+	ctx.Step(`^a persistent cookie should be set$`, aPersistentCookieShouldBeSet)
+	ctx.Step(`^a reset token should be created$`, aResetTokenShouldBeCreated)
+	ctx.Step(`^a security event should be logged$`, aSecurityEventShouldBeLogged)
+	ctx.Step(`^a user exists with email "([^"]*)"$`, aUserExistsWithEmail)
+	ctx.Step(`^active sessions should remain$`, activeSessionsShouldRemain)
+	ctx.Step(`^all components should be properly expanded$`, allComponentsShouldBeProperlyExpanded)
+	ctx.Step(`^an account is locked until (\d+) minutes ago$`, anAccountIsLockedUntilMinutesAgo)
+	ctx.Step(`^an audit log entry should be created$`, anAuditLogEntryShouldBeCreated)
+	ctx.Step(`^an event "([^"]*)" is broadcast to all clients$`, anEventIsBroadcastToAllClients)
+	ctx.Step(`^another client attempts to connect with the same session ID$`, anotherClientAttemptsToConnectWithTheSameSessionID)
+	ctx.Step(`^asset serving should prioritize development speed$`, assetServingShouldPrioritizeDevelopmentSpeed)
+	ctx.Step(`^both servers share session state via Redis$`, bothServersShareSessionStateViaRedis)
+	ctx.Step(`^both sessions should be active$`, bothSessionsShouldBeActive)
+	ctx.Step(`^buffers should be cleaned up according to TTL$`, buffersShouldBeCleanedUpAccordingToTTL)
+	ctx.Step(`^CSP should prevent inline scripts$`, cSPShouldPreventInlineScripts)
+	ctx.Step(`^client A disconnects$`, clientADisconnects)
+	ctx.Step(`^client A is connected with session "([^"]*)"$`, clientAIsConnectedWithSession)
+	ctx.Step(`^client A should receive "([^"]*)" upon reconnection$`, clientAShouldReceiveUponReconnection)
+	ctx.Step(`^client B is connected with session "([^"]*)"$`, clientBIsConnectedWithSession)
+	ctx.Step(`^client B remains connected$`, clientBRemainsConnected)
+	ctx.Step(`^client B should receive "([^"]*)" immediately$`, clientBShouldReceiveImmediately)
+	ctx.Step(`^client preferences should persist$`, clientPreferencesShouldPersist)
+	ctx.Step(`^(\d+) clients disconnect simultaneously$`, clientsDisconnectSimultaneously)
+	ctx.Step(`^connection thrashing should be logged$`, connectionThrashingShouldBeLogged)
+	ctx.Step(`^DevMode is false and I send an email$`, devModeIsFalseAndISendAnEmail)
+	ctx.Step(`^DevMode is true and I send an email$`, devModeIsTrueAndISendAnEmail)
+	ctx.Step(`^device A should remain logged in$`, deviceAShouldRemainLoggedIn)
+	ctx.Step(`^device B should be logged out$`, deviceBShouldBeLoggedOut)
+	ctx.Step(`^duplicate detection should prevent double delivery$`, duplicateDetectionShouldPreventDoubleDelivery)
+	ctx.Step(`^each client has a buffer limit of (\d+) events$`, eachClientHasABufferLimitOfEvents)
+	ctx.Step(`^each input should have a unique ID$`, eachInputShouldHaveAUniqueID)
+	ctx.Step(`^each label should have a matching "([^"]*)" attribute$`, eachLabelShouldHaveAMatchingAttribute)
+	ctx.Step(`^each reconnection should be handled gracefully$`, eachReconnectionShouldBeHandledGracefully)
+	ctx.Step(`^event "([^"]*)" is still in the buffer when I reconnect$`, eventIsStillInTheBufferWhenIReconnect)
+	ctx.Step(`^events "([^"]*)", "([^"]*)", "([^"]*)" are broadcast during the disconnection$`, eventsAreBroadcastDuringTheDisconnection)
+	ctx.Step(`^(\d+) events are broadcast while disconnected$`, eventsAreBroadcastWhileDisconnected)
+	ctx.Step(`^events continue to be broadcast$`, eventsContinueToBeBroadcast)
+	ctx.Step(`^expired sessions should be deleted$`, expiredSessionsShouldBeDeleted)
+	ctx.Step(`^I access diagnostic endpoints$`, iAccessDiagnosticEndpoints)
+	ctx.Step(`^I am connected and have received timestamped events$`, iAmConnectedAndHaveReceivedTimestampedEvents)
+	ctx.Step(`^I am connected and tracking received event IDs$`, iAmConnectedAndTrackingReceivedEventIDs)
+	ctx.Step(`^I am connected through a load balancer to server A$`, iAmConnectedThroughALoadBalancerToServerA)
+	ctx.Step(`^I am connected to SSE$`, iAmConnectedToSSE)
+	ctx.Step(`^I am connected to SSE with a buffer limit of (\d+) events$`, iAmConnectedToSSEWithABufferLimitOfEvents)
+	ctx.Step(`^I am connected to SSE with a session cookie$`, iAmConnectedToSSEWithASessionCookie)
+	ctx.Step(`^I am connected to SSE with session ID "([^"]*)"$`, iAmConnectedToSSEWithSessionID)
+	ctx.Step(`^I am connected with custom headers and query parameters$`, iAmConnectedWithCustomHeadersAndQueryParameters)
+	ctx.Step(`^I am logged in on device A$`, iAmLoggedInOnDeviceA)
+	ctx.Step(`^I am logged in on multiple devices$`, iAmLoggedInOnMultipleDevices)
+	ctx.Step(`^I am logged in with multiple sessions$`, iAmLoggedInWithMultipleSessions)
+	ctx.Step(`^I am not logged in$`, iAmNotLoggedIn)
+	ctx.Step(`^I attempt to login$`, iAttemptToLogin)
+	ctx.Step(`^I attempt to login with valid credentials$`, iAttemptToLoginWithValidCredentials)
+	ctx.Step(`^I broadcast an event to specific clients$`, iBroadcastAnEventToSpecificClients)
+	ctx.Step(`^I broadcast an update event$`, iBroadcastAnUpdateEvent)
+	ctx.Step(`^I change my password$`, iChangeMyPassword)
+	ctx.Step(`^I connect to the SSE endpoint for the first time$`, iConnectToTheSSEEndpointForTheFirstTime)
+	ctx.Step(`^I disconnect after receiving events "([^"]*)", "([^"]*)", "([^"]*)"$`, iDisconnectAfterReceivingEvents)
+	ctx.Step(`^I disconnect and don\'t reconnect for (\d+) seconds$`, iDisconnectAndDontReconnectForSeconds)
+	ctx.Step(`^I disconnect and events "([^"]*)" through "([^"]*)" are broadcast$`, iDisconnectAndEventsThroughAreBroadcast)
+	ctx.Step(`^I disconnect and lose connection state$`, iDisconnectAndLoseConnectionState)
+	ctx.Step(`^I disconnect and multiple events occur with timestamps$`, iDisconnectAndMultipleEventsOccurWithTimestamps)
+	ctx.Step(`^I disconnect for an extended period$`, iDisconnectForAnExtendedPeriod)
+	ctx.Step(`^I have a JSON API endpoint$`, iHaveAJSONAPIEndpoint)
+	ctx.Step(`^I have a password reset token older than (\d+) hour$`, iHaveAPasswordResetTokenOlderThanHour)
+	ctx.Step(`^I have a valid password reset token$`, iHaveAValidPasswordResetToken)
+	ctx.Step(`^I have a valid verification token$`, iHaveAValidVerificationToken)
+	ctx.Step(`^I have a verification token older than (\d+) hours$`, iHaveAVerificationTokenOlderThanHours)
+	ctx.Step(`^I have an extended user store configured$`, iHaveAnExtendedUserStoreConfigured)
+	ctx.Step(`^I have an htmx-enabled page connected to SSE$`, iHaveAnHtmxenabledPageConnectedToSSE)
+	ctx.Step(`^I have multiple clients with different interests$`, iHaveMultipleClientsWithDifferentInterests)
+	ctx.Step(`^I have received events up to ID "([^"]*)"$`, iHaveReceivedEventsUpToID)
+	ctx.Step(`^I have received events with IDs "([^"]*)", "([^"]*)", "([^"]*)"$`, iHaveReceivedEventsWithIDs)
+	ctx.Step(`^I have registered a button component$`, iHaveRegisteredAButtonComponent)
+	ctx.Step(`^I have registered a button component with variants$`, iHaveRegisteredAButtonComponentWithVariants)
+	ctx.Step(`^I have registered a card component$`, iHaveRegisteredACardComponent)
+	ctx.Step(`^I have registered a card component with named slots$`, iHaveRegisteredACardComponentWithNamedSlots)
+	ctx.Step(`^I have registered a code component$`, iHaveRegisteredACodeComponent)
+	ctx.Step(`^I have registered a component named "([^"]*)"$`, iHaveRegisteredAComponentNamed)
+	ctx.Step(`^I have registered a default button component$`, iHaveRegisteredADefaultButtonComponent)
+	ctx.Step(`^I have registered a dropdown component$`, iHaveRegisteredADropdownComponent)
+	ctx.Step(`^I have registered a feature flag component$`, iHaveRegisteredAFeatureFlagComponent)
+	ctx.Step(`^I have registered a form field component$`, iHaveRegisteredAFormFieldComponent)
+	ctx.Step(`^I have registered a modal component$`, iHaveRegisteredAModalComponent)
+	ctx.Step(`^I have registered a tabs component$`, iHaveRegisteredATabsComponent)
+	ctx.Step(`^I have registered a text component$`, iHaveRegisteredATextComponent)
+	ctx.Step(`^I have registered a user avatar component$`, iHaveRegisteredAUserAvatarComponent)
+	ctx.Step(`^I have registered an alert component$`, iHaveRegisteredAnAlertComponent)
+	ctx.Step(`^I have registered an icon component$`, iHaveRegisteredAnIconComponent)
+	ctx.Step(`^I have registered an input component$`, iHaveRegisteredAnInputComponent)
+	ctx.Step(`^I have registered but not verified my email$`, iHaveRegisteredButNotVerifiedMyEmail)
+	ctx.Step(`^I have registered button and card components$`, iHaveRegisteredButtonAndCardComponents)
+	ctx.Step(`^I have registered button, card, and modal components$`, iHaveRegisteredButtonCardAndModalComponents)
+	ctx.Step(`^I have registered multiple components$`, iHaveRegisteredMultipleComponents)
+	ctx.Step(`^I have the same Buffkit configuration$`, iHaveTheSameBuffkitConfiguration)
+	ctx.Step(`^I login on device B$`, iLoginOnDeviceB)
+	ctx.Step(`^I login with remember me checked$`, iLoginWithRememberMeChecked)
+	ctx.Step(`^I login without remember me checked$`, iLoginWithoutRememberMeChecked)
+	ctx.Step(`^I make changes to templates or assets$`, iMakeChangesToTemplatesOrAssets)
+	ctx.Step(`^I make (\d+) failed login attempts for that user$`, iMakeFailedLoginAttemptsForThatUser)
+	ctx.Step(`^I make (\d+) failed login attempts within (\d+) minute$`, iMakeFailedLoginAttemptsWithinMinute)
+	ctx.Step(`^I make (\d+) registration attempts within (\d+) minute$`, iMakeRegistrationAttemptsWithinMinute)
+	ctx.Step(`^I query the component registry$`, iQueryTheComponentRegistry)
+	ctx.Step(`^I rapidly disconnect and reconnect (\d+) times within (\d+) seconds$`, iRapidlyDisconnectAndReconnectTimesWithinSeconds)
+	ctx.Step(`^I reconnect requesting replay$`, iReconnectRequestingReplay)
+	ctx.Step(`^I reconnect with Last-Event-ID "([^"]*)"$`, iReconnectWithLastEventID)
+	ctx.Step(`^I reconnect with Last-Event-ID header set to "([^"]*)"$`, iReconnectWithLastEventIDHeaderSetTo)
+	ctx.Step(`^I reconnect with my session ID$`, iReconnectWithMySessionID)
+	ctx.Step(`^I reconnect with the same session ID$`, iReconnectWithTheSameSessionID)
+	ctx.Step(`^I refresh the browser page$`, iRefreshTheBrowserPage)
+	ctx.Step(`^I register a custom button component$`, iRegisterACustomButtonComponent)
+	ctx.Step(`^I register a new account$`, iRegisterANewAccount)
+	ctx.Step(`^I render HTML containing "([^"]*)"$`, iRenderHTMLContaining)
+	ctx.Step(`^I render HTML containing:$`, iRenderHTMLContaining)
+	ctx.Step(`^I render HTML containing \'<bk-avatar user-id="([^"]*)" \/>\'$`, iRenderHTMLContainingBkavatarUserid)
+	ctx.Step(`^I render HTML containing \'<bk-button hx-post="([^"]*)" hx-target="([^"]*)">Save<\/bk-button>\'$`, iRenderHTMLContainingBkbuttonHxpostHxtargetSavebkbutton)
+	ctx.Step(`^I render HTML containing \'<bk-button id="([^"]*)" data-turbo="([^"]*)">Submit<\/bk-button>\'$`, iRenderHTMLContainingBkbuttonIdDataturboSubmitbkbutton)
+	ctx.Step(`^I render HTML containing \'<bk-button onclick="([^"]*)">Click<\/bk-button>\'$`, iRenderHTMLContainingBkbuttonOnclickClickbkbutton)
+	ctx.Step(`^I render HTML containing \'<bk-button variant="([^"]*)">Click<\/bk-button>\'$`, iRenderHTMLContainingBkbuttonVariantClickbkbutton)
+	ctx.Step(`^I render HTML containing \'<bk-button variant="([^"]*)" size="([^"]*)">Submit<\/bk-button>\'$`, iRenderHTMLContainingBkbuttonVariantSizeSubmitbkbutton)
+	ctx.Step(`^I render HTML containing \'<bk-dropdown data-test-id="([^"]*)" data-track-event="([^"]*)">Menu<\/bk-dropdown>\'$`, iRenderHTMLContainingBkdropdownDatatestidDatatrackeventMenubkdropdown)
+	ctx.Step(`^I render HTML containing \'<bk-dropdown>Menu<\/bk-dropdown>\'$`, iRenderHTMLContainingBkdropdownMenubkdropdown)
+	ctx.Step(`^I render HTML containing \'<bk-dropdown x-data="([^"]*)">Menu<\/bk-dropdown>\'$`, iRenderHTMLContainingBkdropdownXdataMenubkdropdown)
+	ctx.Step(`^I render HTML containing \'<bk-feature flag="([^"]*)">New feature content<\/bk-feature>\'$`, iRenderHTMLContainingBkfeatureFlagNewFeatureContentbkfeature)
+	ctx.Step(`^I render HTML containing \'<bk-icon name="([^"]*)" \/>\'$`, iRenderHTMLContainingBkiconName)
+	ctx.Step(`^I render HTML containing \'<bk-input disabled readonly checked \/>\'$`, iRenderHTMLContainingBkinputDisabledReadonlyChecked)
+	ctx.Step(`^I render HTML containing \'<bk-input type="([^"]*)" required name="([^"]*)" \/>\'$`, iRenderHTMLContainingBkinputTypeRequiredName)
+	ctx.Step(`^I render HTML containing \'<bk-modal title="([^"]*)">Are you sure\?<\/bk-modal>\'$`, iRenderHTMLContainingBkmodalTitleAreYouSurebkmodal)
+	ctx.Step(`^I render HTML containing \'<bk-progress-bar value="([^"]*)" \/>\'$`, iRenderHTMLContainingBkprogressbarValue)
+	ctx.Step(`^I render HTML containing \'<bk-tabs default-tab="([^"]*)">\.\.\.<\/bk-tabs>\'$`, iRenderHTMLContainingBktabsDefaulttabBktabs)
+	ctx.Step(`^I render HTML containing \'<bk-text><script>alert\("([^"]*)"\)<\/script><\/bk-text>\'$`, iRenderHTMLContainingBktextscriptalertScriptbktext)
+	ctx.Step(`^I render HTML containing multiple \'<bk-input label="([^"]*)" \/>\' components$`, iRenderHTMLContainingMultipleBkinputLabelComponents)
+	ctx.Step(`^I render HTML with (\d+) component instances$`, iRenderHTMLWithComponentInstances)
+	ctx.Step(`^I request a password reset$`, iRequestAPasswordReset)
+	ctx.Step(`^I revoke a specific session$`, iRevokeASpecificSession)
+	ctx.Step(`^I revoke the session for device B$`, iRevokeTheSessionForDeviceB)
+	ctx.Step(`^I should be redirected to a success page$`, iShouldBeRedirectedToASuccessPage)
+	ctx.Step(`^I should be redirected to forgot password$`, iShouldBeRedirectedToForgotPassword)
+	ctx.Step(`^I should continue receiving new live events$`, iShouldContinueReceivingNewLiveEvents)
+	ctx.Step(`^I should get a list containing "([^"]*)", "([^"]*)", and "([^"]*)"$`, iShouldGetAListContainingAnd)
+	ctx.Step(`^I should receive a special "([^"]*)" event$`, iShouldReceiveASpecialEvent)
+	ctx.Step(`^I should receive a unique session ID in the response headers$`, iShouldReceiveAUniqueSessionIDInTheResponseHeaders)
+	ctx.Step(`^I should receive a verification email$`, iShouldReceiveAVerificationEmail)
+	ctx.Step(`^I should receive any events missed during page reload$`, iShouldReceiveAnyEventsMissedDuringPageReload)
+	ctx.Step(`^I should receive event "([^"]*)" only once$`, iShouldReceiveEventOnlyOnce)
+	ctx.Step(`^I should receive events "([^"]*)" through "([^"]*)" in order$`, iShouldReceiveEventsThroughInOrder)
+	ctx.Step(`^I should receive the missed events "([^"]*)", "([^"]*)", "([^"]*)" immediately$`, iShouldReceiveTheMissedEventsImmediately)
+	ctx.Step(`^I should receive the most recent (\d+) events$`, iShouldReceiveTheMostRecentEvents)
+	ctx.Step(`^I should reconnect with the same session ID from the cookie$`, iShouldReconnectWithTheSameSessionIDFromTheCookie)
+	ctx.Step(`^I should see a rate limit error message$`, iShouldSeeARateLimitErrorMessage)
+	ctx.Step(`^I should see a success message$`, iShouldSeeASuccessMessage)
+	ctx.Step(`^I should see an account locked message$`, iShouldSeeAnAccountLockedMessage)
+	ctx.Step(`^I should see an error about passwords not matching$`, iShouldSeeAnErrorAboutPasswordsNotMatching)
+	ctx.Step(`^I should see an error message$`, iShouldSeeAnErrorMessage)
+	ctx.Step(`^I should see an error message about email already taken$`, iShouldSeeAnErrorMessageAboutEmailAlreadyTaken)
+	ctx.Step(`^I should see an error message about password strength$`, iShouldSeeAnErrorMessageAboutPasswordStrength)
+	ctx.Step(`^I should see an expiration error$`, iShouldSeeAnExpirationError)
+	ctx.Step(`^I should see an expiration error message$`, iShouldSeeAnExpirationErrorMessage)
+	ctx.Step(`^I should see both devices in sessions list$`, iShouldSeeBothDevicesInSessionsList)
+	ctx.Step(`^I should see information about:$`, iShouldSeeInformationAbout)
+	ctx.Step(`^I should see my active sessions$`, iShouldSeeMyActiveSessions)
+	ctx.Step(`^I should see my profile information$`, iShouldSeeMyProfileInformation)
+	ctx.Step(`^I should see password strength requirements$`, iShouldSeePasswordStrengthRequirements)
+	ctx.Step(`^I should see session details like IP and user agent$`, iShouldSeeSessionDetailsLikeIPAndUserAgent)
+	ctx.Step(`^I should see the forgot password form$`, iShouldSeeTheForgotPasswordForm)
+	ctx.Step(`^I should see the registration form$`, iShouldSeeTheRegistrationForm)
+	ctx.Step(`^I should successfully reconnect on server B$`, iShouldSuccessfullyReconnectOnServerB)
+	ctx.Step(`^I submit a new password "([^"]*)"$`, iSubmitANewPassword)
+	ctx.Step(`^I submit a password reset request for "([^"]*)"$`, iSubmitAPasswordResetRequestFor)
+	ctx.Step(`^I submit a registration with email "([^"]*)"$`, iSubmitARegistrationWithEmail)
+	ctx.Step(`^I submit a registration with email "([^"]*)" and password "([^"]*)"$`, iSubmitARegistrationWithEmailAndPassword)
+	ctx.Step(`^I submit mismatched passwords$`, iSubmitMismatchedPasswords)
+	ctx.Step(`^I submit the profile form$`, iSubmitTheProfileForm)
+	ctx.Step(`^I try to register with password "([^"]*)"$`, iTryToRegisterWithPassword)
+	ctx.Step(`^I try to set password "([^"]*)"$`, iTryToSetPassword)
+	ctx.Step(`^I update my name to "([^"]*)"$`, iUpdateMyNameTo)
+	ctx.Step(`^I visit the reset password link$`, iVisitTheResetPasswordLink)
+	ctx.Step(`^I visit the verification link$`, iVisitTheVerificationLink)
+	ctx.Step(`^it should include timestamp, IP, and result$`, itShouldIncludeTimestampIPAndResult)
+	ctx.Step(`^it should record the password change event$`, itShouldRecordThePasswordChangeEvent)
+	ctx.Step(`^memory usage should not exceed expected bounds$`, memoryUsageShouldNotExceedExpectedBounds)
+	ctx.Step(`^my account should be marked as verified$`, myAccountShouldBeMarkedAsVerified)
+	ctx.Step(`^my account should remain unverified$`, myAccountShouldRemainUnverified)
+	ctx.Step(`^my buffered events should be available$`, myBufferedEventsShouldBeAvailable)
+	ctx.Step(`^my connection drops and I reconnect through server B$`, myConnectionDropsAndIReconnectThroughServerB)
+	ctx.Step(`^my connection drops for (\d+) seconds$`, myConnectionDropsForSeconds)
+	ctx.Step(`^my connection metadata should be restored$`, myConnectionMetadataShouldBeRestored)
+	ctx.Step(`^my event buffer should be freed$`, myEventBufferShouldBeFreed)
+	ctx.Step(`^my password should be updated$`, myPasswordShouldBeUpdated)
+	ctx.Step(`^my password should not be changed$`, myPasswordShouldNotBeChanged)
+	ctx.Step(`^my profile should be updated$`, myProfileShouldBeUpdated)
+	ctx.Step(`^my session should be cleaned up after (\d+) seconds$`, mySessionShouldBeCleanedUpAfterSeconds)
+	ctx.Step(`^my session should end when browser closes$`, mySessionShouldEndWhenBrowserCloses)
+	ctx.Step(`^my session should persist across browser restarts$`, mySessionShouldPersistAcrossBrowserRestarts)
+	ctx.Step(`^no accounts should be verified$`, noAccountsShouldBeVerified)
+	ctx.Step(`^no email should be sent$`, noEmailShouldBeSent)
+	ctx.Step(`^no error should be raised$`, noErrorShouldBeRaised)
+	ctx.Step(`^no events should be duplicated$`, noEventsShouldBeDuplicated)
+	ctx.Step(`^no events should be lost during the cycles$`, noEventsShouldBeLostDuringTheCycles)
+	ctx.Step(`^no page refresh should be required$`, noPageRefreshShouldBeRequired)
+	ctx.Step(`^no preview should be generated$`, noPreviewShouldBeGenerated)
+	ctx.Step(`^no replay should occur$`, noReplayShouldOccur)
+	ctx.Step(`^no reset token should be created$`, noResetTokenShouldBeCreated)
+	ctx.Step(`^no user account should be created$`, noUserAccountShouldBeCreated)
+	ctx.Step(`^older events should be marked as dropped$`, olderEventsShouldBeMarkedAsDropped)
+	ctx.Step(`^only a session cookie should be set$`, onlyASessionCookieShouldBeSet)
+	ctx.Step(`^only one active connection should exist per session$`, onlyOneActiveConnectionShouldExistPerSession)
+	ctx.Step(`^only one user should exist with that email$`, onlyOneUserShouldExistWithThatEmail)
+	ctx.Step(`^only targeted clients should receive the event$`, onlyTargetedClientsShouldReceiveTheEvent)
+	ctx.Step(`^other clients should not be affected$`, otherClientsShouldNotBeAffected)
+	ctx.Step(`^recently locked accounts should remain locked$`, recentlyLockedAccountsShouldRemainLocked)
+	ctx.Step(`^replayed events should be marked with a "([^"]*)" flag$`, replayedEventsShouldBeMarkedWithAFlag)
+	ctx.Step(`^replayed events should maintain their original timestamps$`, replayedEventsShouldMaintainTheirOriginalTimestamps)
+	ctx.Step(`^SSE reconnection is configured with buffer size (\d+)$`, sSEReconnectionIsConfiguredWithBufferSize)
+	ctx.Step(`^SSE reconnection support is enabled with a (\d+) second buffer window$`, sSEReconnectionSupportIsEnabledWithASecondBufferWindow)
+	ctx.Step(`^subscription filters should be maintained$`, subscriptionFiltersShouldBeMaintained)
+	ctx.Step(`^subsequent login attempts should be blocked$`, subsequentLoginAttemptsShouldBeBlocked)
+	ctx.Step(`^subsequent reconnection attempts should create a new session$`, subsequentReconnectionAttemptsShouldCreateANewSession)
+	ctx.Step(`^subsequent registration attempts should be blocked$`, subsequentRegistrationAttemptsShouldBeBlocked)
+	ctx.Step(`^that session should be invalidated$`, thatSessionShouldBeInvalidated)
+	ctx.Step(`^the account should be locked$`, theAccountShouldBeLocked)
+	ctx.Step(`^the account should be unlocked$`, theAccountShouldBeUnlocked)
+	ctx.Step(`^the account unlock job runs$`, theAccountUnlockJobRuns)
+	ctx.Step(`^the application is in development mode$`, theApplicationIsInDevelopmentMode)
+	ctx.Step(`^the application is in production mode$`, theApplicationIsInProductionMode)
+	ctx.Step(`^the buffers should remain independent$`, theBuffersShouldRemainIndependent)
+	ctx.Step(`^the changes should be reflected without restart$`, theChangesShouldBeReflectedWithoutRestart)
+	ctx.Step(`^the client should receive only new events$`, theClientShouldReceiveOnlyNewEvents)
+	ctx.Step(`^the comments should include the component name$`, theCommentsShouldIncludeTheComponentName)
+	ctx.Step(`^the component expansion middleware is active$`, theComponentExpansionMiddlewareIsActive)
+	ctx.Step(`^the component expansion should be skipped$`, theComponentExpansionShouldBeSkipped)
+	ctx.Step(`^the component registry is initialized$`, theComponentRegistryIsInitialized)
+	ctx.Step(`^the component should be properly expanded$`, theComponentShouldBeProperlyExpanded)
+	ctx.Step(`^the component should fetch user data during rendering$`, theComponentShouldFetchUserDataDuringRendering)
+	ctx.Step(`^the component should not be expanded$`, theComponentShouldNotBeExpanded)
+	ctx.Step(`^the connection attempt should be rejected$`, theConnectionAttemptShouldBeRejected)
+	ctx.Step(`^the custom component should be used for rendering$`, theCustomComponentShouldBeUsedForRendering)
+	ctx.Step(`^the default component should be replaced$`, theDefaultComponentShouldBeReplaced)
+	ctx.Step(`^the email should be captured for preview$`, theEmailShouldBeCapturedForPreview)
+	ctx.Step(`^the email should be sent via SMTP$`, theEmailShouldBeSentViaSMTP)
+	ctx.Step(`^the email should contain a reset link$`, theEmailShouldContainAResetLink)
+	ctx.Step(`^the email should contain a verification link$`, theEmailShouldContainAVerificationLink)
+	ctx.Step(`^the event sequence should be continuous$`, theEventSequenceShouldBeContinuous)
+	ctx.Step(`^the events should arrive in chronological order$`, theEventsShouldArriveInChronologicalOrder)
+	ctx.Step(`^the expansion should complete within (\d+)ms$`, theExpansionShouldCompleteWithinMs)
+	ctx.Step(`^the "([^"]*)" flag is enabled$`, theFlagIsEnabled)
+	ctx.Step(`^the handoff should be transparent$`, theHandoffShouldBeTransparent)
+	ctx.Step(`^the import maps should support development workflows$`, theImportMapsShouldSupportDevelopmentWorkflows)
+	ctx.Step(`^the JSON should be returned unchanged$`, theJSONShouldBeReturnedUnchanged)
+	ctx.Step(`^the legitimate client should remain connected$`, theLegitimateClientShouldRemainConnected)
+	ctx.Step(`^the login should succeed$`, theLoginShouldSucceed)
+	ctx.Step(`^the mail system should receive a send request$`, theMailSystemShouldReceiveASendRequest)
+	ctx.Step(`^the original HTML should be preserved$`, theOriginalHTMLShouldBePreserved)
+	ctx.Step(`^the output should be accessible without JavaScript$`, theOutputShouldBeAccessibleWithoutJavaScript)
+	ctx.Step(`^the output should be properly structured HTML$`, theOutputShouldBeProperlyStructuredHTML)
+	ctx.Step(`^the output should contain "([^"]*)"$`, theOutputShouldContain)
+	ctx.Step(`^the output should contain appropriate ARIA labels$`, theOutputShouldContainAppropriateARIALabels)
+	ctx.Step(`^the output should contain appropriate alert styling$`, theOutputShouldContainAppropriateAlertStyling)
+	ctx.Step(`^the output should contain appropriate classes for "([^"]*)"$`, theOutputShouldContainAppropriateClassesFor)
+	ctx.Step(`^the output should contain \'aria-expanded="([^"]*)"\'$`, theOutputShouldContainAriaexpanded)
+	ctx.Step(`^the output should contain \'aria-labelledby=\'$`, theOutputShouldContainArialabelledby)
+	ctx.Step(`^the output should contain \'aria-modal="([^"]*)"\'$`, theOutputShouldContainAriamodal)
+	ctx.Step(`^the output should contain \'class="\'$`, theOutputShouldContainClass)
+	ctx.Step(`^the output should contain data attributes for progressive enhancement$`, theOutputShouldContainDataAttributesForProgressiveEnhancement)
+	ctx.Step(`^the output should contain \'data-component="([^"]*)"\'$`, theOutputShouldContainDatacomponent)
+	ctx.Step(`^the output should contain \'data-initial-tab="([^"]*)"\'$`, theOutputShouldContainDatainitialtab)
+	ctx.Step(`^the output should contain \'data-state="([^"]*)"\'$`, theOutputShouldContainDatastate)
+	ctx.Step(`^the output should contain \'data-test-id="([^"]*)"\'$`, theOutputShouldContainDatatestid)
+	ctx.Step(`^the output should contain \'data-track-event="([^"]*)"\'$`, theOutputShouldContainDatatrackevent)
+	ctx.Step(`^the output should contain \'data-turbo="([^"]*)"\'$`, theOutputShouldContainDataturbo)
+	ctx.Step(`^the output should contain expanded button HTML$`, theOutputShouldContainExpandedButtonHTML)
+	ctx.Step(`^the output should contain expanded card HTML$`, theOutputShouldContainExpandedCardHTML)
+	ctx.Step(`^the output should contain HTML comments marking component boundaries$`, theOutputShouldContainHTMLCommentsMarkingComponentBoundaries)
+	ctx.Step(`^the output should contain \'hx-post="([^"]*)"\'$`, theOutputShouldContainHxpost)
+	ctx.Step(`^the output should contain \'hx-target="([^"]*)"\'$`, theOutputShouldContainHxtarget)
+	ctx.Step(`^the output should contain \'id="([^"]*)"\'$`, theOutputShouldContainId)
+	ctx.Step(`^the output should contain \'name="([^"]*)"\'$`, theOutputShouldContainName)
+	ctx.Step(`^the output should contain \'role="([^"]*)"\'$`, theOutputShouldContainRole)
+	ctx.Step(`^the output should contain sanitized content$`, theOutputShouldContainSanitizedContent)
+	ctx.Step(`^the output should contain the rendered icon HTML$`, theOutputShouldContainTheRenderedIconHTML)
+	ctx.Step(`^the output should contain the user\'s avatar URL$`, theOutputShouldContainTheUsersAvatarURL)
+	ctx.Step(`^the output should contain \'type="([^"]*)"\'$`, theOutputShouldContainType)
+	ctx.Step(`^the output should contain \'x-data="([^"]*)"\'$`, theOutputShouldContainXdata)
+	ctx.Step(`^the output should maintain line breaks$`, theOutputShouldMaintainLineBreaks)
+	ctx.Step(`^the output should not contain "([^"]*)"$`, theOutputShouldNotContain)
+	ctx.Step(`^the output should not contain an actual script tag$`, theOutputShouldNotContainAnActualScriptTag)
+	ctx.Step(`^the output should not contain component boundary comments$`, theOutputShouldNotContainComponentBoundaryComments)
+	ctx.Step(`^the output should preserve the indentation$`, theOutputShouldPreserveTheIndentation)
+	ctx.Step(`^the page content should update automatically$`, thePageContentShouldUpdateAutomatically)
+	ctx.Step(`^the page reloads and re-establishes SSE connection$`, thePageReloadsAndReestablishesSSEConnection)
+	ctx.Step(`^the password should not be changed$`, thePasswordShouldNotBeChanged)
+	ctx.Step(`^the reconnection should be logged$`, theReconnectionShouldBeLogged)
+	ctx.Step(`^the registration should fail$`, theRegistrationShouldFail)
+	ctx.Step(`^the reset token should be invalidated$`, theResetTokenShouldBeInvalidated)
+	ctx.Step(`^the response content-type is "([^"]*)"$`, theResponseContenttypeIs)
+	ctx.Step(`^the response should include security headers$`, theResponseShouldIncludeSecurityHeaders)
+	ctx.Step(`^the second tab should be marked as active$`, theSecondTabShouldBeMarkedAsActive)
+	ctx.Step(`^the server has (\d+) connected clients$`, theServerHasConnectedClients)
+	ctx.Step(`^the server should remain responsive$`, theServerShouldRemainResponsive)
+	ctx.Step(`^the server should track my session in memory$`, theServerShouldTrackMySessionInMemory)
+	ctx.Step(`^the session cleanup job runs$`, theSessionCleanupJobRuns)
+	ctx.Step(`^the session ID should be stored as a secure cookie$`, theSessionIDShouldBeStoredAsASecureCookie)
+	ctx.Step(`^the transition should be seamless$`, theTransitionShouldBeSeamless)
+	ctx.Step(`^there are accounts with expired lock times$`, thereAreAccountsWithExpiredLockTimes)
+	ctx.Step(`^there are expired sessions older than (\d+) hours$`, thereAreExpiredSessionsOlderThanHours)
+	ctx.Step(`^those accounts should be unlocked$`, thoseAccountsShouldBeUnlocked)
+	ctx.Step(`^valid credentials should also fail$`, validCredentialsShouldAlsoFail)
+	ctx.Step(`^X-Frame-Options should prevent clickjacking$`, xFrameOptionsShouldPreventClickjacking)
+}
+[0m
+--- PASS: TestFeatures (0.64s)
+    --- PASS: TestFeatures/Accessing_login_form (0.00s)
+    --- PASS: TestFeatures/Login_form_accepts_POST_requests (0.00s)
+    --- PASS: TestFeatures/Logout_accepts_POST_requests (0.00s)
+    --- PASS: TestFeatures/Protected_routes_require_authentication (0.00s)
+    --- PASS: TestFeatures/RequireLogin_middleware_exists (0.00s)
+    --- PASS: TestFeatures/Authenticated_users_can_access_protected_routes (0.12s)
+    --- PASS: TestFeatures/User_context_is_available_in_protected_routes (0.12s)
+    --- PASS: TestFeatures/User_registration_form_is_accessible (0.00s)
+    --- PASS: TestFeatures/User_can_register_with_valid_credentials (0.00s)
+    --- PASS: TestFeatures/Registration_fails_with_weak_password (0.00s)
+    --- PASS: TestFeatures/Registration_fails_with_duplicate_email (0.00s)
+    --- PASS: TestFeatures/User_can_verify_email_with_valid_token (0.00s)
+    --- PASS: TestFeatures/Email_verification_fails_with_invalid_token (0.00s)
+    --- PASS: TestFeatures/Email_verification_fails_with_expired_token (0.00s)
+    --- PASS: TestFeatures/Forgot_password_form_is_accessible (0.00s)
+    --- PASS: TestFeatures/User_can_request_password_reset (0.00s)
+    --- PASS: TestFeatures/Password_reset_silently_succeeds_for_non-existent_email (0.00s)
+    --- PASS: TestFeatures/User_can_reset_password_with_valid_token (0.00s)
+    --- PASS: TestFeatures/Password_reset_fails_with_mismatched_passwords (0.00s)
+    --- PASS: TestFeatures/Password_reset_fails_with_expired_token (0.00s)
+    --- PASS: TestFeatures/User_can_view_their_profile (0.00s)
+    --- PASS: TestFeatures/User_can_update_their_profile (0.00s)
+    --- PASS: TestFeatures/Profile_page_requires_authentication (0.00s)
+    --- PASS: TestFeatures/User_can_view_active_sessions (0.00s)
+    --- PASS: TestFeatures/User_can_revoke_a_session (0.00s)
+    --- PASS: TestFeatures/Sessions_page_requires_authentication (0.00s)
+    --- PASS: TestFeatures/Login_attempts_are_rate_limited (0.00s)
+    --- PASS: TestFeatures/Registration_attempts_are_rate_limited (0.00s)
+    --- PASS: TestFeatures/Account_is_locked_after_too_many_failed_attempts (0.00s)
+    --- PASS: TestFeatures/Locked_account_is_unlocked_after_timeout (0.00s)
+    --- PASS: TestFeatures/Login_attempts_are_audit_logged (0.00s)
+    --- PASS: TestFeatures/Password_changes_are_audit_logged (0.00s)
+    --- PASS: TestFeatures/Session_cleanup_job_removes_expired_sessions (0.00s)
+    --- PASS: TestFeatures/Account_unlock_job_unlocks_expired_locks (0.00s)
+    --- PASS: TestFeatures/Verification_emails_are_sent_through_mail_system (0.00s)
+    --- PASS: TestFeatures/Password_reset_emails_are_sent_through_mail_system (0.00s)
+    --- PASS: TestFeatures/Remember_me_cookie_extends_session (0.00s)
+    --- PASS: TestFeatures/Regular_login_creates_session_cookie_only (0.00s)
+    --- PASS: TestFeatures/Authentication_pages_have_security_headers (0.00s)
+    --- PASS: TestFeatures/Password_strength_is_validated_on_registration (0.00s)
+    --- PASS: TestFeatures/Password_strength_is_validated_on_reset (0.00s)
+    --- PASS: TestFeatures/User_can_be_logged_in_on_multiple_devices (0.00s)
+    --- PASS: TestFeatures/Revoking_session_logs_out_specific_device (0.00s)
+    --- PASS: TestFeatures/Wire_Buffkit_successfully (0.00s)
+    --- PASS: TestFeatures/Get_version_information (0.00s)
+    --- PASS: TestFeatures/Successfully_wiring_Buffkit_with_valid_configuration (0.00s)
+    --- PASS: TestFeatures/Rejecting_configuration_with_missing_auth_secret (0.00s)
+    --- PASS: TestFeatures/Rejecting_configuration_with_nil_auth_secret (0.00s)
+    --- PASS: TestFeatures/Handling_invalid_Redis_configuration (0.00s)
+    --- PASS: TestFeatures/Providing_version_information (0.00s)
+    --- PASS: TestFeatures/Render_a_simple_button_component (0.00s)
+    --- PASS: TestFeatures/Render_component_with_attributes (0.00s)
+    --- PASS: TestFeatures/Pass_through_data_attributes (0.00s)
+    --- PASS: TestFeatures/Component_with_named_slots (0.00s)
+    --- PASS: TestFeatures/Component_with_default_slot (0.00s)
+    --- PASS: TestFeatures/Render_nested_components (0.00s)
+    --- PASS: TestFeatures/Interactive_component_includes_enhancement_data (0.00s)
+    --- PASS: TestFeatures/Form_component_with_validation_attributes (0.00s)
+    --- PASS: TestFeatures/Handle_unregistered_component_gracefully (0.00s)
+    --- PASS: TestFeatures/Handle_malformed_component_HTML (0.00s)
+    --- PASS: TestFeatures/Prevent_XSS_in_component_attributes (0.00s)
+    --- PASS: TestFeatures/Escape_user_content_properly (0.00s)
+    --- PASS: TestFeatures/Handle_large_pages_efficiently (0.00s)
+    --- PASS: TestFeatures/Skip_expansion_for_non-HTML_responses (0.00s)
+    --- PASS: TestFeatures/Preserve_custom_HTML_attributes (0.00s)
+    --- PASS: TestFeatures/Handle_boolean_attributes (0.00s)
+    --- PASS: TestFeatures/Render_component_variants (0.00s)
+    --- PASS: TestFeatures/Render_component_variants#01 (0.00s)
+    --- PASS: TestFeatures/Render_component_variants#02 (0.00s)
+    --- PASS: TestFeatures/Render_component_variants#03 (0.00s)
+    --- PASS: TestFeatures/Ensure_ARIA_attributes_are_properly_set (0.00s)
+    --- PASS: TestFeatures/Generate_unique_IDs_for_accessibility (0.00s)
+    --- PASS: TestFeatures/Work_with_HTMX_attributes (0.00s)
+    --- PASS: TestFeatures/Work_with_Alpine.js_directives (0.00s)
+    --- PASS: TestFeatures/List_all_registered_components (0.00s)
+    --- PASS: TestFeatures/Override_default_component (0.00s)
+    --- PASS: TestFeatures/Show_component_boundaries_in_development (0.00s)
+    --- PASS: TestFeatures/Hide_component_boundaries_in_production (0.00s)
+    --- PASS: TestFeatures/Handle_self-closing_components (0.00s)
+    --- PASS: TestFeatures/Handle_components_with_hyphenated_names (0.00s)
+    --- PASS: TestFeatures/Preserve_whitespace_in_pre_elements (0.00s)
+    --- PASS: TestFeatures/Component_initialization_attributes (0.00s)
+    --- PASS: TestFeatures/Component_with_conditional_rendering (0.00s)
+    --- PASS: TestFeatures/Component_with_server-side_data (0.00s)
+    --- PASS: TestFeatures/Mail_preview_endpoint_is_available_in_dev_mode (0.00s)
+    --- PASS: TestFeatures/Mail_preview_endpoint_is_not_available_in_production (0.00s)
+    --- PASS: TestFeatures/Development_mail_sender_logs_emails (0.00s)
+    --- PASS: TestFeatures/Development_mail_sender_stores_email_content (0.00s)
+    --- PASS: TestFeatures/Security_headers_are_relaxed_in_dev_mode (0.00s)
+    --- PASS: TestFeatures/Error_messages_are_verbose_in_dev_mode (0.00s)
+    --- PASS: TestFeatures/Hot_reloading_compatibility (0.00s)
+    --- PASS: TestFeatures/Development_vs_production_mail_behavior (0.00s)
+    --- PASS: TestFeatures/Development_diagnostics (0.00s)
+    --- PASS: TestFeatures/Development-only_middleware (0.00s)
+    --- PASS: TestFeatures/SSE_endpoint_is_available (0.20s)
+    --- PASS: TestFeatures/Broadcasting_events_to_all_clients (0.00s)
+    --- PASS: TestFeatures/Client_connection_management (0.00s)
+    --- PASS: TestFeatures/Connection_cleanup_on_disconnect (0.00s)
+    --- PASS: TestFeatures/Broadcasting_HTML_fragments (0.00s)
+    --- PASS: TestFeatures/Event_filtering_and_targeting (0.00s)
+    --- PASS: TestFeatures/SSE_with_htmx_integration (0.00s)
+    --- PASS: TestFeatures/Error_handling_in_SSE_connections (0.00s)
+    --- PASS: TestFeatures/SSE_broker_lifecycle (0.00s)
+    --- PASS: TestFeatures/Direct_broker_testing_-_client_registration (0.00s)
+    --- PASS: TestFeatures/Direct_broker_testing_-_client_unregistration (0.00s)
+    --- PASS: TestFeatures/Direct_broker_testing_-_event_broadcasting (0.00s)
+    --- PASS: TestFeatures/Direct_broker_testing_-_heartbeat_system (0.00s)
+    --- PASS: TestFeatures/Client_receives_a_persistent_session_ID_on_first_connection (0.00s)
+    --- PASS: TestFeatures/Graceful_reconnection_after_brief_network_interruption (0.00s)
+    --- PASS: TestFeatures/Reconnection_with_Last-Event-ID_header (0.00s)
+    --- PASS: TestFeatures/Buffer_overflow_handling_during_extended_disconnection (0.00s)
+    --- PASS: TestFeatures/Session_cleanup_after_abandonment_timeout (0.00s)
+    --- PASS: TestFeatures/Rapid_disconnect_and_reconnect_cycles (0.00s)
+    --- PASS: TestFeatures/Multiple_clients_with_independent_buffers (0.00s)
+    --- PASS: TestFeatures/Reconnection_after_browser_refresh (0.00s)
+    --- PASS: TestFeatures/Event_replay_maintains_correct_order_and_timing (0.00s)
+    --- PASS: TestFeatures/Memory_usage_remains_bounded (0.00s)
+    --- PASS: TestFeatures/Client_spoofing_prevention (0.00s)
+    --- PASS: TestFeatures/Graceful_degradation_when_buffers_are_disabled (0.00s)
+    --- PASS: TestFeatures/Event_deduplication_during_replay (0.00s)
+    --- PASS: TestFeatures/Connection_state_recovery_with_metadata (0.00s)
+    --- PASS: TestFeatures/Load_balancer_compatibility (0.00s)
+PASS
+ok  	github.com/johnjansen/buffkit/features	(cached)
