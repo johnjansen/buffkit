@@ -24,7 +24,7 @@
 **This project represents an experimental approach to software development using AI agents.** We're using BDD-based specifications to deliver a moderately complex problem in a short time frame. This is a proving ground for an agentic development process that leverages:
 
 - **[Zed.dev](https://zed.dev)** and **[Warp.dev](https://warp.dev)** as our primary development interfaces
-- **Anthropic Claude Sonnet 4** doing the actual development work
+- **Anthropic Claude Opus 4.1** doing the actual development work
 - **Graphiti MCP server** for persistent agent memory and learning
 - A self-evolving set of rules that guide the AI and enable continuous improvement
 
