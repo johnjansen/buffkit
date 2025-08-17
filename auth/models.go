@@ -374,6 +374,7 @@ type ExtendedUserStore interface {
 	DeleteSession(ctx context.Context, token string) error
 	DeleteUserSessions(ctx context.Context, userID string) error
 	ListUserSessions(ctx context.Context, userID string) ([]*Session, error)
+	CleanupSessions(ctx context.Context, maxAge, maxInactivity time.Duration) (int, error)
 
 	// Audit logging
 	LogAuthEvent(ctx context.Context, log *AuditLog) error

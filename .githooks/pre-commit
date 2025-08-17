@@ -1,0 +1,142 @@
+#!/bin/bash
+
+# Buffkit Pre-commit Hook
+# This hook ensures code quality before committing
+#
+# To install this hook:
+#   git config core.hooksPath .githooks
+# Or copy to .git/hooks/pre-commit
+
+set -e
+
+echo "🔍 Running Buffkit pre-commit checks..."
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Track if any check fails
+FAILED=0
+
+# Function to run a check
+run_check() {
+    local name=$1
+    local cmd=$2
+
+    echo -n "  ✓ $name... "
+    if eval "$cmd" > /dev/null 2>&1; then
+        echo -e "${GREEN}PASS${NC}"
+    else
+        echo -e "${RED}FAIL${NC}"
+        echo -e "${YELLOW}    Run: $cmd${NC}"
+        FAILED=1
+    fi
+}
+
+# 1. Check compilation
+echo "📦 Checking compilation..."
+run_check "Building all packages" "go build ./..."
+
+# 2. Run go vet
+echo "🔎 Running go vet..."
+run_check "Vetting code" "go vet ./..."
+
+# 3. Run golangci-lint
+echo "🧹 Running linters..."
+if command -v golangci-lint &> /dev/null; then
+    run_check "golangci-lint" "golangci-lint run ./..."
+else
+    echo -e "${YELLOW}  ⚠ golangci-lint not installed${NC}"
+    echo "    Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
+fi
+
+# 4. Run tests
+echo "🧪 Running tests..."
+run_check "Unit tests" "go test -short ./..."
+
+# 5. Check for BDD scenarios
+echo "📝 Checking BDD scenarios..."
+if [ -d "features" ]; then
+    feature_count=$(find features -name "*.feature" -type f | wc -l)
+    echo "  ✓ Found $feature_count feature files"
+
+    # Run BDD tests if godog is available
+    if go list -m github.com/cucumber/godog &> /dev/null 2>&1; then
+        run_check "BDD tests" "go test ./features -v -count=1"
+    fi
+fi
+
+# 6. Check formatting
+echo "💅 Checking formatting..."
+unformatted=$(gofmt -l .)
+if [ -z "$unformatted" ]; then
+    echo -e "  ✓ Code formatting... ${GREEN}PASS${NC}"
+else
+    echo -e "  ✗ Code formatting... ${RED}FAIL${NC}"
+    echo -e "${YELLOW}    Unformatted files:${NC}"
+    echo "$unformatted" | sed 's/^/      /'
+    echo -e "${YELLOW}    Run: gofmt -w .${NC}"
+    FAILED=1
+fi
+
+# 7. Check for debugging artifacts
+echo "🔍 Checking for debug artifacts..."
+debug_found=0
+
+# Check for fmt.Println (should use proper logging)
+if grep -r "fmt\.Println" --include="*.go" . 2>/dev/null | grep -v "^[[:space:]]*//" | grep -v "_test\.go" > /dev/null; then
+    echo -e "  ⚠ Found fmt.Println statements (use proper logging instead)"
+    debug_found=1
+fi
+
+# Check for TODO comments
+todo_count=$(grep -r "TODO" --include="*.go" . 2>/dev/null | wc -l)
+if [ "$todo_count" -gt 0 ]; then
+    echo "  ℹ Found $todo_count TODO comments"
+fi
+
+if [ "$debug_found" -eq 0 ]; then
+    echo -e "  ✓ No debug artifacts... ${GREEN}PASS${NC}"
+fi
+
+# 8. Check dependencies
+echo "📚 Checking dependencies..."
+run_check "Module verification" "go mod verify"
+run_check "Module tidiness" "go mod tidy -diff"
+
+# Summary
+echo ""
+if [ "$FAILED" -eq 0 ]; then
+    echo -e "${GREEN}✅ All pre-commit checks passed!${NC}"
+    echo ""
+    echo "📋 Reminders:"
+    echo "  • Follow BDD/TDD practices"
+    echo "  • Update feature files for new functionality"
+    echo "  • Keep methods under 20 lines"
+    echo "  • Maintain cyclomatic complexity under 8"
+    echo "  • Comment aggressively but clearly"
+    echo "  • One concern per file/function"
+    echo "  • No premature optimization"
+    echo "  • Test everything"
+else
+    echo -e "${RED}❌ Pre-commit checks failed!${NC}"
+    echo ""
+    echo "Fix the issues above and try again."
+    echo "To bypass (not recommended): git commit --no-verify"
+    exit 1
+fi
+
+# Final reminder about the process
+echo ""
+echo "🎯 Buffkit Development Process:"
+echo "  1. Write BDD scenarios first"
+echo "  2. Implement to make tests pass"
+echo "  3. Check compilation: go build ./..."
+echo "  4. Run go vet: go vet ./..."
+echo "  5. Run linters: golangci-lint run ./..."
+echo "  6. Run tests: go test ./..."
+echo "  7. Verify CI requirements match local checks"
+echo ""
+echo "Ready to commit! 🚀"

@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+	"github.com/johnjansen/buffkit/auth"
+	"github.com/johnjansen/buffkit/mail"
 )
 
 // Runtime encapsulates the Asynq client, server, and mux
@@ -97,6 +99,7 @@ func (r *Runtime) RegisterDefaults() {
 
 	// Register some default handlers
 	r.Mux.HandleFunc("email:send", HandleEmailSend)
+	r.Mux.HandleFunc("email:welcome", HandleWelcomeEmail)
 	r.Mux.HandleFunc("cleanup:sessions", HandleCleanupSessions)
 }
 
@@ -170,16 +173,57 @@ func HandleEmailSend(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("failed to unmarshal email payload: %w", err)
 	}
 
-	// In a real implementation, this would send the email
-	log.Printf("Jobs: Sending email to %s: %s", payload.To, payload.Subject)
+	// Use the mail package to actually send the email
+	// The mail sender should be configured by the app via mail.UseSender()
+	sender := mail.GetSender()
+	if sender == nil {
+		// If no sender configured, just log (dev mode)
+		log.Printf("Jobs: Would send email to %s: %s (no mail sender configured)", payload.To, payload.Subject)
+		return nil
+	}
 
+	// Create a mail message
+	message := mail.Message{
+		To:      payload.To,
+		Subject: payload.Subject,
+		Text:    payload.Body,
+		HTML:    payload.Body, // Use same content for HTML unless specified differently
+	}
+
+	// Send the email
+	if err := sender.Send(ctx, message); err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	log.Printf("Jobs: Email sent to %s: %s", payload.To, payload.Subject)
 	return nil
 }
 
 // HandleCleanupSessions removes expired sessions
 func HandleCleanupSessions(ctx context.Context, t *asynq.Task) error {
-	// In a real implementation, this would clean up expired sessions
-	log.Println("Jobs: Cleaning up expired sessions")
+	// Get the auth store to clean up sessions
+	store := auth.GetStore()
+	if store == nil {
+		log.Println("Jobs: No auth store configured, skipping session cleanup")
+		return nil
+	}
+
+	// If the store supports session cleanup, do it
+	if extStore, ok := store.(auth.ExtendedUserStore); ok {
+		// Clean up sessions older than 24 hours or inactive for 2 hours
+		maxAge := 24 * time.Hour
+		maxInactivity := 2 * time.Hour
+
+		count, err := extStore.CleanupSessions(ctx, maxAge, maxInactivity)
+		if err != nil {
+			return fmt.Errorf("failed to cleanup sessions: %w", err)
+		}
+
+		log.Printf("Jobs: Cleaned up %d expired sessions", count)
+	} else {
+		log.Println("Jobs: Auth store doesn't support session cleanup")
+	}
+
 	return nil
 }
 
@@ -193,6 +237,84 @@ func (r *Runtime) EnqueueEmail(to, subject, body string) error {
 		Body:    body,
 	}
 	return r.Enqueue("email:send", payload, asynq.Queue("default"))
+}
+
+// HandleWelcomeEmail processes welcome email jobs for new users
+func HandleWelcomeEmail(ctx context.Context, t *asynq.Task) error {
+	var payload map[string]string
+	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
+		return fmt.Errorf("failed to unmarshal welcome email payload: %w", err)
+	}
+
+	userID := payload["user_id"]
+	if userID == "" {
+		return fmt.Errorf("missing user_id in welcome email payload")
+	}
+
+	// Get the auth store to fetch user details
+	store := auth.GetStore()
+	if store == nil {
+		log.Printf("Jobs: No auth store configured, skipping welcome email for user %s", userID)
+		return nil
+	}
+
+	// Get user details
+	user, err := store.ByID(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("failed to get user %s: %w", userID, err)
+	}
+
+	// Get mail sender
+	sender := mail.GetSender()
+	if sender == nil {
+		log.Printf("Jobs: Would send welcome email to %s (no mail sender configured)", user.Email)
+		return nil
+	}
+
+	// Prepare welcome email content
+	subject := "Welcome to Our Service!"
+	textBody := fmt.Sprintf(`Hello %s,
+
+Welcome to our service! We're excited to have you on board.
+
+Your account has been successfully created with the email: %s
+
+To get started:
+1. Log in to your account
+2. Complete your profile
+3. Explore our features
+
+If you have any questions, please don't hesitate to reach out.
+
+Best regards,
+The Team`, user.Name(), user.Email)
+
+	htmlBody := fmt.Sprintf(`<h2>Hello %s,</h2>
+<p>Welcome to our service! We're excited to have you on board.</p>
+<p>Your account has been successfully created with the email: <strong>%s</strong></p>
+<h3>To get started:</h3>
+<ol>
+  <li>Log in to your account</li>
+  <li>Complete your profile</li>
+  <li>Explore our features</li>
+</ol>
+<p>If you have any questions, please don't hesitate to reach out.</p>
+<p>Best regards,<br>The Team</p>`, user.Name(), user.Email)
+
+	// Create and send the email
+	message := mail.Message{
+		To:      user.Email,
+		Subject: subject,
+		Text:    textBody,
+		HTML:    htmlBody,
+	}
+
+	if err := sender.Send(ctx, message); err != nil {
+		return fmt.Errorf("failed to send welcome email: %w", err)
+	}
+
+	log.Printf("Jobs: Welcome email sent to %s", user.Email)
+	return nil
 }
 
 // EnqueueWelcomeEmail enqueues a welcome email for a new user

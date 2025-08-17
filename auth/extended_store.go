@@ -514,6 +514,31 @@ func (s *SQLStore) ListUserSessions(ctx context.Context, userID string) ([]*Sess
 	return sessions, nil
 }
 
+// CleanupSessions removes expired or inactive sessions
+func (s *SQLStore) CleanupSessions(ctx context.Context, maxAge, maxInactivity time.Duration) (int, error) {
+	cutoffAge := time.Now().Add(-maxAge)
+	cutoffActivity := time.Now().Add(-maxInactivity)
+
+	query := `
+		DELETE FROM sessions
+		WHERE expires_at < $1
+		   OR created_at < $2
+		   OR last_activity_at < $3
+	`
+
+	result, err := s.db.ExecContext(ctx, query, time.Now(), cutoffAge, cutoffActivity)
+	if err != nil {
+		return 0, fmt.Errorf("failed to cleanup sessions: %w", err)
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get cleanup count: %w", err)
+	}
+
+	return int(count), nil
+}
+
 // LogAuthEvent logs an authentication event
 func (s *SQLStore) LogAuthEvent(ctx context.Context, log *AuditLog) error {
 	if log.ID == "" {
