@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/cucumber/godog"
@@ -1931,6 +1930,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 // Test runner
+// TestFeatures is replaced by TestAllFeatures in main_test.go which combines all scenarios
+/*
 func TestFeatures(t *testing.T) {
 	suite := godog.TestSuite{
 		ScenarioInitializer: InitializeScenario,
@@ -1945,6 +1946,7 @@ func TestFeatures(t *testing.T) {
 		t.Fatal("non-zero status returned, failed to run feature tests")
 	}
 }
+*/
 
 // Direct broker testing step definitions
 
