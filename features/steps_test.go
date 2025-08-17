@@ -867,9 +867,9 @@ func (ts *TestSuite) iShouldNotBeRedirected() error {
 func (ts *TestSuite) theCurrentUserShouldBeAvailableInTheContext() error {
 	// Create a handler that checks for user in context
 	checkUserHandler := buffkit.RequireLogin(func(c buffalo.Context) error {
-		user, err := auth.CurrentUser(c)
-		if err != nil {
-			return c.Error(http.StatusInternalServerError, fmt.Errorf("user not in context: %v", err))
+		user := auth.CurrentUser(c)
+		if user == nil {
+			return c.Error(http.StatusInternalServerError, fmt.Errorf("user not in context"))
 		}
 		if user == nil {
 			return c.Error(http.StatusInternalServerError, fmt.Errorf("user is nil"))
@@ -904,9 +904,9 @@ func (ts *TestSuite) theCurrentUserShouldBeAvailableInTheContext() error {
 func (ts *TestSuite) iCanAccessUserInformation() error {
 	// Similar to above but checks we can read user properties
 	checkUserHandler := buffkit.RequireLogin(func(c buffalo.Context) error {
-		user, err := auth.CurrentUser(c)
-		if err != nil {
-			return c.Error(http.StatusInternalServerError, err)
+		user := auth.CurrentUser(c)
+		if user == nil {
+			return c.Error(http.StatusInternalServerError, fmt.Errorf("user not in context"))
 		}
 		if user.Email == "" {
 			return c.Error(http.StatusInternalServerError, fmt.Errorf("user email is empty"))

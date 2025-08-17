@@ -1,0 +1,17 @@
+Hi <%= user.Name() %>,
+
+Welcome! Thank you for signing up.
+
+Please verify your email address to activate your account and get started.
+
+Verify your email by clicking this link:
+<%= verifyURL %>
+
+This verification link will expire in 24 hours for security reasons.
+
+If you didn't create an account with us, please ignore this email. No account will be created without verifying this email address.
+
+---
+
+© <%= Time.now.year %> <%= appName %>. All rights reserved.
+<%= appAddress %>

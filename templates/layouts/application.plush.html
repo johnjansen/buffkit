@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= contentOf("title") %></title>
+
+    <!-- CSRF Token -->
+    <%= csrf() %>
+
+    <!-- Import Map -->
+    <%= raw(importmap()) %>
+
+    <!-- Styles -->
+    <style>
+        /* Base styles - can be overridden by app */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Flash messages */
+        .flash-messages {
+            margin: 20px 0;
+        }
+
+        .flash-message {
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .flash-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* SSE connection indicator */
+        .sse-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            z-index: 9999;
+        }
+
+        .sse-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .sse-connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .sse-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .sse-indicator.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+
+    <!-- Additional styles from content -->
+    <%= contentOf("stylesheets") %>
+</head>
+<body>
+    <!-- SSE Connection Indicator -->
+    <div id="sse-indicator" class="sse-indicator sse-disconnected hidden">
+        <span id="sse-status">Disconnected</span>
+    </div>
+
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        <%= for (key, messages) in flash { %>
+            <%= for (msg) in messages { %>
+                <div class="flash-message flash-<%= key %>" role="alert">
+                    <%= msg %>
+                </div>
+            <% } %>
+        <% } %>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <%= yield %>
+    </main>
+
+    <!-- Core JavaScript Modules -->
+    <script type="module">
+        // Import core libraries
+        import 'htmx.org';
+        import Alpine from 'alpinejs';
+
+        // Initialize Alpine.js
+        window.Alpine = Alpine;
+        Alpine.start();
+
+        // Import app entry point
+        import 'app';
+    </script>
+
+    <!-- SSE Client -->
+    <script>
+        (function() {
+            'use strict';
+
+            let eventSource = null;
+            let reconnectTimer = null;
+            let reconnectDelay = 1000;
+            const maxReconnectDelay = 30000;
+            const indicator = document.getElementById('sse-indicator');
+            const statusText = document.getElementById('sse-status');
+
+            function updateIndicator(status) {
+                if (!indicator) return;
+
+                indicator.classList.remove('sse-connected', 'sse-connecting', 'sse-disconnected');
+
+                switch(status) {
+                    case 'connected':
+                        indicator.classList.add('sse-connected');
+                        statusText.textContent = 'Live';
+                        // Hide after 3 seconds when connected
+                        setTimeout(() => {
+                            if (indicator.classList.contains('sse-connected')) {
+                                indicator.classList.add('hidden');
+                            }
+                        }, 3000);
+                        break;
+                    case 'connecting':
+                        indicator.classList.add('sse-connecting');
+                        indicator.classList.remove('hidden');
+                        statusText.textContent = 'Connecting...';
+                        break;
+                    case 'disconnected':
+                        indicator.classList.add('sse-disconnected');
+                        indicator.classList.remove('hidden');
+                        statusText.textContent = 'Disconnected';
+                        break;
+                }
+            }
+
+            function connect() {
+                if (eventSource) {
+                    eventSource.close();
+                }
+
+                updateIndicator('connecting');
+
+                eventSource = new EventSource('/events');
+
+                eventSource.onopen = function() {
+                    console.log('[SSE] Connected');
+                    updateIndicator('connected');
+                    reconnectDelay = 1000; // Reset delay on successful connection
+
+                    if (reconnectTimer) {
+                        clearTimeout(reconnectTimer);
+                        reconnectTimer = null;
+                    }
+                };
+
+                eventSource.onerror = function(e) {
+                    console.error('[SSE] Connection error', e);
+                    updateIndicator('disconnected');
+
+                    if (eventSource.readyState === EventSource.CLOSED) {
+                        // Connection closed, attempt to reconnect
+                        scheduleReconnect();
+                    }
+                };
+
+                // Default message handler
+                eventSource.onmessage = function(e) {
+                    console.log('[SSE] Message:', e.data);
+
+                    // Try to parse as JSON for structured updates
+                    try {
+                        const data = JSON.parse(e.data);
+                        handleStructuredMessage(data);
+                    } catch {
+                        // Not JSON, treat as HTML fragment
+                        handleHTMLMessage(e.data);
+                    }
+                };
+
+                // Heartbeat handler
+                eventSource.addEventListener('heartbeat', function(e) {
+                    console.debug('[SSE] Heartbeat received');
+                });
+
+                // Custom event handlers can be added here
+                // Example: eventSource.addEventListener('user-update', handleUserUpdate);
+            }
+
+            function scheduleReconnect() {
+                if (reconnectTimer) {
+                    return; // Already scheduled
+                }
+
+                console.log(`[SSE] Reconnecting in ${reconnectDelay}ms...`);
+
+                reconnectTimer = setTimeout(() => {
+                    reconnectTimer = null;
+                    connect();
+                }, reconnectDelay);
+
+                // Exponential backoff
+                reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
+            }
+
+            function handleStructuredMessage(data) {
+                // Handle structured SSE messages
+                if (data.action === 'update' && data.target && data.html) {
+                    const element = document.querySelector(data.target);
+                    if (element) {
+                        // Use htmx swap if available
+                        if (window.htmx) {
+                            htmx.swap(element, data.html, {swapStyle: data.swap || 'innerHTML'});
+                        } else {
+                            element.innerHTML = data.html;
+                        }
+                    }
+                } else if (data.action === 'redirect' && data.url) {
+                    window.location.href = data.url;
+                } else if (data.action === 'reload') {
+                    window.location.reload();
+                }
+            }
+
+            function handleHTMLMessage(html) {
+                // Default behavior: look for elements with data-sse-target
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+
+                const updates = temp.querySelectorAll('[data-sse-target]');
+                updates.forEach(update => {
+                    const targetId = update.getAttribute('data-sse-target');
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        // Use htmx swap if available
+                        if (window.htmx) {
+                            htmx.swap(target, update.outerHTML, {swapStyle: 'outerHTML'});
+                        } else {
+                            target.outerHTML = update.outerHTML;
+                        }
+                    }
+                });
+
+                // If no specific target, check for flash messages
+                if (updates.length === 0 && html.includes('flash-message')) {
+                    const flashContainer = document.querySelector('.flash-messages');
+                    if (flashContainer) {
+                        flashContainer.insertAdjacentHTML('beforeend', html);
+                    }
+                }
+            }
+
+            // Auto-connect when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', connect);
+            } else {
+                connect();
+            }
+
+            // Reconnect on visibility change
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && (!eventSource || eventSource.readyState === EventSource.CLOSED)) {
+                    connect();
+                }
+            });
+
+            // Clean up on page unload
+            window.addEventListener('beforeunload', function() {
+                if (eventSource) {
+                    eventSource.close();
+                }
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                }
+            });
+
+            // Expose SSE client for debugging and extensions
+            window.BuffkitSSE = {
+                getEventSource: () => eventSource,
+                reconnect: () => {
+                    if (eventSource) {
+                        eventSource.close();
+                    }
+                    connect();
+                },
+                disconnect: () => {
+                    if (eventSource) {
+                        eventSource.close();
+                        eventSource = null;
+                    }
+                    if (reconnectTimer) {
+                        clearTimeout(reconnectTimer);
+                        reconnectTimer = null;
+                    }
+                    updateIndicator('disconnected');
+                },
+                send: (event, data) => {
+                    // For future bidirectional communication
+                    console.warn('[SSE] Send not implemented yet', event, data);
+                }
+            };
+        })();
+    </script>
+
+    <!-- Additional scripts from content -->
+    <%= contentOf("javascripts") %>
+</body>
+</html>

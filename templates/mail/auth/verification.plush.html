@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset styles */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+
+        /* Remove default styling */
+        body { margin: 0; padding: 0; width: 100% !important; min-width: 100%; }
+        img { display: block; }
+
+        /* Mobile styles */
+        @media screen and (max-width: 600px) {
+            .container { width: 100% !important; max-width: 100% !important; }
+            .content { padding: 20px !important; }
+            .button { width: 100% !important; max-width: 300px !important; }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #1a1a1a !important; }
+            .email-body { background-color: #2d2d2d !important; }
+            .content-wrapper { background-color: #2d2d2d !important; color: #ffffff !important; }
+            h1, h2, h3, p { color: #ffffff !important; }
+            .text-muted { color: #a0a0a0 !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f7f7f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f7f7f7;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <!-- Email Container -->
+                <table class="container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 40px 20px 20px 20px;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); border-radius: 50%; display: inline-block;">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="64" height="64">
+                                    <tr>
+                                        <td align="center" valign="middle">
+                                            <span style="color: #ffffff; font-size: 28px; font-weight: bold;">✓</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td class="content" style="padding: 0 40px 40px 40px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <!-- Title -->
+                                <tr>
+                                    <td align="center" style="padding-bottom: 20px;">
+                                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #333333;">Verify Your Email</h1>
+                                    </td>
+                                </tr>
+
+                                <!-- Greeting -->
+                                <tr>
+                                    <td align="left" style="padding-bottom: 20px;">
+                                        <p style="margin: 0; font-size: 16px; line-height: 24px; color: #666666;">
+                                            Hi <%= user.Name() %>,
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <!-- Main Message -->
+                                <tr>
+                                    <td align="left" style="padding-bottom: 30px;">
+                                        <p style="margin: 0; font-size: 16px; line-height: 24px; color: #666666;">
+                                            Welcome! Thank you for signing up. Please verify your email address to activate your account and get started.
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <!-- CTA Button -->
+                                <tr>
+                                    <td align="center" style="padding-bottom: 30px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" class="button">
+                                            <tr>
+                                                <td style="border-radius: 6px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);">
+                                                    <a href="<%= verifyURL %>" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">
+                                                        Verify Email Address
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <!-- Alternative Link -->
+                                <tr>
+                                    <td align="left" style="padding-bottom: 30px;">
+                                        <p style="margin: 0 0 10px 0; font-size: 14px; line-height: 20px; color: #999999;">
+                                            Or copy and paste this link into your browser:
+                                        </p>
+                                        <p style="margin: 0; font-size: 14px; line-height: 20px; word-break: break-all;">
+                                            <a href="<%= verifyURL %>" style="color: #4CAF50; text-decoration: underline;">
+                                                <%= verifyURL %>
+                                            </a>
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <!-- Security Note -->
+                                <tr>
+                                    <td align="left" style="padding-top: 20px; border-top: 1px solid #eeeeee;">
+                                        <p style="margin: 0; font-size: 14px; line-height: 20px; color: #999999;">
+                                            This verification link will expire in 24 hours for security reasons.
+                                        </p>
+                                        <p style="margin: 10px 0 0 0; font-size: 14px; line-height: 20px; color: #999999;">
+                                            If you didn't create an account with us, please ignore this email. No account will be created without verifying this email address.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 10px;">
+                                        <p style="margin: 0; font-size: 12px; line-height: 18px; color: #999999;">
+                                            © <%= Time.now.year %> <%= appName %>. All rights reserved.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin: 0; font-size: 12px; line-height: 18px; color: #999999;">
+                                            <%= appAddress %>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

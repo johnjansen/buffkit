@@ -1,0 +1,531 @@
+<div class="container">
+    <div class="sessions-wrapper">
+        <div class="sessions-header">
+            <h1>Active Sessions</h1>
+            <p class="sessions-subtitle">Manage your active login sessions across all devices</p>
+        </div>
+
+        <div class="sessions-content">
+            <!-- Current Session Card -->
+            <div class="session-card current-session">
+                <div class="card-header">
+                    <h2>Current Session</h2>
+                    <span class="badge badge-primary">This Device</span>
+                </div>
+
+                <div class="card-body">
+                    <div class="session-info">
+                        <div class="session-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                        </div>
+                        <div class="session-details">
+                            <h3>Web Browser</h3>
+                            <p class="session-location">
+                                <%= if (current_session && current_session.IPAddress) { %>
+                                    IP: <%= current_session.IPAddress %>
+                                <% } else { %>
+                                    IP: Unknown
+                                <% } %>
+                            </p>
+                            <p class="session-time">
+                                Active now
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Sessions -->
+            <div class="sessions-list">
+                <div class="list-header">
+                    <h2>Other Sessions</h2>
+                    <%= if (sessions && len(sessions) > 1) { %>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="revokeAllSessions()">
+                            Revoke All
+                        </button>
+                    <% } %>
+                </div>
+
+                <%= if (sessions && len(sessions) > 1) { %>
+                    <%= for (session) in sessions { %>
+                        <%= if (!session.IsCurrent) { %>
+                            <div class="session-card">
+                                <div class="card-body">
+                                    <div class="session-info">
+                                        <div class="session-icon">
+                                            <%= if (session.Platform == "mobile") { %>
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                                </svg>
+                                            <% } else if (session.Platform == "tablet") { %>
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                                </svg>
+                                            <% } else { %>
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                                </svg>
+                                            <% } %>
+                                        </div>
+                                        <div class="session-details">
+                                            <h3>
+                                                <%= if (session.UserAgent) { %>
+                                                    <%= parseUserAgent(session.UserAgent) %>
+                                                <% } else { %>
+                                                    Unknown Device
+                                                <% } %>
+                                            </h3>
+                                            <p class="session-location">
+                                                IP: <%= session.IPAddress || "Unknown" %>
+                                            </p>
+                                            <p class="session-time">
+                                                Last active: <%= formatTime(session.LastActivityAt) %>
+                                                <%= if (session.IsExpired()) { %>
+                                                    <span class="badge badge-warning">Expired</span>
+                                                <% } %>
+                                            </p>
+                                        </div>
+                                        <div class="session-actions">
+                                            <form action="/sessions/<%= session.ID %>/revoke" method="POST" class="revoke-form">
+                                                <%= csrf() %>
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    Revoke
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% } %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                        <h3>No other active sessions</h3>
+                        <p>You're only logged in on this device</p>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="security-notice">
+                <div class="notice-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <div class="notice-content">
+                    <h4>Security Tip</h4>
+                    <p>
+                        If you see any unfamiliar sessions, revoke them immediately and change your password.
+                        Sessions are automatically expired after 30 days of inactivity.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Session Settings -->
+            <div class="session-settings">
+                <h2>Session Settings</h2>
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Session Timeout</h3>
+                            <p>Automatically log out after period of inactivity</p>
+                        </div>
+                        <select class="form-control form-control-sm" style="width: auto;">
+                            <option value="30">30 minutes</option>
+                            <option value="60" selected>1 hour</option>
+                            <option value="240">4 hours</option>
+                            <option value="480">8 hours</option>
+                            <option value="1440">24 hours</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h3>Remember Me Duration</h3>
+                            <p>How long to stay logged in with "Remember Me"</p>
+                        </div>
+                        <select class="form-control form-control-sm" style="width: auto;">
+                            <option value="7">7 days</option>
+                            <option value="30" selected>30 days</option>
+                            <option value="60">60 days</option>
+                            <option value="90">90 days</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sessions-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .sessions-header {
+        margin-bottom: 40px;
+    }
+
+    .sessions-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 32px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .sessions-subtitle {
+        color: #666;
+        font-size: 16px;
+    }
+
+    .sessions-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .session-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .current-session {
+        border: 2px solid #4CAF50;
+    }
+
+    .card-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    .session-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .session-icon {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        background: #f0f0f0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+    }
+
+    .session-details {
+        flex-grow: 1;
+    }
+
+    .session-details h3 {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .session-location,
+    .session-time {
+        margin: 2px 0;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .session-actions {
+        flex-shrink: 0;
+    }
+
+    .revoke-form {
+        margin: 0;
+    }
+
+    .sessions-list {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .list-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .list-header h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .sessions-list .session-card {
+        box-shadow: none;
+        border-radius: 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .sessions-list .session-card:last-child {
+        border-bottom: none;
+    }
+
+    .empty-state {
+        padding: 60px 24px;
+        text-align: center;
+        color: #999;
+    }
+
+    .empty-state svg {
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        font-weight: 500;
+        color: #666;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge-primary {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c0392b;
+    }
+
+    .security-notice {
+        display: flex;
+        gap: 16px;
+        padding: 20px;
+        background: #e8f4f8;
+        border-radius: 8px;
+        border: 1px solid #b8e0e8;
+    }
+
+    .notice-icon {
+        flex-shrink: 0;
+        color: #0288d1;
+    }
+
+    .notice-content h4 {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .notice-content p {
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+        line-height: 1.5;
+    }
+
+    .session-settings {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+    }
+
+    .session-settings h2 {
+        margin: 0 0 20px 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .settings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .setting-info h3 {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .setting-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .form-control {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    @media (max-width: 640px) {
+        .session-info {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .session-actions {
+            margin-top: 16px;
+        }
+
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .form-control {
+            width: 100% !important;
+        }
+    }
+</style>
+
+<script>
+function revokeAllSessions() {
+    if (confirm('Are you sure you want to revoke all other sessions? You will remain logged in on this device.')) {
+        // In a real app, this would make an API call
+        fetch('/sessions/revoke-all', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            }
+        }).then(() => {
+            window.location.reload();
+        });
+    }
+}
+
+function parseUserAgent(ua) {
+    // Simple user agent parsing
+    if (ua.includes('Chrome')) return 'Google Chrome';
+    if (ua.includes('Firefox')) return 'Mozilla Firefox';
+    if (ua.includes('Safari')) return 'Safari';
+    if (ua.includes('Edge')) return 'Microsoft Edge';
+    return 'Web Browser';
+}
+
+function formatTime(timestamp) {
+    // Format timestamp relative to now
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    if (days < 30) return `${days} day${days !== 1 ? 's' : ''} ago`;
+
+    return date.toLocaleDateString();
+}
+</script>

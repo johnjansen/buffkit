@@ -16,6 +16,9 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
+	"io/fs"
+	"net/http"
+	"os"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/johnjansen/buffkit/auth"
@@ -27,6 +30,12 @@ import (
 	"github.com/johnjansen/buffkit/secure"
 	"github.com/johnjansen/buffkit/ssr"
 )
+
+//go:embed templates/*
+var templatesFS embed.FS
+
+//go:embed public/*
+var publicFS embed.FS
 
 // Config holds all configuration for Buffkit packages.
 // This is the main configuration struct that controls how Buffkit behaves.
@@ -166,6 +175,40 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 	app.POST("/login", auth.LoginHandler)
 	app.POST("/logout", auth.LogoutHandler)
 
+	// Registration routes
+	app.GET("/register", auth.RegistrationFormHandler)
+	app.POST("/register", auth.RegistrationHandler)
+
+	// Add rate limiting to auth endpoints
+	if authStore != nil {
+		if extStore, ok := kit.AuthStore.(auth.ExtendedUserStore); ok {
+			// Use database-backed rate limiting if extended store is available
+			app.Use(auth.DBRateLimitMiddleware(extStore))
+		} else {
+			// Use in-memory rate limiting as fallback
+			app.Use(auth.RateLimitMiddleware(auth.NewRateLimiter()))
+		}
+	}
+
+	// Email verification
+	app.GET("/verify-email", auth.EmailVerificationHandler)
+
+	// Password reset routes
+	app.GET("/forgot-password", auth.ForgotPasswordFormHandler)
+	app.POST("/forgot-password", auth.ForgotPasswordHandler)
+	app.GET("/reset-password", auth.ResetPasswordFormHandler)
+	app.POST("/reset-password", auth.ResetPasswordHandler)
+
+	// Profile routes (protected)
+	profileGroup := app.Group("/profile")
+	profileGroup.Use(auth.RequireLogin)
+	profileGroup.GET("/", auth.ProfileHandler)
+	profileGroup.POST("/", auth.ProfileUpdateHandler)
+
+	// Session management (protected)
+	app.GET("/sessions", auth.RequireLogin(auth.SessionsHandler))
+	app.POST("/sessions/{session_id}/revoke", auth.RequireLogin(auth.RevokeSessionHandler))
+
 	// Initialize background job processing if Redis is configured.
 	// Jobs use Asynq which requires Redis for queue management.
 	// If Redis isn't available, job enqueuing becomes a no-op.
@@ -178,6 +221,13 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 
 		// Register default job handlers (email sending, cleanup tasks, etc.)
 		runtime.RegisterDefaults()
+
+		// Register authentication background jobs
+		if kit.AuthStore != nil {
+			if extStore, ok := kit.AuthStore.(auth.ExtendedUserStore); ok {
+				auth.RegisterAuthJobs(runtime.Mux, extStore)
+			}
+		}
 	}
 
 	// Initialize mail sending.
@@ -250,6 +300,12 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 			// to send real-time updates to connected clients.
 			c.Set("broker", kit.Broker)
 
+			// Add buffkit reference for auth email sending
+			c.Set("buffkit", kit)
+
+			// Add mail sender for direct access
+			c.Set("mail_sender", kit.Mail)
+
 			// Add import map helper for templates.
 			// Templates can call <%= importmap() %> to render the
 			// import map script tag with all configured pins.
@@ -268,6 +324,24 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 			return next(c)
 		}
 	})
+
+	// Set up template override system.
+	// Set up template override system.
+	// Buffkit templates are embedded and added first, then app templates
+	// override them. This allows apps to shadow any Buffkit template.
+	// Note: Template override system requires Buffalo app configuration
+	// that may not be directly accessible. This is a placeholder for
+	// future implementation when Buffalo provides better access to internals.
+
+	// Set up static asset override system.
+	// Similar to templates, Buffkit's assets are served first,
+	// then app's assets can override them.
+	publicRoot, err := fs.Sub(publicFS, "public")
+	if err == nil {
+		// Mount Buffkit's embedded assets
+		// Convert fs.FS to http.FileSystem
+		app.ServeFiles("/", http.FS(publicRoot))
+	}
 
 	// Initialize database migrations if database is configured.
 	// The migration runner handles applying SQL migrations in order.
@@ -345,4 +419,13 @@ func NewMigrationRunner(db *sql.DB, migrationFS embed.FS, dialect string) *migra
 // This is useful for debugging and ensuring compatibility.
 func Version() string {
 	return "0.1.0-alpha"
+}
+
+// dirExists checks if a directory exists
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
 }
