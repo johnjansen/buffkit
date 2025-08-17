@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"os"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/johnjansen/buffkit/auth"
@@ -30,9 +29,6 @@ import (
 	"github.com/johnjansen/buffkit/secure"
 	"github.com/johnjansen/buffkit/ssr"
 )
-
-//go:embed templates/*
-var templatesFS embed.FS
 
 //go:embed public/*
 var publicFS embed.FS
@@ -419,13 +415,4 @@ func NewMigrationRunner(db *sql.DB, migrationFS embed.FS, dialect string) *migra
 // This is useful for debugging and ensuring compatibility.
 func Version() string {
 	return "0.1.0-alpha"
-}
-
-// dirExists checks if a directory exists
-func dirExists(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return info.IsDir()
 }

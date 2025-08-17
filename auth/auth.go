@@ -449,7 +449,7 @@ func CurrentUser(c buffalo.Context) *User {
 	user, err := store.ByID(c.Request().Context(), userID)
 	if err != nil {
 		// User doesn't exist anymore, clear session
-		ClearUserSession(c)
+		_ = ClearUserSession(c)
 		return nil
 	}
 
