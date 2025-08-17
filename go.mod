@@ -4,16 +4,21 @@ go 1.23.0
 
 require (
 	github.com/cucumber/godog v0.15.1
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gobuffalo/buffalo v1.1.0
 	github.com/gobuffalo/envy v1.10.2
+	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/hibiken/asynq v0.24.1
+	github.com/lib/pq v1.10.9
 	github.com/markbates/grift v1.5.0
 	github.com/mattn/go-sqlite3 v1.14.32
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.41.0
 	golang.org/x/net v0.43.0
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -37,7 +42,6 @@ require (
 	github.com/gobuffalo/plush/v4 v4.1.19 // indirect
 	github.com/gobuffalo/refresh v1.13.3 // indirect
 	github.com/gobuffalo/tags/v3 v3.1.4 // indirect
-	github.com/gobuffalo/validate v2.0.4+incompatible // indirect
 	github.com/gobuffalo/validate/v3 v3.3.3 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

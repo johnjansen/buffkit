@@ -357,6 +357,11 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 		})
 	}
 
+	// Set global Kit reference for Grift tasks
+	// This allows CLI tasks like buffkit:migrate and jobs:worker
+	// to access the configured runtime components
+	SetGlobalKit(kit)
+
 	return kit, nil
 }
 
