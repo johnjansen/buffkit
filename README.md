@@ -44,6 +44,14 @@ We've developed a structured 4-step approach for building features with AI agent
 
 This process leverages the strengths of both human intuition and AI precision, ensuring features are well-thought-out before implementation while maintaining the rapid development cycles that agents enable.
 
+### The "Hands-Off" Experiment
+
+We're deliberately taking a **hands-off approach** to the actual coding—spending all our time convincing and teaching the LLM, then leaving it entirely to write the code. We'll sanity check the system as a whole later. This will undoubtedly fail in several ways, but it's a necessary experiment.
+
+If we ever want to achieve a truly agentic engineer capable of delivering based on architecture or product requirements, we need to solve the fundamental challenge of conveying acceptance criteria—from loose specifications to detailed implementation plans, and everything in between. This requires constantly "bludgeoning" the LLM into doing what we want, the way we want it.
+
+It's completely naive to think that basic rules and memory are sufficient. True thought and reasoning involve almost constant self-reflection, analogous comparison, and continual learning. This experiment pushes the boundaries of what's possible when we treat the AI as the primary implementer while humans focus entirely on specification, guidance, and architectural decision-making.
+
 ---
 
 > **⚠️ ALPHA STATUS - v0.1.0-alpha**
