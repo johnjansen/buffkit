@@ -19,11 +19,14 @@
 
 </div>
 
-> **⚠️ WARNING: EARLY DEVELOPMENT - NOT READY FOR USE**
+> **⚠️ ALPHA STATUS - v0.1.0-alpha**
 > 
-> This project is in very early development and is **NOT FUNCTIONAL** yet. The API is unstable, features are incomplete, and breaking changes will occur frequently. Do not use this in any production or serious development work.
+> This project is in alpha. Core features are functional but the API may still change. Missing pieces:
+> - Grift/CLI tasks for migrations and jobs
+> - Some migration SQL files
+> - Production deployment guides
 > 
-> This README documents the intended design and API, not the current implementation.
+> Most features documented below are implemented and working.
 
 An opinionated SSR-first stack for Buffalo (Go) that brings Rails-like batteries to server-rendered applications — without the bloat.
 
@@ -40,15 +43,17 @@ Think of it as Rails' conventions and developer experience, but built for Go's p
 
 ## Features
 
-### Core Packages
+### Core Packages (✅ = Complete, 🚧 = In Progress)
 
-- **🔄 SSR** - Server-sent events broker with fragment helpers for real-time updates
-- **🔐 Auth** - Session-based authentication with customizable user store
-- **📬 Mail** - Email sending with SMTP support and dev preview
-- **⚡ Jobs** - Background job processing via Asynq (Redis-backed)
-- **📦 Import Maps** - CDN-first JavaScript management without bundlers
-- **🛡️ Security** - Secure headers, CSRF protection, and safe defaults
-- **🧩 Components** - Server-side custom elements (`<bk-*>`) with slots
+- **✅ SSR** - Server-sent events broker with reconnection, RenderPartial helper for fragments
+- **✅ Auth** - Full authentication system with registration, login, sessions, password reset
+- **✅ Mail** - SMTP and dev sender, preview at `/__mail/preview` in dev mode
+- **✅ Jobs** - Asynq integration with email and session cleanup handlers
+- **✅ Import Maps** - Pin/unpin, vendor support, content hashing
+- **✅ Security** - Headers via unrolled/secure, CSRF middleware
+- **✅ Components** - Server-side `<bk-*>` components with slots
+- **✅ Migrations** - Multi-dialect support (PostgreSQL, MySQL, SQLite)
+- **🚧 CLI Tasks** - Grift tasks for migrations and workers (not yet implemented)
 
 ### Philosophy
 
