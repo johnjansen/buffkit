@@ -19,6 +19,19 @@
 
 </div>
 
+## 🤖 Agentic Development Trial
+
+**This project represents an experimental approach to software development using AI agents.** We're using BDD-based specifications to deliver a moderately complex problem in a short time frame. This is a proving ground for an agentic development process that leverages:
+
+- **[Zed.dev](https://zed.dev)** and **[Warp.dev](https://warp.dev)** as our primary development interfaces
+- **Anthropic Claude Sonnet 4** doing the actual development work
+- **Graphiti MCP server** for persistent agent memory and learning
+- A self-evolving set of rules that guide the AI and enable continuous improvement
+
+We hope this will eventually become a useful tool, but for now it serves as a testbed for exploring how AI agents can effectively collaborate in complex software development tasks.
+
+---
+
 > **⚠️ ALPHA STATUS - v0.1.0-alpha**
 > 
 > This project is in alpha. Core features are functional but the API may still change. Missing pieces:
