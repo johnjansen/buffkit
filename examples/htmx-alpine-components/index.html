@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuffKit - HTMX + Alpine.js Component Examples</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Custom styles for transitions -->
+    <style>
+        [x-cloak] { display: none !important; }
+
+        .htmx-indicator {
+            opacity: 0;
+            transition: opacity 200ms ease-in-out;
+        }
+
+        .htmx-request .htmx-indicator {
+            opacity: 1;
+        }
+
+        .htmx-request.htmx-indicator {
+            opacity: 1;
+        }
+    </style>
+
+    <!-- Alpine.js Components -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            // Dropdown component
+            Alpine.data('dropdown', () => ({
+                open: false,
+                toggle() {
+                    this.open = !this.open
+                },
+                close() {
+                    this.open = false
+                }
+            }))
+
+            // Modal component
+            Alpine.data('modal', () => ({
+                open: false,
+                showModal() {
+                    this.open = true
+                    document.body.style.overflow = 'hidden'
+                },
+                hideModal() {
+                    this.open = false
+                    document.body.style.overflow = ''
+                }
+            }))
+
+            // Tabs component
+            Alpine.data('tabs', () => ({
+                activeTab: 0,
+                selectTab(index) {
+                    this.activeTab = index
+                }
+            }))
+
+            // Notification component
+            Alpine.data('notification', () => ({
+                show: false,
+                message: '',
+                type: 'info',
+                showNotification(message, type = 'info') {
+                    this.message = message
+                    this.type = type
+                    this.show = true
+                    setTimeout(() => {
+                        this.show = false
+                    }, 3000)
+                }
+            }))
+        })
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Global notification area -->
+    <div x-data="notification()"
+         @show-notification.window="showNotification($event.detail.message, $event.detail.type)"
+         class="fixed top-4 right-4 z-50">
+        <div x-show="show"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="transform translate-x-full opacity-0"
+             x-transition:enter-end="transform translate-x-0 opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="transform translate-x-0 opacity-100"
+             x-transition:leave-end="transform translate-x-full opacity-0"
+             :class="{
+                 'bg-green-500': type === 'success',
+                 'bg-red-500': type === 'error',
+                 'bg-blue-500': type === 'info',
+                 'bg-yellow-500': type === 'warning'
+             }"
+             class="text-white px-6 py-3 rounded-lg shadow-lg">
+            <span x-text="message"></span>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold mb-8 text-gray-900">BuffKit Component Examples</h1>
+        <p class="text-lg text-gray-600 mb-12">HTMX + Alpine.js + Tailwind CSS = Simple, Powerful Components</p>
+
+        <!-- Example 1: Dropdown (Alpine-only) -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">1. Dropdown Component (Alpine.js)</h2>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div x-data="dropdown()" class="relative inline-block">
+                    <button @click="toggle()"
+                            :aria-expanded="open"
+                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                        Options Menu
+                        <svg class="inline-block ml-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         @click.outside="close()"
+                         class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50"
+                         style="display: none;">
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Edit</a>
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Duplicate</a>
+                            <hr class="my-1">
+                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Archive</a>
+                            <a href="#" class="block px-4 py-2 text-red-600 hover:bg-gray-100">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 2: Search (HTMX-powered) -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. Live Search (HTMX)</h2>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <p class="text-sm text-gray-600 mb-4">Note: This example simulates server responses inline for demo purposes</p>
+                <div class="max-w-md">
+                    <input type="search"
+                           name="q"
+                           placeholder="Search for users..."
+                           hx-post="/search-demo"
+                           hx-trigger="keyup changed delay:500ms, search"
+                           hx-target="#search-results"
+                           hx-indicator="#search-indicator"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+
+                    <div id="search-indicator" class="htmx-indicator mt-2">
+                        <div class="flex items-center text-gray-500">
+                            <svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Searching...
+                        </div>
+                    </div>
+
+                    <div id="search-results" class="mt-4">
+                        <!-- Search results will appear here -->
+                        <p class="text-gray-500 text-sm">Start typing to search...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 3: Modal (Hybrid) -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">3. Modal Dialog (Alpine.js + HTMX)</h2>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div x-data="modal()">
+                    <button @click="showModal()"
+                            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">
+                        Open Modal
+                    </button>
+
+                    <!-- Modal backdrop and content -->
+                    <div x-show="open"
+                         x-cloak
+                         class="fixed inset-0 z-50 overflow-y-auto">
+                        <!-- Backdrop -->
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             @click="hideModal()"
+                             class="fixed inset-0 bg-black bg-opacity-50"></div>
+
+                        <!-- Modal content -->
+                        <div class="relative min-h-screen flex items-center justify-center p-4">
+                            <div x-show="open"
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="transform scale-95 opacity-0"
+                                 x-transition:enter-end="transform scale-100 opacity-100"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="transform scale-100 opacity-100"
+                                 x-transition:leave-end="transform scale-95 opacity-0"
+                                 @click.stop
+                                 class="relative bg-white rounded-lg max-w-md w-full p-6">
+
+                                <h3 class="text-lg font-semibold mb-4">Modal Title</h3>
+
+                                <div hx-get="/modal-content-demo"
+                                     hx-trigger="intersect once"
+                                     hx-indicator="#modal-loading">
+                                    <div id="modal-loading" class="htmx-indicator">
+                                        <div class="animate-pulse">
+                                            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">
+                                        This modal content could be loaded dynamically via HTMX when opened.
+                                    </p>
+                                </div>
+
+                                <div class="flex justify-end space-x-2">
+                                    <button @click="hideModal()"
+                                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                                        Cancel
+                                    </button>
+                                    <button @click="hideModal(); $dispatch('show-notification', {message: 'Action confirmed!', type: 'success'})"
+                                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 4: Tabs (Alpine-only) -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">4. Tabs Component (Alpine.js)</h2>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div x-data="tabs()">
+                    <!-- Tab buttons -->
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8">
+                            <button @click="selectTab(0)"
+                                    :class="{'border-blue-500 text-blue-600': activeTab === 0, 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 0}"
+                                    class="py-2 px-1 border-b-2 font-medium text-sm transition">
+                                Tab 1
+                            </button>
+                            <button @click="selectTab(1)"
+                                    :class="{'border-blue-500 text-blue-600': activeTab === 1, 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 1}"
+                                    class="py-2 px-1 border-b-2 font-medium text-sm transition">
+                                Tab 2
+                            </button>
+                            <button @click="selectTab(2)"
+                                    :class="{'border-blue-500 text-blue-600': activeTab === 2, 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 2}"
+                                    class="py-2 px-1 border-b-2 font-medium text-sm transition">
+                                Tab 3
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab panels -->
+                    <div class="mt-4">
+                        <div x-show="activeTab === 0" x-transition>
+                            <p class="text-gray-600">Content for Tab 1. This could contain any HTML or even load content via HTMX.</p>
+                        </div>
+                        <div x-show="activeTab === 1" x-transition style="display: none;">
+                            <p class="text-gray-600">Content for Tab 2. Each tab maintains its own state.</p>
+                        </div>
+                        <div x-show="activeTab === 2" x-transition style="display: none;">
+                            <p class="text-gray-600">Content for Tab 3. Tabs work entirely client-side with Alpine.js.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 5: Form with validation (HTMX + Alpine) -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">5. Enhanced Form (HTMX + Alpine.js)</h2>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <form hx-post="/form-demo"
+                      hx-target="#form-result"
+                      x-data="{ loading: false, email: '', emailValid: true }"
+                      @htmx:before-request="loading = true"
+                      @htmx:after-request="loading = false"
+                      @submit.prevent
+                      class="max-w-md">
+
+                    <div class="mb-4">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                            Email Address
+                        </label>
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               x-model="email"
+                               @blur="emailValid = email.includes('@')"
+                               :class="{'border-red-500': !emailValid && email.length > 0}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                               required>
+                        <p x-show="!emailValid && email.length > 0"
+                           x-transition
+                           class="mt-1 text-sm text-red-600">
+                            Please enter a valid email address.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+                            Message
+                        </label>
+                        <textarea id="message"
+                                  name="message"
+                                  rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                  required></textarea>
+                    </div>
+
+                    <button type="submit"
+                            :disabled="loading || !emailValid"
+                            class="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition">
+                        <span x-show="!loading">Submit Form</span>
+                        <span x-show="loading" class="flex items-center justify-center">
+                            <svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+
+                    <div id="form-result" class="mt-4">
+                        <!-- Form submission result appears here -->
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Example 6: Accordion (Alpine-only) -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">6. Accordion Component (Alpine.js)</h2>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="space-y-2">
+                    <!-- Accordion Item 1 -->
+                    <div x-data="{ open: false }" class="border border-gray-200 rounded-lg">
+                        <button @click="open = !open"
+                                :aria-expanded="open"
+                                class="w-full px-4 py-3 text-left flex justify-between items-center hover:bg-gray-50">
+                            <span class="font-medium">What is HTMX?</span>
+                            <svg class="h-5 w-5 transition-transform" :class="{'rotate-180': open}" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 transform translate-y-0"
+                             x-transition:leave-end="opacity-0 transform -translate-y-2"
+                             class="px-4 pb-3">
+                            <p class="text-gray-600">HTMX allows you to access modern browser features directly from HTML, rather than using JavaScript. It enables AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML using attributes.</p>
+                        </div>
+                    </div>
+
+                    <!-- Accordion Item 2 -->
+                    <div x-data="{ open: false }" class="border border-gray-200 rounded-lg">
+                        <button @click="open = !open"
+                                :aria-expanded="open"
+                                class="w-full px-4 py-3 text-left flex justify-between items-center hover:bg-gray-50">
+                            <span class="font-medium">What is Alpine.js?</span>
+                            <svg class="h-5 w-5 transition-transform" :class="{'rotate-180': open}" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 transform translate-y-0"
+                             x-transition:leave-end="opacity-0 transform -translate-y-2"
+                             class="px-4 pb-3">
+                            <p class="text-gray-600">Alpine.js is a rugged, minimal framework for composing JavaScript behavior in your markup. It offers reactive and declarative nature of big frameworks like Vue or React at a much lower cost.</p>
+                        </div>
+                    </div>
+
+                    <!-- Accordion Item 3 -->
+                    <div x-data="{ open: false }" class="border border-gray-200 rounded-lg">
+                        <button @click="open = !open"
+                                :aria-expanded="open"
+                                class="w-full px-4 py-3 text-left flex justify-between items-center hover:bg-gray-50">
+                            <span class="font-medium">Why combine them?</span>
+                            <svg class="h-5 w-5 transition-transform" :class="{'rotate-180': open}" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 transform translate-y-0"
+                             x-transition:leave-end="opacity-0 transform -translate-y-2"
+                             class="px-4 pb-3">
+                            <p class="text-gray-600">HTMX handles server communication while Alpine.js handles client-side interactivity. Together, they provide a complete solution without the complexity of a full JavaScript framework. Both work directly in HTML with no build step required.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo note -->
+        <div class="mt-12 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="text-sm text-yellow-800">
+                <strong>Note:</strong> This is a static demo page. In a real BuffKit application, HTMX endpoints would be handled by the Go server, returning HTML fragments for dynamic updates. The Alpine.js components work fully client-side and don't require server interaction.
+            </p>
+        </div>
+    </div>
+
+    <!-- Simulate HTMX responses for demo (normally these would be server endpoints) -->
+    <script>
+        // Intercept HTMX requests for demo purposes
+        document.body.addEventListener('htmx:beforeRequest', function(event) {
+            if (event.detail.pathInfo.requestPath === '/search-demo') {
+                event.preventDefault();
+                const searchTerm = event.detail.parameters.q;
+
+                setTimeout(() => {
+                    const results = searchTerm ? `
+                        <div class="space-y-2">
+                            <div class="p-3 bg-gray-50 rounded">
+                                <div class="font-medium">John Doe</div>
+                                <div class="text-sm text-gray-600">john.doe@example.com</div>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded">
+                                <div class="font-medium">Jane Smith</div>
+                                <div class="text-sm text-gray-600">jane.smith@example.com</div>
+                            </div>
+                        </div>
+                    ` : '<p class="text-gray-500 text-sm">Start typing to search...</p>';
+
+                    document.getElementById('search-results').innerHTML = results;
+                }, 300);
+            }
+
+            if (event.detail.pathInfo.requestPath === '/form-demo') {
+                event.preventDefault();
+
+                setTimeout(() => {
+                    document.getElementById('form-result').innerHTML = `
+                        <div class="p-3 bg-green-50 border border-green-200 rounded">
+                            <p class="text-green-800">Form submitted successfully!</p>
+                        </div>
+                    `;
+
+                    // Trigger notification
+                    window.dispatchEvent(new CustomEvent('show-notification', {
+                        detail: { message: 'Form submitted!', type: 'success' }
+                    }));
+                }, 500);
+            }
+
+            if (event.detail.pathInfo.requestPath === '/modal-content-demo') {
+                event.preventDefault();
+                // Modal content is already shown, just remove loading indicator
+                setTimeout(() => {
+                    document.getElementById('modal-loading').style.display = 'none';
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
