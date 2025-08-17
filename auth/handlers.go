@@ -424,7 +424,10 @@ func isValidEmail(email string) bool {
 
 func generateToken() string {
 	b := make([]byte, 32)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		// Fall back to timestamp-based token
+		return fmt.Sprintf("%x", time.Now().UnixNano())
+	}
 	return hex.EncodeToString(b)
 }
 

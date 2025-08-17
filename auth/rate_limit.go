@@ -101,7 +101,7 @@ func RateLimitMiddleware(limiter *RateLimiter) buffalo.MiddlewareFunc {
 					// Only record failed attempts for login/reset endpoints
 					// Buffalo doesn't expose status directly, so we track it differently
 					// This will be called after the handler completes
-					limiter.RecordAttempt(ip, email)
+					_ = limiter.RecordAttempt(ip, email)
 				}()
 			}
 
@@ -396,7 +396,7 @@ func DBRateLimitMiddleware(store ExtendedUserStore) buffalo.MiddlewareFunc {
 					// For now, always record the attempt
 					// In production, you'd track success via context or wrapper
 					success := false
-					limiter.RecordAttempt(ctx, ip, email, success)
+					_ = limiter.RecordAttempt(ctx, ip, email, success)
 				}()
 			}
 

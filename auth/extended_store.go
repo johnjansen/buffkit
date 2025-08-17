@@ -428,7 +428,7 @@ func (s *SQLStore) GetSession(ctx context.Context, token string) (*Session, erro
 	}
 
 	if len(dataJSON) > 0 {
-		json.Unmarshal(dataJSON, &session.Data)
+		_ = json.Unmarshal(dataJSON, &session.Data)
 	}
 
 	return session, nil
@@ -505,7 +505,7 @@ func (s *SQLStore) ListUserSessions(ctx context.Context, userID string) ([]*Sess
 		}
 
 		if len(dataJSON) > 0 {
-			json.Unmarshal(dataJSON, &session.Data)
+			_ = json.Unmarshal(dataJSON, &session.Data)
 		}
 
 		sessions = append(sessions, session)
@@ -587,7 +587,7 @@ func (s *SQLStore) GetUserAuditLogs(ctx context.Context, userID string, limit in
 		}
 
 		if len(metadataJSON) > 0 {
-			json.Unmarshal(metadataJSON, &log.Metadata)
+			_ = json.Unmarshal(metadataJSON, &log.Metadata)
 		}
 
 		logs = append(logs, log)

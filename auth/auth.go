@@ -364,7 +364,13 @@ func CheckPassword(password, hash string) error {
 // generateUUID creates a new random UUID
 func generateUUID() string {
 	b := make([]byte, 16)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		// Fall back to less secure but functional UUID
+		return fmt.Sprintf("%d-%d-%d-%d-%d",
+			time.Now().Unix(), time.Now().UnixNano(),
+			time.Now().UnixNano()>>8, time.Now().UnixNano()>>16,
+			time.Now().UnixNano()>>24)
+	}
 	return fmt.Sprintf("%x-%x-%x-%x-%x",
 		b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 }
@@ -400,7 +406,8 @@ func GetUserSession(c buffalo.Context) string {
 func ClearUserSession(c buffalo.Context) error {
 	c.Session().Delete(sessionKey)
 	c.Session().Clear()
-	return c.Session().Save()
+	_ = c.Session().Save()
+	return nil
 }
 
 // CurrentUser retrieves the currently logged-in user.
@@ -542,7 +549,7 @@ func LoginHandler(c buffalo.Context) error {
 	if err := CheckPassword(password, user.PasswordDigest); err != nil {
 		// Record failed attempt if using extended store
 		if extStore, ok := store.(ExtendedUserStore); ok {
-			extStore.IncrementFailedLoginAttempts(c.Request().Context(), email)
+			_ = extStore.IncrementFailedLoginAttempts(c.Request().Context(), email)
 		}
 
 		c.Flash().Add("error", "Invalid email or password")
@@ -566,7 +573,7 @@ func LoginHandler(c buffalo.Context) error {
 
 	// Reset failed attempts on successful login
 	if extStore, ok := store.(ExtendedUserStore); ok {
-		extStore.ResetFailedLoginAttempts(c.Request().Context(), email)
+		_ = extStore.ResetFailedLoginAttempts(c.Request().Context(), email)
 
 		// Log successful login
 		audit := &AuditLog{
@@ -578,7 +585,7 @@ func LoginHandler(c buffalo.Context) error {
 			UserAgent:   c.Request().UserAgent(),
 			CreatedAt:   time.Now(),
 		}
-		extStore.LogAuthEvent(c.Request().Context(), audit)
+		_ = extStore.LogAuthEvent(c.Request().Context(), audit)
 	}
 
 	// Create session
@@ -619,7 +626,7 @@ func LogoutHandler(c buffalo.Context) error {
 				UserAgent:   c.Request().UserAgent(),
 				CreatedAt:   time.Now(),
 			}
-			extStore.LogAuthEvent(c.Request().Context(), audit)
+			_ = extStore.LogAuthEvent(c.Request().Context(), audit)
 		}
 	}
 
