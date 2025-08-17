@@ -51,6 +51,7 @@ type TestSuite struct {
 	lastEvent   *ssr.Event
 	eventType   string
 	eventData   string
+	shared      *SharedContext // Add shared context for universal assertions
 }
 
 // Reset clears the test state between scenarios
@@ -63,6 +64,9 @@ func (ts *TestSuite) Reset() {
 	ts.error = nil
 	ts.version = ""
 	ts.broker = nil
+	if ts.shared != nil {
+		ts.shared.Reset()
+	}
 	ts.clients = make(map[string]*ssr.Client)
 	ts.clientCount = 0
 }
@@ -257,7 +261,20 @@ func (ts *TestSuite) iVisit(path string) error {
 	}
 	ts.request = req
 	ts.response = httptest.NewRecorder()
+
+	// Sync with shared context
+	if ts.shared != nil {
+		ts.shared.Request = req
+		ts.shared.Response = ts.response
+	}
+
 	ts.app.ServeHTTP(ts.response, req)
+
+	// Capture response in shared context for universal assertions
+	if ts.shared != nil && ts.response != nil {
+		ts.shared.CaptureHTTPResponse(ts.response)
+	}
+
 	return nil
 }
 
@@ -269,7 +286,46 @@ func (ts *TestSuite) iSubmitAPOSTRequestTo(path string) error {
 	}
 	ts.request = req
 	ts.response = httptest.NewRecorder()
+
+	// Sync with shared context
+	if ts.shared != nil {
+		ts.shared.Request = req
+		ts.shared.Response = ts.response
+	}
+
 	ts.app.ServeHTTP(ts.response, req)
+
+	// Capture response in shared context
+	if ts.shared != nil && ts.response != nil {
+		ts.shared.CaptureHTTPResponse(ts.response)
+	}
+
+	return nil
+}
+
+// Step: When I connect to the SSE endpoint
+func (ts *TestSuite) iConnectToTheSSEEndpoint() error {
+	req, err := http.NewRequest("GET", "/sse", nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Accept", "text/event-stream")
+	ts.request = req
+	ts.response = httptest.NewRecorder()
+
+	// Sync with shared context
+	if ts.shared != nil {
+		ts.shared.Request = req
+		ts.shared.Response = ts.response
+	}
+
+	ts.app.ServeHTTP(ts.response, req)
+
+	// Capture response in shared context
+	if ts.shared != nil && ts.response != nil {
+		ts.shared.CaptureHTTPResponse(ts.response)
+	}
+
 	return nil
 }
 
@@ -1012,6 +1068,12 @@ func (ts *TestSuite) iBroadcastAnEventWithData(eventType, data string) error {
 func (ts *TestSuite) allConnectedClientsShouldReceiveTheEvent() error {
 	if len(ts.clients) == 0 {
 		return fmt.Errorf("no clients connected")
+	}
+
+	// Store event data in shared context for assertions
+	if ts.shared != nil && ts.lastEvent != nil {
+		eventJSON := fmt.Sprintf(`{"type":"%s","data":"%s"}`, ts.eventType, ts.eventData)
+		ts.shared.CaptureOutput(eventJSON)
 	}
 
 	receivedCount := 0
@@ -1791,8 +1853,11 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ts := &TestSuite{}
 
-	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		ts.Reset()
+		if ts.shared != nil {
+			ts.shared.Cleanup()
+		}
 		return ctx, nil
 	})
 

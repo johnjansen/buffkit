@@ -1,0 +1,548 @@
+package features
+
+import (
+	"bytes"
+	"context"
+	"database/sql"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
+
+	"github.com/cucumber/godog"
+	"github.com/gobuffalo/buffalo"
+
+	// Import database drivers
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
+)
+
+// SharedContext provides common test functionality for all test suites
+type SharedContext struct {
+	// Output from any operation (HTML rendering, CLI commands, HTTP responses, etc.)
+	Output       string
+	ErrorOutput  string
+	ExitCode     int
+	LastError    error
+	ResponseCode int
+
+	// HTTP testing
+	Response *httptest.ResponseRecorder
+	Request  *http.Request
+	App      *buffalo.App
+
+	// CLI command execution
+	LastCmd     *exec.Cmd
+	WorkingDir  string
+	Environment map[string]string
+	TempDirs    []string
+
+	// Database for testing
+	TestDB       *sql.DB
+	DBDialect    string
+	DBConnString string
+
+	// Cleanup functions
+	CleanupFuncs []func()
+}
+
+// NewSharedContext creates a new shared test context
+func NewSharedContext() *SharedContext {
+	return &SharedContext{
+		Environment:  make(map[string]string),
+		CleanupFuncs: make([]func(), 0),
+		TempDirs:     make([]string, 0),
+	}
+}
+
+// Cleanup runs all cleanup functions
+func (c *SharedContext) Cleanup() {
+	for i := len(c.CleanupFuncs) - 1; i >= 0; i-- {
+		if fn := c.CleanupFuncs[i]; fn != nil {
+			fn()
+		}
+	}
+	// Clean up temp directories
+	for _, dir := range c.TempDirs {
+		os.RemoveAll(dir)
+	}
+}
+
+// Reset clears the context for a new scenario
+func (c *SharedContext) Reset() {
+	c.Output = ""
+	c.ErrorOutput = ""
+	c.ExitCode = 0
+	c.LastError = nil
+	c.ResponseCode = 0
+	c.Response = nil
+	c.Request = nil
+	c.LastCmd = nil
+}
+
+// =============================================================================
+// UNIVERSAL STEP DEFINITIONS
+// =============================================================================
+
+// TheOutputShouldContain checks if any output contains the expected text
+// This handles: standard output, error output, HTTP response body, rendered HTML
+func (c *SharedContext) TheOutputShouldContain(expected string) error {
+	// Check all possible outputs
+	outputs := []struct {
+		name   string
+		output string
+	}{
+		{"output", c.Output},
+		{"error output", c.ErrorOutput},
+	}
+
+	// If we have an HTTP response, check that too
+	if c.Response != nil {
+		outputs = append(outputs, struct {
+			name   string
+			output string
+		}{"HTTP response", c.Response.Body.String()})
+	}
+
+	// Check each output source
+	for _, out := range outputs {
+		if strings.Contains(out.output, expected) {
+			return nil // Found it!
+		}
+	}
+
+	// Not found in any output - provide helpful error
+	allOutput := c.getAllOutput()
+	if allOutput == "" {
+		return fmt.Errorf("expected output to contain %q but no output was captured", expected)
+	}
+
+	// Show what we actually got for debugging
+	preview := allOutput
+	if len(preview) > 500 {
+		preview = preview[:500] + "... (truncated)"
+	}
+	return fmt.Errorf("output does not contain %q\nActual output:\n%s", expected, preview)
+}
+
+// TheOutputShouldNotContain checks that no output contains the unexpected text
+func (c *SharedContext) TheOutputShouldNotContain(unexpected string) error {
+	allOutput := c.getAllOutput()
+	if strings.Contains(allOutput, unexpected) {
+		// Find which output contains it for better error message
+		location := "output"
+		if strings.Contains(c.ErrorOutput, unexpected) {
+			location = "error output"
+		} else if c.Response != nil && strings.Contains(c.Response.Body.String(), unexpected) {
+			location = "HTTP response"
+		}
+
+		preview := allOutput
+		if len(preview) > 500 {
+			preview = preview[:500] + "... (truncated)"
+		}
+		return fmt.Errorf("%s contains unexpected text %q\nActual output:\n%s", location, unexpected, preview)
+	}
+	return nil
+}
+
+// TheOutputShouldMatch checks if output matches a regex pattern
+func (c *SharedContext) TheOutputShouldMatch(pattern string) error {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid regex pattern %q: %w", pattern, err)
+	}
+
+	allOutput := c.getAllOutput()
+	if !re.MatchString(allOutput) {
+		preview := allOutput
+		if len(preview) > 500 {
+			preview = preview[:500] + "... (truncated)"
+		}
+		return fmt.Errorf("output does not match pattern %q\nActual output:\n%s", pattern, preview)
+	}
+	return nil
+}
+
+// TheErrorOutputShouldContain specifically checks error output
+func (c *SharedContext) TheErrorOutputShouldContain(expected string) error {
+	if !strings.Contains(c.ErrorOutput, expected) {
+		if c.ErrorOutput == "" {
+			return fmt.Errorf("expected error output to contain %q but no error output was captured", expected)
+		}
+		return fmt.Errorf("error output does not contain %q\nActual error output:\n%s", expected, c.ErrorOutput)
+	}
+	return nil
+}
+
+// =============================================================================
+// ENVIRONMENT AND SETUP
+// =============================================================================
+
+// ISetEnvironmentVariable sets an environment variable for command execution
+func (c *SharedContext) ISetEnvironmentVariable(key, value string) error {
+	c.Environment[key] = value
+	return nil
+}
+
+// IHaveACleanDatabase sets up a fresh test database
+func (c *SharedContext) IHaveACleanDatabase() error {
+	tempDir, err := os.MkdirTemp("", "buffkit-test-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temp dir: %w", err)
+	}
+	c.TempDirs = append(c.TempDirs, tempDir)
+
+	dbPath := filepath.Join(tempDir, "test.db")
+	c.DBConnString = dbPath
+	c.DBDialect = "sqlite3"
+
+	// Set environment variable for the database
+	c.Environment["DATABASE_URL"] = fmt.Sprintf("sqlite3://%s", dbPath)
+
+	// Open connection to verify it works
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return fmt.Errorf("failed to open test database: %w", err)
+	}
+	c.TestDB = db
+	c.CleanupFuncs = append(c.CleanupFuncs, func() {
+		db.Close()
+	})
+
+	return nil
+}
+
+// IHaveAWorkingDirectory sets the working directory for commands
+func (c *SharedContext) IHaveAWorkingDirectory(dir string) error {
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to create working directory: %w", err)
+	}
+	c.WorkingDir = dir
+	c.TempDirs = append(c.TempDirs, dir)
+	return nil
+}
+
+// =============================================================================
+// COMMAND EXECUTION
+// =============================================================================
+
+// IRunCommand executes a CLI command
+func (c *SharedContext) IRunCommand(command string) error {
+	return c.IRunCommandWithTimeout(command, 30)
+}
+
+// IRunCommandWithTimeout executes a CLI command with a timeout in seconds
+func (c *SharedContext) IRunCommandWithTimeout(command string, timeoutSeconds int) error {
+	// Reset outputs
+	c.Output = ""
+	c.ErrorOutput = ""
+	c.ExitCode = 0
+	c.LastError = nil
+
+	// Parse command
+	parts := strings.Fields(command)
+	if len(parts) == 0 {
+		return fmt.Errorf("empty command")
+	}
+
+	// Create command with context for timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+
+	c.LastCmd = exec.CommandContext(ctx, parts[0], parts[1:]...)
+
+	// Set up output capture
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	c.LastCmd.Stdout = stdout
+	c.LastCmd.Stderr = stderr
+
+	// Set environment
+	c.LastCmd.Env = os.Environ()
+	for k, v := range c.Environment {
+		c.LastCmd.Env = append(c.LastCmd.Env, fmt.Sprintf("%s=%s", k, v))
+	}
+
+	// Set working directory if specified
+	if c.WorkingDir != "" {
+		c.LastCmd.Dir = c.WorkingDir
+	}
+
+	// Execute command
+	err := c.LastCmd.Run()
+	c.LastError = err
+
+	// Capture outputs
+	c.Output = stdout.String()
+	c.ErrorOutput = stderr.String()
+
+	// Get exit code
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			c.ExitCode = exitErr.ExitCode()
+		} else {
+			c.ExitCode = -1
+		}
+	} else {
+		c.ExitCode = 0
+	}
+
+	return nil
+}
+
+// TheExitCodeShouldBe checks the command exit code
+func (c *SharedContext) TheExitCodeShouldBe(expected int) error {
+	if c.ExitCode != expected {
+		return fmt.Errorf("exit code was %d, expected %d\nStdout: %s\nStderr: %s",
+			c.ExitCode, expected, c.Output, c.ErrorOutput)
+	}
+	return nil
+}
+
+// =============================================================================
+// HTML/COMPONENT RENDERING
+// =============================================================================
+
+// IRenderHTMLContaining simulates rendering HTML (usually through a component system)
+func (c *SharedContext) IRenderHTMLContaining(html string) error {
+	// For now, just store the HTML as output
+	// In a real implementation, this would process through the component system
+	c.Output = html
+
+	// TODO: Process through actual component registry if available
+	// This is a placeholder that should be replaced with actual component rendering
+
+	return nil
+}
+
+// =============================================================================
+// HTTP TESTING
+// =============================================================================
+
+// IVisit makes an HTTP GET request to a path
+func (c *SharedContext) IVisit(path string) error {
+	req, err := http.NewRequest("GET", path, nil)
+	if err != nil {
+		return err
+	}
+	c.Request = req
+	c.Response = httptest.NewRecorder()
+
+	// If we have an app, use it to handle the request
+	if c.App != nil {
+		c.App.ServeHTTP(c.Response, req)
+		c.Output = c.Response.Body.String()
+		c.ResponseCode = c.Response.Code
+	}
+
+	return nil
+}
+
+// ISubmitAPostRequestTo makes an HTTP POST request
+func (c *SharedContext) ISubmitAPostRequestTo(path string) error {
+	req, err := http.NewRequest("POST", path, nil)
+	if err != nil {
+		return err
+	}
+	c.Request = req
+	c.Response = httptest.NewRecorder()
+
+	// If we have an app, use it to handle the request
+	if c.App != nil {
+		c.App.ServeHTTP(c.Response, req)
+		c.Output = c.Response.Body.String()
+		c.ResponseCode = c.Response.Code
+	}
+
+	return nil
+}
+
+// TheResponseStatusShouldBe checks the HTTP response status code
+func (c *SharedContext) TheResponseStatusShouldBe(expected int) error {
+	if c.Response == nil {
+		return fmt.Errorf("no HTTP response captured")
+	}
+	if c.Response.Code != expected {
+		return fmt.Errorf("response status was %d, expected %d", c.Response.Code, expected)
+	}
+	return nil
+}
+
+// TheContentTypeShouldBe checks the response content type
+func (c *SharedContext) TheContentTypeShouldBe(expected string) error {
+	if c.Response == nil {
+		return fmt.Errorf("no HTTP response captured")
+	}
+	actual := c.Response.Header().Get("Content-Type")
+	if !strings.Contains(actual, expected) {
+		return fmt.Errorf("content type was %q, expected to contain %q", actual, expected)
+	}
+	return nil
+}
+
+// =============================================================================
+// FILE SYSTEM
+// =============================================================================
+
+// AFileShouldExist checks if a file exists
+func (c *SharedContext) AFileShouldExist(path string) error {
+	fullPath := path
+	if c.WorkingDir != "" && !filepath.IsAbs(path) {
+		fullPath = filepath.Join(c.WorkingDir, path)
+	}
+
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return fmt.Errorf("file does not exist: %s", fullPath)
+	}
+	return nil
+}
+
+// TheFileShouldContain checks if a file contains expected text
+func (c *SharedContext) TheFileShouldContain(path, expected string) error {
+	fullPath := path
+	if c.WorkingDir != "" && !filepath.IsAbs(path) {
+		fullPath = filepath.Join(c.WorkingDir, path)
+	}
+
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		return fmt.Errorf("failed to read file %s: %w", fullPath, err)
+	}
+
+	if !strings.Contains(string(content), expected) {
+		return fmt.Errorf("file %s does not contain %q", fullPath, expected)
+	}
+	return nil
+}
+
+// =============================================================================
+// DATABASE
+// =============================================================================
+
+// TheMigrationsTableShouldExist checks if migrations table was created
+func (c *SharedContext) TheMigrationsTableShouldExist() error {
+	if c.TestDB == nil {
+		return fmt.Errorf("no test database connection")
+	}
+
+	var tableName string
+	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='buffkit_migrations'`
+	err := c.TestDB.QueryRow(query).Scan(&tableName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("migrations table does not exist")
+		}
+		return fmt.Errorf("failed to check migrations table: %w", err)
+	}
+
+	if tableName != "buffkit_migrations" {
+		return fmt.Errorf("expected table 'buffkit_migrations', got '%s'", tableName)
+	}
+
+	return nil
+}
+
+// =============================================================================
+// HELPER METHODS
+// =============================================================================
+
+// getAllOutput combines all output sources for searching
+func (c *SharedContext) getAllOutput() string {
+	outputs := []string{}
+
+	if c.Output != "" {
+		outputs = append(outputs, c.Output)
+	}
+	if c.ErrorOutput != "" {
+		outputs = append(outputs, c.ErrorOutput)
+	}
+	if c.Response != nil && c.Response.Body.Len() > 0 {
+		outputs = append(outputs, c.Response.Body.String())
+	}
+
+	return strings.Join(outputs, "\n")
+}
+
+// SetHTTPApp sets the Buffalo app for HTTP testing
+func (c *SharedContext) SetHTTPApp(app *buffalo.App) {
+	c.App = app
+}
+
+// CaptureOutput sets the output directly (for integration with existing tests)
+func (c *SharedContext) CaptureOutput(output string) {
+	c.Output = output
+}
+
+// CaptureErrorOutput sets the error output directly
+func (c *SharedContext) CaptureErrorOutput(output string) {
+	c.ErrorOutput = output
+}
+
+// CaptureHTTPResponse captures an HTTP response for testing
+func (c *SharedContext) CaptureHTTPResponse(w io.Writer) {
+	if recorder, ok := w.(*httptest.ResponseRecorder); ok {
+		c.Response = recorder
+		c.Output = recorder.Body.String()
+		c.ResponseCode = recorder.Code
+	}
+}
+
+// =============================================================================
+// REGISTRATION
+// =============================================================================
+
+// RegisterSharedSteps registers all shared step definitions with godog
+func RegisterSharedSteps(ctx *godog.ScenarioContext, shared *SharedContext) {
+	// Output assertions - support both single and double quotes
+	ctx.Step(`^the output should contain "([^"]*)"$`, shared.TheOutputShouldContain)
+	ctx.Step(`^the output should contain '([^']*)'$`, shared.TheOutputShouldContain)
+	ctx.Step(`^the output should not contain "([^"]*)"$`, shared.TheOutputShouldNotContain)
+	ctx.Step(`^the output should not contain '([^']*)'$`, shared.TheOutputShouldNotContain)
+	ctx.Step(`^the output should match "([^"]*)"$`, shared.TheOutputShouldMatch)
+	ctx.Step(`^the error output should contain "([^"]*)"$`, shared.TheErrorOutputShouldContain)
+	ctx.Step(`^the error output should contain '([^']*)'$`, shared.TheErrorOutputShouldContain)
+
+	// Environment and setup
+	ctx.Step(`^I set environment variable "([^"]*)" to "([^"]*)"$`, shared.ISetEnvironmentVariable)
+	ctx.Step(`^I set environment variable '([^']*)' to '([^']*)'$`, shared.ISetEnvironmentVariable)
+	ctx.Step(`^I have a clean database$`, shared.IHaveACleanDatabase)
+	ctx.Step(`^I have a working directory "([^"]*)"$`, shared.IHaveAWorkingDirectory)
+
+	// Command execution
+	ctx.Step(`^I run "([^"]*)"$`, shared.IRunCommand)
+	ctx.Step(`^I run '([^']*)'$`, shared.IRunCommand)
+	ctx.Step(`^I run "([^"]*)" with timeout (\d+) seconds$`, shared.IRunCommandWithTimeout)
+	ctx.Step(`^the exit code should be (\d+)$`, shared.TheExitCodeShouldBe)
+
+	// HTML/Component rendering
+	ctx.Step(`^I render HTML containing "([^"]*)"$`, shared.IRenderHTMLContaining)
+	ctx.Step(`^I render HTML containing '([^']*)'$`, shared.IRenderHTMLContaining)
+
+	// HTTP testing
+	ctx.Step(`^I visit "([^"]*)"$`, shared.IVisit)
+	ctx.Step(`^I submit a POST request to "([^"]*)"$`, shared.ISubmitAPostRequestTo)
+	ctx.Step(`^the response status should be (\d+)$`, shared.TheResponseStatusShouldBe)
+	ctx.Step(`^the content type should be "([^"]*)"$`, shared.TheContentTypeShouldBe)
+
+	// File system
+	ctx.Step(`^a file "([^"]*)" should exist$`, shared.AFileShouldExist)
+	ctx.Step(`^the file "([^"]*)" should contain "([^"]*)"$`, shared.TheFileShouldContain)
+
+	// Database
+	ctx.Step(`^the migrations table should exist$`, shared.TheMigrationsTableShouldExist)
+
+	// Cleanup after each scenario
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		shared.Cleanup()
+		shared.Reset()
+		return ctx, nil
+	})
+}

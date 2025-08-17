@@ -10,7 +10,12 @@ import (
 func TestAllFeatures(t *testing.T) {
 	suite := godog.TestSuite{
 		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
-			// Initialize all scenario suites
+			// Create a shared bridge that provides common step definitions
+			bridge := NewSharedBridge()
+			bridge.RegisterBridgedSteps(ctx)
+
+			// Initialize feature-specific scenario suites
+			// These work alongside the shared bridge
 			InitializeScenario(ctx)                // Basic scenarios from steps_test.go
 			InitializeBasicScenario(ctx)           // Basic integration from basic_test.go
 			InitializeSSEReconnectionScenario(ctx) // SSE reconnection from sse_reconnection_test.go

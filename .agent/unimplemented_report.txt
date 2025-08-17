@@ -1,0 +1,789 @@
+=== Buffkit BDD Step Implementation Check ===
+
+📊 Summary:
+   Total step definitions: 305
+   Implemented: 305
+   Unimplemented: 0
+   Feature steps: 575
+   Undefined steps: 324
+
+⚠️  Undefined Steps (in features but no step definition):
+   Pattern: the application is wired with DevMode set to true
+      - ../features/development_mode.feature:11: the application is wired with DevMode set to true
+
+   Pattern: the content type should be "..."
+      - ../features/server_sent_events.feature:12: the content type should be "text/event-stream"
+
+   Pattern: client A is connected with session "..."
+      - ../features/sse_reconnection.feature:67: client A is connected with session "session-A"
+
+   Pattern: client B remains connected
+      - ../features/sse_reconnection.feature:71: client B remains connected
+
+   Pattern: N clients disconnect simultaneously
+      - ../features/sse_reconnection.feature:98: 50 clients disconnect simultaneously
+
+   Pattern: buffers should be cleaned up according to TTL
+      - ../features/sse_reconnection.feature:101: buffers should be cleaned up according to TTL
+
+   Pattern: I should see my active sessions
+      - ../features/authentication_enhanced.feature:116: I should see my active sessions
+
+   Pattern: I render HTML containing "..."
+      - ../features/components.feature:13: I render HTML containing "<bk-button>Click me</bk-button>"
+      - ../features/components.feature:51: I render HTML containing "<bk-alert>This is a warning message</bk-alert>"
+      - ../features/components.feature:91: I render HTML containing "<bk-unknown>Content</bk-unknown>"
+      - ../features/components.feature:97: I render HTML containing "<bk-button>Unclosed tag"
+      - ../features/components.feature:197: I render HTML containing "<bk-card>Content</bk-card>"
+      - ../features/components.feature:204: I render HTML containing "<bk-card>Content</bk-card>"
+
+   Pattern: the output should contain 'data-state="..."'
+      - ../features/components.feature:77: the output should contain 'data-state="closed"'
+
+   Pattern: the output should maintain line breaks
+      - ../features/components.feature:229: the output should maintain line breaks
+
+   Pattern: DevMode is false and I send an email
+      - ../features/development_mode.feature:63: DevMode is false and I send an email
+
+   Pattern: I submit a POST request to "..."
+      - ../features/authentication.feature:15: I submit a POST request to "/login"
+      - ../features/authentication.feature:20: I submit a POST request to "/logout"
+
+   Pattern: the JSON should be returned unchanged
+      - ../features/components.feature:125: the JSON should be returned unchanged
+
+   Pattern: the output should not contain component boundary comments
+      - ../features/components.feature:205: the output should not contain component boundary comments
+
+   Pattern: I should receive events "..." through "..." in order
+      - ../features/sse_reconnection.feature:34: I should receive events "11" through "15" in order
+
+   Pattern: I reconnect with Last-Event-ID "..."
+      - ../features/sse_reconnection.feature:125: I reconnect with Last-Event-ID "2"
+
+   Pattern: I am connected and tracking received event IDs
+      - ../features/sse_reconnection.feature:122: I am connected and tracking received event IDs
+
+   Pattern: the output should contain 'id="..."'
+      - ../features/components.feature:131: the output should contain 'id="submit-btn"'
+
+   Pattern: I visit "..."
+      - ../features/authentication.feature:10: I visit "/login"
+      - ../features/authentication_enhanced.feature:12: I visit "/register"
+      - ../features/authentication_enhanced.feature:42: I visit "/verify-email?token=invalid"
+      - ../features/authentication_enhanced.feature:54: I visit "/forgot-password"
+      - ../features/authentication_enhanced.feature:95: I visit "/profile"
+      - ../features/authentication_enhanced.feature:101: I visit "/profile"
+      - ../features/authentication_enhanced.feature:109: I visit "/profile"
+      - ../features/authentication_enhanced.feature:115: I visit "/sessions"
+      - ../features/authentication_enhanced.feature:127: I visit "/sessions"
+      - ../features/authentication_enhanced.feature:204: I visit "/login"
+      - ../features/development_mode.feature:12: I visit "/__mail/preview"
+      - ../features/development_mode.feature:19: I visit "/__mail/preview"
+
+   Pattern: each reconnection should be handled gracefully
+      - ../features/sse_reconnection.feature:60: each reconnection should be handled gracefully
+
+   Pattern: no email should be sent
+      - ../features/authentication_enhanced.feature:68: no email should be sent
+
+   Pattern: I submit mismatched passwords
+      - ../features/authentication_enhanced.feature:82: I submit mismatched passwords
+
+   Pattern: the original HTML should be preserved
+      - ../features/components.feature:99: the original HTML should be preserved
+
+   Pattern: the expansion should complete within 100ms
+      - ../features/components.feature:118: the expansion should complete within 100ms
+
+   Pattern: the output should contain 'role="..."'
+      - ../features/components.feature:158: the output should contain 'role="dialog"'
+
+   Pattern: the client should receive only new events
+      - ../features/sse_reconnection.feature:116: the client should receive only new events
+
+   Pattern: I attempt to login
+      - ../features/authentication_enhanced.feature:157: I attempt to login
+
+   Pattern: I should see password strength requirements
+      - ../features/authentication_enhanced.feature:212: I should see password strength requirements
+      - ../features/authentication_enhanced.feature:218: I should see password strength requirements
+
+   Pattern: the output should contain 'data-component="..."'
+      - ../features/components.feature:31: the output should contain 'data-component="dropdown"'
+      - ../features/components.feature:76: the output should contain 'data-component="dropdown"'
+
+   Pattern: the output should contain HTML comments marking component boundaries
+      - ../features/components.feature:198: the output should contain HTML comments marking component boundaries
+
+   Pattern: the output should contain 'data-initial-tab="..."'
+      - ../features/components.feature:235: the output should contain 'data-initial-tab="2"'
+
+   Pattern: I disconnect for an extended period
+      - ../features/sse_reconnection.feature:41: I disconnect for an extended period
+
+   Pattern: replayed events should be marked with a "..." flag
+      - ../features/sse_reconnection.feature:91: replayed events should be marked with a "replayed" flag
+
+   Pattern: my session should end when browser closes
+      - ../features/authentication_enhanced.feature:200: my session should end when browser closes
+
+   Pattern: the component should be properly expanded
+      - ../features/components.feature:216: the component should be properly expanded
+
+   Pattern: the "..." flag is enabled
+      - ../features/components.feature:241: the "new-ui" flag is enabled
+
+   Pattern: I should receive the most recent N events
+      - ../features/sse_reconnection.feature:45: I should receive the most recent 100 events
+
+   Pattern: subsequent reconnection attempts should create a new session
+      - ../features/sse_reconnection.feature:54: subsequent reconnection attempts should create a new session
+
+   Pattern: I should see a rate limit error message
+      - ../features/authentication_enhanced.feature:134: I should see a rate limit error message
+      - ../features/authentication_enhanced.feature:139: I should see a rate limit error message
+
+   Pattern: the output should contain expanded card HTML
+      - ../features/components.feature:67: the output should contain expanded card HTML
+
+   Pattern: I should receive event "..." only once
+      - ../features/sse_reconnection.feature:126: I should receive event "3" only once
+
+   Pattern: it should include timestamp, IP, and result
+      - ../features/authentication_enhanced.feature:159: it should include timestamp, IP, and result
+
+   Pattern: the output should contain 'data-turbo="..."'
+      - ../features/components.feature:132: the output should contain 'data-turbo="false"'
+
+   Pattern: the page reloads and re-establishes SSE connection
+      - ../features/sse_reconnection.feature:80: the page reloads and re-establishes SSE connection
+
+   Pattern: the output should contain 'hx-post="..."'
+      - ../features/components.feature:172: the output should contain 'hx-post="/api/save"'
+
+   Pattern: I am connected to SSE
+      - ../features/sse_reconnection.feature:58: I am connected to SSE
+
+   Pattern: the component should not be expanded
+      - ../features/components.feature:98: the component should not be expanded
+
+   Pattern: the default component should be replaced
+      - ../features/components.feature:191: the default component should be replaced
+
+   Pattern: I send an email with subject "..."
+      - ../features/development_mode.feature:25: I send an email with subject "Test Email"
+      - ../features/development_mode.feature:26: I send an email with subject "Another Test"
+
+   Pattern: I render HTML containing '<bk-button variant="..." size="...">Submit</PATH
+      - ../features/components.feature:20: I render HTML containing '<bk-button variant="primary" size="large">Submit</bk-button>'
+
+   Pattern: the output should contain appropriate classes for "..."
+      - ../features/components.feature:145: the output should contain appropriate classes for "<variant>"
+
+   Pattern: I have registered a code component
+      - ../features/components.feature:219: I have registered a code component
+
+   Pattern: I should receive the missed events "...", "...", "..." immediately
+      - ../features/sse_reconnection.feature:24: I should receive the missed events "4", "5", "6" immediately
+
+   Pattern: no events should be lost during the cycles
+      - ../features/sse_reconnection.feature:61: no events should be lost during the cycles
+
+   Pattern: that session should be invalidated
+      - ../features/authentication_enhanced.feature:122: that session should be invalidated
+
+   Pattern: I render HTML containing '<bk-modal title="...">Are you sure?</PATH
+      - ../features/components.feature:157: I render HTML containing '<bk-modal title="Confirm">Are you sure?</bk-modal>'
+
+   Pattern: I should receive any events missed during page reload
+      - ../features/sse_reconnection.feature:82: I should receive any events missed during page reload
+
+   Pattern: the server has N connected clients
+      - ../features/sse_reconnection.feature:96: the server has 100 connected clients
+
+   Pattern: I disconnect and lose connection state
+      - ../features/sse_reconnection.feature:132: I disconnect and lose connection state
+
+   Pattern: I login with remember me checked
+      - ../features/authentication_enhanced.feature:193: I login with remember me checked
+
+   Pattern: the output should not contain "..."
+      - ../features/components.feature:16: the output should not contain "bk-button"
+      - ../features/components.feature:69: the output should not contain "bk-card"
+      - ../features/components.feature:70: the output should not contain "bk-button"
+      - ../features/components.feature:105: the output should not contain "onclick"
+
+   Pattern: I connect to "..." with SSE headers
+      - ../features/server_sent_events.feature:10: I connect to "/events" with SSE headers
+
+   Pattern: I reconnect with Last-Event-ID header set to "..."
+      - ../features/sse_reconnection.feature:33: I reconnect with Last-Event-ID header set to "10"
+
+   Pattern: the output should contain 'data-track-event="..."'
+      - ../features/components.feature:30: the output should contain 'data-track-event="open"'
+
+   Pattern: a client disconnects and reconnects
+      - ../features/sse_reconnection.feature:115: a client disconnects and reconnects
+
+   Pattern: the output should contain 'aria-expanded="..."'
+      - ../features/components.feature:78: the output should contain 'aria-expanded="false"'
+
+   Pattern: I render HTML containing '<bk-button variant="...">Click</PATH
+      - ../features/components.feature:144: I render HTML containing '<bk-button variant="<variant>">Click</bk-button>'
+
+   Pattern: I wire Buffkit with an invalid Redis URL "..."
+      - ../features/buffkit_integration.feature:27: I wire Buffkit with an invalid Redis URL "redis://invalid:99999/0"
+
+   Pattern: a "..." indicator should be sent
+      - ../features/sse_reconnection.feature:118: a "no-buffer" indicator should be sent
+
+   Pattern: duplicate detection should prevent double delivery
+      - ../features/sse_reconnection.feature:127: duplicate detection should prevent double delivery
+
+   Pattern: I render HTML containing '<bk-dropdown data-test-id="..." data-track-event="...">Menu</PATH
+      - ../features/components.feature:28: I render HTML containing '<bk-dropdown data-test-id="menu" data-track-event="open">Menu</bk-dropdown>'
+
+   Pattern: the output should contain sanitized content
+      - ../features/components.feature:106: the output should contain sanitized content
+
+   Pattern: the event type should be "..."
+      - ../features/server_sent_events.feature:19: the event type should be "user-update"
+
+   Pattern: the password should not be changed
+      - ../features/authentication_enhanced.feature:219: the password should not be changed
+
+   Pattern: I should see both devices in sessions list
+      - ../features/authentication_enhanced.feature:226: I should see both devices in sessions list
+
+   Pattern: the output should not contain an actual script tag
+      - ../features/components.feature:112: the output should not contain an actual script tag
+
+   Pattern: older events should be marked as dropped
+      - ../features/sse_reconnection.feature:46: older events should be marked as dropped
+
+   Pattern: my connection drops and I reconnect through server B
+      - ../features/sse_reconnection.feature:141: my connection drops and I reconnect through server B
+
+   Pattern: I should get a list containing "...", "...", and "..."
+      - ../features/components.feature:185: I should get a list containing "button", "card", and "modal"
+
+   Pattern: I render HTML containing '<bk-icon name="..." /PATH
+      - ../features/components.feature:210: I render HTML containing '<bk-icon name="check" />'
+
+   Pattern: I submit a password reset request for "..."
+      - ../features/authentication_enhanced.feature:60: I submit a password reset request for "user@example.com"
+      - ../features/authentication_enhanced.feature:66: I submit a password reset request for "nonexistent@example.com"
+
+   Pattern: the registration should fail
+      - ../features/authentication_enhanced.feature:213: the registration should fail
+
+   Pattern: I render HTML containing '<bk-input type="..." required name="..." /PATH
+      - ../features/components.feature:83: I render HTML containing '<bk-input type="email" required name="user_email" />'
+
+   Pattern: I should see an expiration error
+      - ../features/authentication_enhanced.feature:89: I should see an expiration error
+
+   Pattern: the output should contain "..."
+      - ../features/cli_tasks.feature:11: the output should contain "Running migrations"
+      - ../features/cli_tasks.feature:12: the output should contain "Creating migration table"
+      - ../features/cli_tasks.feature:19: the output should contain "No pending migrations"
+      - ../features/cli_tasks.feature:25: the output should contain "Rolling back migration"
+      - ../features/cli_tasks.feature:31: the output should contain "Rolling back 1 migration"
+      - ../features/cli_tasks.feature:36: the output should contain "Migration Status"
+      - ../features/cli_tasks.feature:41: the output should contain "Starting job worker"
+      - ../features/cli_tasks.feature:42: the output should contain "Connecting to Redis"
+      - ../features/cli_tasks.feature:46: the output should contain "Starting job worker"
+      - ../features/cli_tasks.feature:47: the output should contain "Concurrency: 10"
+      - ../features/cli_tasks.feature:51: the output should contain "Starting scheduler"
+      - ../features/cli_tasks.feature:52: the output should contain "Processing scheduled jobs"
+      - ../features/cli_tasks.feature:69: the output should contain "Using MySQL dialect"
+      - ../features/cli_tasks.feature:74: the output should contain "Using PostgreSQL dialect"
+      - ../features/cli_tasks.feature:78: the output should contain "buffkit:migrate"
+      - ../features/cli_tasks.feature:79: the output should contain "buffkit:rollback"
+      - ../features/cli_tasks.feature:80: the output should contain "buffkit:status"
+      - ../features/cli_tasks.feature:81: the output should contain "buffkit:worker"
+      - ../features/cli_tasks.feature:82: the output should contain "buffkit:scheduler"
+      - ../features/cli_tasks.feature:88: the output should contain "DEBUG"
+      - ../features/cli_tasks.feature:102: the output should contain "Connected to Redis"
+      - ../features/components.feature:14: the output should contain "<button"
+      - ../features/components.feature:15: the output should contain "Click me</button>"
+      - ../features/components.feature:22: the output should contain "primary"
+      - ../features/components.feature:23: the output should contain "large"
+      - ../features/components.feature:24: the output should contain "Submit</button>"
+      - ../features/components.feature:44: the output should contain "Card Title"
+      - ../features/components.feature:45: the output should contain "Card content goes here"
+      - ../features/components.feature:46: the output should contain "Card actions"
+      - ../features/components.feature:52: the output should contain "This is a warning message"
+      - ../features/components.feature:85: the output should contain "required"
+      - ../features/components.feature:92: the output should contain "<bk-unknown>Content</bk-unknown>"
+      - ../features/components.feature:111: the output should contain "&lt;script&gt;"
+      - ../features/components.feature:137: the output should contain "disabled"
+      - ../features/components.feature:138: the output should contain "readonly"
+      - ../features/components.feature:139: the output should contain "checked"
+      - ../features/components.feature:242: the output should contain "New feature content"
+
+   Pattern: an event "..." is broadcast to all clients
+      - ../features/sse_reconnection.feature:70: an event "shared-event" is broadcast to all clients
+
+   Pattern: each client has a buffer limit of N events
+      - ../features/sse_reconnection.feature:97: each client has a buffer limit of 1000 events
+
+   Pattern: I rapidly disconnect and reconnect N times within N seconds
+      - ../features/sse_reconnection.feature:59: I rapidly disconnect and reconnect 10 times within 2 seconds
+
+   Pattern: the account should be locked
+      - ../features/authentication_enhanced.feature:145: the account should be locked
+
+   Pattern: I render HTML containing '<bk-input disabled readonly checked /PATH
+      - ../features/components.feature:136: I render HTML containing '<bk-input disabled readonly checked />'
+
+   Pattern: I render HTML containing '<bk-dropdown x-data="...">Menu</PATH
+      - ../features/components.feature:177: I render HTML containing '<bk-dropdown x-data="{ open: false }">Menu</bk-dropdown>'
+
+   Pattern: another client attempts to connect with the same session ID
+      - ../features/sse_reconnection.feature:107: another client attempts to connect with the same session ID
+
+   Pattern: the legitimate client should remain connected
+      - ../features/sse_reconnection.feature:110: the legitimate client should remain connected
+
+   Pattern: I render HTML containing '<bk-tabs default-tab="...">...</PATH
+      - ../features/components.feature:234: I render HTML containing '<bk-tabs default-tab="2">...</bk-tabs>'
+
+   Pattern: my session should be cleaned up after N seconds
+      - ../features/sse_reconnection.feature:52: my session should be cleaned up after 30 seconds
+
+   Pattern: my event buffer should be freed
+      - ../features/sse_reconnection.feature:53: my event buffer should be freed
+
+   Pattern: only one active connection should exist per session
+      - ../features/sse_reconnection.feature:62: only one active connection should exist per session
+
+   Pattern: the reset token should be invalidated
+      - ../features/authentication_enhanced.feature:76: the reset token should be invalidated
+
+   Pattern: it should record the password change event
+      - ../features/authentication_enhanced.feature:165: it should record the password change event
+
+   Pattern: I render HTML containing '<bk-text><script>alert("...")</PATH
+      - ../features/components.feature:110: I render HTML containing '<bk-text><script>alert("XSS")</script></bk-text>'
+
+   Pattern: I broadcast an event "..." with data "..."
+      - ../features/server_sent_events.feature:17: I broadcast an event "user-update" with data "Hello World"
+
+   Pattern: replayed events should maintain their original timestamps
+      - ../features/sse_reconnection.feature:90: replayed events should maintain their original timestamps
+
+   Pattern: the server should remain responsive
+      - ../features/sse_reconnection.feature:102: the server should remain responsive
+
+   Pattern: my connection metadata should be restored
+      - ../features/sse_reconnection.feature:134: my connection metadata should be restored
+
+   Pattern: no events should be duplicated
+      - ../features/sse_reconnection.feature:35: no events should be duplicated
+
+   Pattern: both servers share session state via Redis
+      - ../features/sse_reconnection.feature:142: both servers share session state via Redis
+
+   Pattern: I run "..." with timeout N seconds
+      - ../features/cli_tasks.feature:40: I run "grift buffkit:worker" with timeout 2 seconds
+      - ../features/cli_tasks.feature:45: I run "grift buffkit:worker 10" with timeout 2 seconds
+      - ../features/cli_tasks.feature:50: I run "grift buffkit:scheduler" with timeout 2 seconds
+      - ../features/cli_tasks.feature:101: I run "grift buffkit:worker" with timeout 2 seconds
+      - ../features/cli_tasks.feature:107: I run "grift buffkit:worker" with timeout 5 seconds
+
+   Pattern: the output should contain appropriate ARIA labels
+      - ../features/components.feature:87: the output should contain appropriate ARIA labels
+
+   Pattern: other clients should not be affected
+      - ../features/server_sent_events.feature:44: other clients should not be affected
+
+   Pattern: events "...", "...", "..." are broadcast during the disconnection
+      - ../features/sse_reconnection.feature:22: events "4", "5", "6" are broadcast during the disconnection
+
+   Pattern: I should receive a special "..." event
+      - ../features/sse_reconnection.feature:44: I should receive a special "buffer-overflow" event
+
+   Pattern: the events should arrive in chronological order
+      - ../features/sse_reconnection.feature:92: the events should arrive in chronological order
+
+   Pattern: I submit the profile form
+      - ../features/authentication_enhanced.feature:103: I submit the profile form
+
+   Pattern: I have the same Buffkit configuration
+      - ../features/development_mode.feature:60: I have the same Buffkit configuration
+
+   Pattern: client B should receive "..." immediately
+      - ../features/sse_reconnection.feature:72: client B should receive "shared-event" immediately
+
+   Pattern: I submit a registration with email "..." and password "..."
+      - ../features/authentication_enhanced.feature:17: I submit a registration with email "newuser@example.com" and password "SecurePass123!"
+      - ../features/authentication_enhanced.feature:23: I submit a registration with email "user@example.com" and password "weak"
+
+   Pattern: I render HTML containing '<bk-button hx-post="..." hx-target="...">Save</PATH
+      - ../features/components.feature:171: I render HTML containing '<bk-button hx-post="/api/save" hx-target="#result">Save</bk-button>'
+
+   Pattern: I should see information about:
+      - ../features/development_mode.feature:70: I should see information about:
+
+   Pattern: connection thrashing should be logged
+      - ../features/sse_reconnection.feature:63: connection thrashing should be logged
+
+   Pattern: I am connected through a load balancer to server A
+      - ../features/sse_reconnection.feature:140: I am connected through a load balancer to server A
+
+   Pattern: a user exists with email "..."
+      - ../features/authentication_enhanced.feature:28: a user exists with email "existing@example.com"
+      - ../features/authentication_enhanced.feature:59: a user exists with email "user@example.com"
+      - ../features/authentication_enhanced.feature:143: a user exists with email "user@example.com"
+
+   Pattern: I should get an error containing "..."
+      - ../features/buffkit_integration.feature:28: I should get an error containing "failed to initialize jobs"
+
+   Pattern: the component expansion should be skipped
+      - ../features/components.feature:124: the component expansion should be skipped
+
+   Pattern: the output should contain 'aria-modal="..."'
+      - ../features/components.feature:159: the output should contain 'aria-modal="true"'
+
+   Pattern: the email should be sent via SMTP
+      - ../features/development_mode.feature:64: the email should be sent via SMTP
+
+   Pattern: I have a JSON API endpoint
+      - ../features/components.feature:122: I have a JSON API endpoint
+
+   Pattern: I access diagnostic endpoints
+      - ../features/development_mode.feature:69: I access diagnostic endpoints
+
+   Pattern: I disconnect after receiving events "...", "...", "..."
+      - ../features/sse_reconnection.feature:123: I disconnect after receiving events "1", "2", "3"
+
+   Pattern: I set environment variable "..." to "..."
+      - ../features/cli_tasks.feature:55: I set environment variable "DATABASE_URL" to ""
+      - ../features/cli_tasks.feature:61: I set environment variable "DATABASE_URL" to "invalid://url"
+      - ../features/cli_tasks.feature:67: I set environment variable "DATABASE_URL" to "mysql://user:pass@localhost/testdb"
+      - ../features/cli_tasks.feature:72: I set environment variable "DATABASE_URL" to "postgres://user:pass@localhost/testdb"
+      - ../features/cli_tasks.feature:86: I set environment variable "VERBOSE" to "true"
+      - ../features/cli_tasks.feature:93: I set environment variable "MIGRATION_PATH" to "temp_migrations"
+      - ../features/cli_tasks.feature:100: I set environment variable "REDIS_URL" to "redis://localhost:6379"
+      - ../features/cli_tasks.feature:106: I set environment variable "REDIS_URL" to "redis://invalid:9999"
+
+   Pattern: I have a working directory "..."
+      - ../features/cli_tasks.feature:92: I have a working directory "temp_migrations"
+
+   Pattern: I render HTML containing multiple '<bk-input label="..." /PATH components
+      - ../features/components.feature:164: I render HTML containing multiple '<bk-input label="Email" />' components
+
+   Pattern: the output should contain 'class="'
+      - ../features/components.feature:21: the output should contain 'class="'
+
+   Pattern: the import maps should support development workflows
+      - ../features/development_mode.feature:56: the import maps should support development workflows
+
+   Pattern: I am connected and have received timestamped events
+      - ../features/sse_reconnection.feature:87: I am connected and have received timestamped events
+
+   Pattern: my buffered events should be available
+      - ../features/sse_reconnection.feature:144: my buffered events should be available
+
+   Pattern: memory usage should not exceed expected bounds
+      - ../features/sse_reconnection.feature:100: memory usage should not exceed expected bounds
+
+   Pattern: events continue to be broadcast
+      - ../features/sse_reconnection.feature:99: events continue to be broadcast
+
+   Pattern: I try to register with password "..."
+      - ../features/authentication_enhanced.feature:211: I try to register with password "password"
+
+   Pattern: the error output should contain "..."
+      - ../features/cli_tasks.feature:57: the error output should contain "database configuration"
+      - ../features/cli_tasks.feature:63: the error output should contain "unsupported database"
+      - ../features/cli_tasks.feature:95: the error output should contain "no migrations found"
+      - ../features/cli_tasks.feature:108: the error output should contain "Redis connection failed"
+
+   Pattern: I have received events with IDs "...", "...", "..."
+      - ../features/sse_reconnection.feature:20: I have received events with IDs "1", "2", "3"
+
+   Pattern: I reconnect with my session ID
+      - ../features/sse_reconnection.feature:43: I reconnect with my session ID
+      - ../features/sse_reconnection.feature:133: I reconnect with my session ID
+
+   Pattern: client B is connected with session "..."
+      - ../features/sse_reconnection.feature:68: client B is connected with session "session-B"
+
+   Pattern: I render HTML containing '<bk-button onclick="...">Click</PATH
+      - ../features/components.feature:104: I render HTML containing '<bk-button onclick="alert(1)">Click</bk-button>'
+
+   Pattern: DevMode is true and I send an email
+      - ../features/development_mode.feature:61: DevMode is true and I send an email
+
+   Pattern: subscription filters should be maintained
+      - ../features/sse_reconnection.feature:135: subscription filters should be maintained
+
+   Pattern: I attempt to login with valid credentials
+      - ../features/authentication_enhanced.feature:151: I attempt to login with valid credentials
+
+   Pattern: recently locked accounts should remain locked
+      - ../features/authentication_enhanced.feature:178: recently locked accounts should remain locked
+
+   Pattern: I have registered a button component with variants
+      - ../features/components.feature:143: I have registered a button component with variants
+
+   Pattern: I broadcast an event to specific clients
+      - ../features/server_sent_events.feature:42: I broadcast an event to specific clients
+
+   Pattern: I am connected to SSE with a buffer limit of N events
+      - ../features/sse_reconnection.feature:40: I am connected to SSE with a buffer limit of 100 events
+
+   Pattern: I try to set password "..."
+      - ../features/authentication_enhanced.feature:217: I try to set password "12345678"
+
+   Pattern: I reconnect requesting replay
+      - ../features/sse_reconnection.feature:89: I reconnect requesting replay
+
+   Pattern: I render HTML containing '<bk-avatar user-id="..." /PATH
+      - ../features/components.feature:246: I render HTML containing '<bk-avatar user-id="123" />'
+
+   Pattern: I broadcast an update event
+      - ../features/server_sent_events.feature:48: I broadcast an update event
+
+   Pattern: my session should persist across browser restarts
+      - ../features/authentication_enhanced.feature:195: my session should persist across browser restarts
+
+   Pattern: I should reconnect with the same session ID from the cookie
+      - ../features/sse_reconnection.feature:81: I should reconnect with the same session ID from the cookie
+
+   Pattern: no preview should be generated
+      - ../features/development_mode.feature:65: no preview should be generated
+
+   Pattern: only targeted clients should receive the event
+      - ../features/server_sent_events.feature:43: only targeted clients should receive the event
+
+   Pattern: I am connected to SSE with a session cookie
+      - ../features/sse_reconnection.feature:78: I am connected to SSE with a session cookie
+
+   Pattern: the version should contain "..."
+      - ../features/buffkit_integration.feature:33: the version should contain "alpha"
+
+   Pattern: I render HTML containing '<bk-dropdown>Menu</PATH
+      - ../features/components.feature:75: I render HTML containing '<bk-dropdown>Menu</bk-dropdown>'
+
+   Pattern: the custom component should be used for rendering
+      - ../features/components.feature:190: the custom component should be used for rendering
+
+   Pattern: I render HTML containing '<bk-progress-bar value="..." /PATH
+      - ../features/components.feature:215: I render HTML containing '<bk-progress-bar value="50" />'
+
+   Pattern: the output should preserve the indentation
+      - ../features/components.feature:228: the output should preserve the indentation
+
+   Pattern: I refresh the browser page
+      - ../features/sse_reconnection.feature:79: I refresh the browser page
+
+   Pattern: the output should contain 'data-test-id="..."'
+      - ../features/components.feature:29: the output should contain 'data-test-id="menu"'
+
+   Pattern: I have registered a text component
+      - ../features/components.feature:109: I have registered a text component
+
+   Pattern: I have registered a modal component
+      - ../features/components.feature:156: I have registered a modal component
+
+   Pattern: the component should fetch user data during rendering
+      - ../features/components.feature:247: the component should fetch user data during rendering
+
+   Pattern: I disconnect and don't reconnect for N seconds
+      - ../features/sse_reconnection.feature:51: I disconnect and don't reconnect for 35 seconds
+
+   Pattern: the login should succeed
+      - ../features/authentication_enhanced.feature:152: the login should succeed
+
+   Pattern: I am logged in on multiple devices
+      - ../features/authentication_enhanced.feature:229: I am logged in on multiple devices
+
+   Pattern: I should get an error "..."
+      - ../features/buffkit_integration.feature:20: I should get an error "AuthSecret is required"
+      - ../features/buffkit_integration.feature:24: I should get an error "AuthSecret is required"
+
+   Pattern: the output should contain the rendered icon HTML
+      - ../features/components.feature:211: the output should contain the rendered icon HTML
+
+   Pattern: the connection attempt should be rejected
+      - ../features/sse_reconnection.feature:108: the connection attempt should be rejected
+
+   Pattern: I should successfully reconnect on server B
+      - ../features/sse_reconnection.feature:143: I should successfully reconnect on server B
+
+   Pattern: I update my name to "..."
+      - ../features/authentication_enhanced.feature:102: I update my name to "New Name"
+
+   Pattern: I render HTML containing '<bk-feature flag="...">New feature content</PATH
+      - ../features/components.feature:240: I render HTML containing '<bk-feature flag="new-ui">New feature content</bk-feature>'
+
+   Pattern: the output should contain the user's avatar URL
+      - ../features/components.feature:248: the output should contain the user's avatar URL
+
+   Pattern: the event data should be "..."
+      - ../features/server_sent_events.feature:20: the event data should be "Hello World"
+
+   Pattern: I have registered a form field component
+      - ../features/components.feature:163: I have registered a form field component
+
+   Pattern: the response content-type is "..."
+      - ../features/components.feature:123: the response content-type is "application/json"
+
+   Pattern: I am connected with custom headers and query parameters
+      - ../features/sse_reconnection.feature:131: I am connected with custom headers and query parameters
+
+   Pattern: the handoff should be transparent
+      - ../features/sse_reconnection.feature:145: the handoff should be transparent
+
+   Pattern: I should be redirected to forgot password
+      - ../features/authentication_enhanced.feature:90: I should be redirected to forgot password
+
+   Pattern: a client is connected with session ID "..."
+      - ../features/sse_reconnection.feature:106: a client is connected with session ID "legitimate-session"
+
+   Pattern: client preferences should persist
+      - ../features/sse_reconnection.feature:136: client preferences should persist
+
+   Pattern: SSE reconnection is configured with buffer size N
+      - ../features/sse_reconnection.feature:114: SSE reconnection is configured with buffer size 0
+
+   Pattern: event "..." is still in the buffer when I reconnect
+      - ../features/sse_reconnection.feature:124: event "3" is still in the buffer when I reconnect
+
+   Pattern: I submit a registration with email "..."
+      - ../features/authentication_enhanced.feature:29: I submit a registration with email "existing@example.com"
+
+   Pattern: I make N failed login attempts for that user
+      - ../features/authentication_enhanced.feature:144: I make 5 failed login attempts for that user
+
+   Pattern: I am connected to SSE with session ID "..."
+      - ../features/sse_reconnection.feature:19: I am connected to SSE with session ID "test-session-123"
+      - ../features/sse_reconnection.feature:30: I am connected to SSE with session ID "test-session-456"
+      - ../features/sse_reconnection.feature:50: I am connected to SSE with session ID "test-session-789"
+
+   Pattern: I run "..."
+      - ../features/cli_tasks.feature:10: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:17: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:18: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:23: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:24: I run "grift buffkit:rollback"
+      - ../features/cli_tasks.feature:29: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:30: I run "grift buffkit:rollback 1"
+      - ../features/cli_tasks.feature:35: I run "grift buffkit:status"
+      - ../features/cli_tasks.feature:56: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:62: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:68: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:73: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:77: I run "grift list"
+      - ../features/cli_tasks.feature:87: I run "grift buffkit:migrate"
+      - ../features/cli_tasks.feature:94: I run "grift buffkit:migrate"
+
+   Pattern: I render HTML with N component instances
+      - ../features/components.feature:117: I render HTML with 100 component instances
+
+   Pattern: no replay should occur
+      - ../features/sse_reconnection.feature:117: no replay should occur
+
+   Pattern: the mail system should receive a send request
+      - ../features/authentication_enhanced.feature:183: the mail system should receive a send request
+      - ../features/authentication_enhanced.feature:188: the mail system should receive a send request
+
+   Pattern: the output should contain 'type="..."'
+      - ../features/components.feature:84: the output should contain 'type="email"'
+
+   Pattern: I have registered multiple components
+      - ../features/components.feature:116: I have registered multiple components
+
+   Pattern: the event sequence should be continuous
+      - ../features/sse_reconnection.feature:36: the event sequence should be continuous
+
+   Pattern: I have an htmx-enabled page connected to SSE
+      - ../features/server_sent_events.feature:47: I have an htmx-enabled page connected to SSE
+
+   Pattern: client A disconnects
+      - ../features/sse_reconnection.feature:69: client A disconnects
+
+   Pattern: client A should receive "..." upon reconnection
+      - ../features/sse_reconnection.feature:73: client A should receive "shared-event" upon reconnection
+
+   Pattern: a security event should be logged
+      - ../features/sse_reconnection.feature:109: a security event should be logged
+
+   Pattern: the email should be captured for preview
+      - ../features/development_mode.feature:62: the email should be captured for preview
+
+   Pattern: no page refresh should be required
+      - ../features/server_sent_events.feature:50: no page refresh should be required
+
+   Pattern: I have received events up to ID "..."
+      - ../features/sse_reconnection.feature:31: I have received events up to ID "10"
+
+   Pattern: I disconnect and multiple events occur with timestamps
+      - ../features/sse_reconnection.feature:88: I disconnect and multiple events occur with timestamps
+
+   Pattern: the output should contain 'name="..."'
+      - ../features/components.feature:86: the output should contain 'name="user_email"'
+
+   Pattern: I send an HTML email with content "..."
+      - ../features/development_mode.feature:33: I send an HTML email with content "<h1>Welcome</h1>"
+
+   Pattern: N events are broadcast while disconnected
+      - ../features/sse_reconnection.feature:42: 150 events are broadcast while disconnected
+
+   Pattern: I make changes to templates or assets
+      - ../features/development_mode.feature:54: I make changes to templates or assets
+
+   Pattern: the changes should be reflected without restart
+      - ../features/development_mode.feature:55: the changes should be reflected without restart
+
+   Pattern: I have multiple clients with different interests
+      - ../features/server_sent_events.feature:41: I have multiple clients with different interests
+
+   Pattern: I disconnect and events "..." through "..." are broadcast
+      - ../features/sse_reconnection.feature:32: I disconnect and events "11" through "15" are broadcast
+
+   Pattern: the transition should be seamless
+      - ../features/sse_reconnection.feature:83: the transition should be seamless
+
+   Pattern: I submit a new password "..."
+      - ../features/authentication_enhanced.feature:74: I submit a new password "NewSecurePass123!"
+
+   Pattern: the output should contain 'x-data="..."'
+      - ../features/components.feature:178: the output should contain 'x-data="{ open: false }"'
+
+   Pattern: I login without remember me checked
+      - ../features/authentication_enhanced.feature:198: I login without remember me checked
+
+   Pattern: the output should contain expanded button HTML
+      - ../features/components.feature:68: the output should contain expanded button HTML
+
+   Pattern: the output should contain 'aria-labelledby='
+      - ../features/components.feature:160: the output should contain 'aria-labelledby='
+
+   Pattern: the output should contain data attributes for progressive enhancement
+      - ../features/components.feature:179: the output should contain data attributes for progressive enhancement
+
+   Pattern: I have registered a component named "..."
+      - ../features/components.feature:214: I have registered a component named "progress-bar"
+
+   Pattern: asset serving should prioritize development speed
+      - ../features/development_mode.feature:57: asset serving should prioritize development speed
+
+   Pattern: the page content should update automatically
+      - ../features/server_sent_events.feature:49: the page content should update automatically
+
+   Pattern: the buffers should remain independent
+      - ../features/sse_reconnection.feature:74: the buffers should remain independent
+
+   Pattern: I render HTML containing '<bk-button id="..." data-turbo="...">Submit</PATH
+      - ../features/components.feature:130: I render HTML containing '<bk-button id="submit-btn" data-turbo="false">Submit</bk-button>'
+
+   Pattern: the output should contain 'hx-target="..."'
+      - ../features/components.feature:173: the output should contain 'hx-target="#result"'
+
+exit status 1

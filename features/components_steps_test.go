@@ -11,7 +11,7 @@ import (
 	"github.com/johnjansen/buffkit/components"
 )
 
-// ComponentsTestSuite holds state for component testing
+// ComponentsTestSuite holds test state for component scenarios
 type ComponentsTestSuite struct {
 	app      *buffalo.App
 	kit      *buffkit.Kit
@@ -19,11 +19,14 @@ type ComponentsTestSuite struct {
 	input    string
 	output   string
 	error    error
+	shared   *SharedContext // Add shared context for universal assertions
 }
 
 // NewComponentsTestSuite creates a new test suite
 func NewComponentsTestSuite() *ComponentsTestSuite {
-	return &ComponentsTestSuite{}
+	return &ComponentsTestSuite{
+		shared: NewSharedContext(),
+	}
 }
 
 // Reset clears the test state
@@ -34,6 +37,9 @@ func (s *ComponentsTestSuite) Reset() {
 	s.input = ""
 	s.output = ""
 	s.error = nil
+	if s.shared != nil {
+		s.shared.Reset()
+	}
 }
 
 // InitializeComponentsScenario registers all component step definitions
@@ -51,12 +57,11 @@ func InitializeComponentsScenario(ctx *godog.ScenarioContext) {
 
 	// Basic rendering steps
 	ctx.Step(`^I have registered a button component$`, suite.iHaveRegisteredButtonComponent)
-	ctx.Step(`^I render HTML containing "([^"]*)"$`, suite.iRenderHTMLContaining)
+	// Note: "I render HTML containing" is handled by shared context
 	ctx.Step(`^I render HTML containing '<([^>]+)>'$`, suite.iRenderHTMLContainingTag)
 	ctx.Step(`^I render HTML containing:$`, suite.iRenderHTMLContainingMultiline)
-	ctx.Step(`^the output should contain "([^"]*)"$`, suite.outputShouldContain)
+	// Note: "the output should contain" is handled by shared context
 	ctx.Step(`^the output should contain '<([^>]+)>'$`, suite.outputShouldContainTag)
-	ctx.Step(`^the output should not contain "([^"]*)"$`, suite.outputShouldNotContain)
 	ctx.Step(`^the output should contain class "([^"]*)"$`, suite.outputShouldContainClass)
 	ctx.Step(`^the output should contain attribute "([^"]*)" with value "([^"]*)"$`, suite.outputShouldContainAttribute)
 	ctx.Step(`^the output should be properly structured HTML$`, suite.outputShouldBeProperHTML)
@@ -171,7 +176,6 @@ func (s *ComponentsTestSuite) iHaveRegisteredButtonComponent() error {
 }
 
 func (s *ComponentsTestSuite) iRenderHTMLContaining(html string) error {
-	s.input = html
 	// For testing, we'll just do simple string replacement to simulate expansion
 	// since the actual expansion is done by middleware
 	s.output = html
@@ -188,6 +192,12 @@ func (s *ComponentsTestSuite) iRenderHTMLContaining(html string) error {
 			}
 		}
 	}
+
+	// Sync output with shared context for universal assertions
+	if s.shared != nil {
+		s.shared.CaptureOutput(s.output)
+	}
+
 	return nil
 }
 
@@ -195,11 +205,18 @@ func (s *ComponentsTestSuite) iRenderHTMLContainingTag(tag string) error {
 	return s.iRenderHTMLContaining(tag)
 }
 
-func (s *ComponentsTestSuite) iRenderHTMLContainingMultiline(docString *godog.DocString) error {
-	return s.iRenderHTMLContaining(docString.Content)
+func (s *ComponentsTestSuite) iRenderHTMLContainingMultiline(arg *godog.DocString) error {
+	// iRenderHTMLContaining will sync with shared context
+	return s.iRenderHTMLContaining(arg.Content)
 }
 
 func (s *ComponentsTestSuite) outputShouldContain(expected string) error {
+	// Output should already be synced by render methods
+	// Use shared context's universal implementation if available
+	if s.shared != nil {
+		return s.shared.TheOutputShouldContain(expected)
+	}
+	// Fallback if shared context not available
 	if !strings.Contains(s.output, expected) {
 		return fmt.Errorf("output does not contain %q\nGot: %s", expected, s.output)
 	}
@@ -207,10 +224,17 @@ func (s *ComponentsTestSuite) outputShouldContain(expected string) error {
 }
 
 func (s *ComponentsTestSuite) outputShouldContainTag(tag string) error {
+	// Delegate to outputShouldContain which handles shared context
 	return s.outputShouldContain(tag)
 }
 
 func (s *ComponentsTestSuite) outputShouldNotContain(unexpected string) error {
+	// Output should already be synced by render methods
+	// Use shared context's universal implementation if available
+	if s.shared != nil {
+		return s.shared.TheOutputShouldNotContain(unexpected)
+	}
+	// Fallback if shared context not available
 	if strings.Contains(s.output, unexpected) {
 		return fmt.Errorf("output should not contain %q\nGot: %s", unexpected, s.output)
 	}
@@ -306,9 +330,17 @@ func (s *ComponentsTestSuite) outputShouldContainAlertStyling() error {
 	return nil
 }
 
+func (s *ComponentsTestSuite) outputShouldNotContainComments() error {
+	if strings.Contains(s.output, "<!--") {
+		return fmt.Errorf("HTML comments found in output when they shouldn't be")
+	}
+	return nil
+}
+
 func (s *ComponentsTestSuite) allComponentsShouldBeProperlyExpanded() error {
+	// Check that no bk- tags remain
 	if strings.Contains(s.output, "<bk-") {
-		return fmt.Errorf("unexpanded component tags found in output")
+		return fmt.Errorf("unexpanded components found in output")
 	}
 	return nil
 }
@@ -347,34 +379,34 @@ func (s *ComponentsTestSuite) onclickShouldNotBePresent() error                {
 func (s *ComponentsTestSuite) customButtonShouldBeUsed() error                 { return nil }
 func (s *ComponentsTestSuite) outputShouldContainComponentComments() error     { return nil }
 func (s *ComponentsTestSuite) commentsShouldIncludeComponentName() error       { return nil }
-func (s *ComponentsTestSuite) outputShouldNotContainComments() error           { return nil }
-func (s *ComponentsTestSuite) outputShouldContainRenderedIcon() error          { return nil }
-func (s *ComponentsTestSuite) outputShouldContainProgressBar() error           { return nil }
-func (s *ComponentsTestSuite) whitespaceShouldBePreserved() error              { return nil }
-func (s *ComponentsTestSuite) initializationCodeShouldBePresent() error        { return nil }
-func (s *ComponentsTestSuite) secondTabShouldBeActive() error                  { return nil }
-func (s *ComponentsTestSuite) outputShouldConditionallyShow() error            { return nil }
-func (s *ComponentsTestSuite) avatarShouldBeRenderedWithUserData() error       { return nil }
-func (s *ComponentsTestSuite) allDataAttributesShouldBePreserved() error       { return nil }
-func (s *ComponentsTestSuite) iRenderPageWithManyComponents(count int) error   { return nil }
-func (s *ComponentsTestSuite) renderingShouldCompleteQuickly() error           { return nil }
-func (s *ComponentsTestSuite) allComponentsShouldBeExpandedCorrectly() error   { return nil }
-func (s *ComponentsTestSuite) iRenderJSONContainingComponents() error          { return nil }
-func (s *ComponentsTestSuite) jsonShouldBeUnchanged() error                    { return nil }
-func (s *ComponentsTestSuite) componentTagsShouldNotBeExpanded() error         { return nil }
-func (s *ComponentsTestSuite) componentShouldPreserveCustomAttributes() error  { return nil }
-func (s *ComponentsTestSuite) ariaLabelShouldBePreserved() error               { return nil }
-func (s *ComponentsTestSuite) componentShouldHandleBooleanAttributes() error   { return nil }
-func (s *ComponentsTestSuite) disabledShouldBePresentWithoutValue() error      { return nil }
-func (s *ComponentsTestSuite) iQueryComponentRegistry() error                  { return nil }
-func (s *ComponentsTestSuite) iShouldGetListContaining(a, b, c string) error   { return nil }
-func (s *ComponentsTestSuite) applicationIsInDevelopmentMode() error           { return nil }
-func (s *ComponentsTestSuite) applicationIsInProductionMode() error            { return nil }
-func (s *ComponentsTestSuite) outputShouldHaveProperARIA() error               { return nil }
-func (s *ComponentsTestSuite) ariaExpandedShouldReflectState() error           { return nil }
-func (s *ComponentsTestSuite) eachInputShouldHaveUniqueID() error              { return nil }
-func (s *ComponentsTestSuite) eachLabelShouldHaveMatchingFor() error           { return nil }
-func (s *ComponentsTestSuite) outputShouldWorkWithHTMX() error                 { return nil }
-func (s *ComponentsTestSuite) htmxAttributesShouldBePreserved() error          { return nil }
-func (s *ComponentsTestSuite) outputShouldWorkWithAlpine() error               { return nil }
-func (s *ComponentsTestSuite) alpineAttributesShouldBePreserved() error        { return nil }
+
+func (s *ComponentsTestSuite) outputShouldContainRenderedIcon() error         { return nil }
+func (s *ComponentsTestSuite) outputShouldContainProgressBar() error          { return nil }
+func (s *ComponentsTestSuite) whitespaceShouldBePreserved() error             { return nil }
+func (s *ComponentsTestSuite) initializationCodeShouldBePresent() error       { return nil }
+func (s *ComponentsTestSuite) secondTabShouldBeActive() error                 { return nil }
+func (s *ComponentsTestSuite) outputShouldConditionallyShow() error           { return nil }
+func (s *ComponentsTestSuite) avatarShouldBeRenderedWithUserData() error      { return nil }
+func (s *ComponentsTestSuite) allDataAttributesShouldBePreserved() error      { return nil }
+func (s *ComponentsTestSuite) iRenderPageWithManyComponents(count int) error  { return nil }
+func (s *ComponentsTestSuite) renderingShouldCompleteQuickly() error          { return nil }
+func (s *ComponentsTestSuite) allComponentsShouldBeExpandedCorrectly() error  { return nil }
+func (s *ComponentsTestSuite) iRenderJSONContainingComponents() error         { return nil }
+func (s *ComponentsTestSuite) jsonShouldBeUnchanged() error                   { return nil }
+func (s *ComponentsTestSuite) componentTagsShouldNotBeExpanded() error        { return nil }
+func (s *ComponentsTestSuite) componentShouldPreserveCustomAttributes() error { return nil }
+func (s *ComponentsTestSuite) ariaLabelShouldBePreserved() error              { return nil }
+func (s *ComponentsTestSuite) componentShouldHandleBooleanAttributes() error  { return nil }
+func (s *ComponentsTestSuite) disabledShouldBePresentWithoutValue() error     { return nil }
+func (s *ComponentsTestSuite) iQueryComponentRegistry() error                 { return nil }
+func (s *ComponentsTestSuite) iShouldGetListContaining(a, b, c string) error  { return nil }
+func (s *ComponentsTestSuite) applicationIsInDevelopmentMode() error          { return nil }
+func (s *ComponentsTestSuite) applicationIsInProductionMode() error           { return nil }
+func (s *ComponentsTestSuite) outputShouldHaveProperARIA() error              { return nil }
+func (s *ComponentsTestSuite) ariaExpandedShouldReflectState() error          { return nil }
+func (s *ComponentsTestSuite) eachInputShouldHaveUniqueID() error             { return nil }
+func (s *ComponentsTestSuite) eachLabelShouldHaveMatchingFor() error          { return nil }
+func (s *ComponentsTestSuite) outputShouldWorkWithHTMX() error                { return nil }
+func (s *ComponentsTestSuite) htmxAttributesShouldBePreserved() error         { return nil }
+func (s *ComponentsTestSuite) outputShouldWorkWithAlpine() error              { return nil }
+func (s *ComponentsTestSuite) alpineAttributesShouldBePreserved() error       { return nil }
