@@ -89,6 +89,10 @@ type Broker struct {
 	// Default 25 seconds works well with most proxy timeouts (usually 30-60s).
 	// These heartbeats prevent connections from being closed by intermediaries.
 	heartbeatInterval time.Duration
+
+	// shutdown channel signals the broker to stop gracefully.
+	// Close this channel to stop the broker's goroutines.
+	shutdown chan struct{}
 }
 
 // NewBroker creates a new SSE broker and starts its event loops.
@@ -108,6 +112,7 @@ func NewBroker() *Broker {
 		unregister:        make(chan *Client),       // Unbuffered for immediate cleanup
 		clients:           make(map[string]*Client), // Active client registry
 		heartbeatInterval: 25 * time.Second,         // Conservative heartbeat interval
+		shutdown:          make(chan struct{}),      // Shutdown signal channel
 	}
 
 	// Start the broker's main event loop in a goroutine.
@@ -132,6 +137,12 @@ func NewBroker() *Broker {
 func (b *Broker) run() {
 	for {
 		select {
+		case <-b.shutdown:
+			// Clean up all clients
+			for _, client := range b.clients {
+				close(client.Events)
+			}
+			return
 		case client := <-b.register:
 			// New client connected - add to registry.
 			// This happens when someone opens the page or reconnects.
@@ -178,14 +189,23 @@ func (b *Broker) heartbeat() {
 	defer ticker.Stop()
 
 	for {
-		<-ticker.C
-		// Send heartbeat event with current timestamp.
-		// Clients can use this to detect connection health.
-		b.broadcast <- Event{
-			Name: "heartbeat",
-			Data: []byte(time.Now().Format(time.RFC3339)),
+		select {
+		case <-b.shutdown:
+			return
+		case <-ticker.C:
+			// Send heartbeat event with current timestamp.
+			// Clients can use this to detect connection health.
+			b.broadcast <- Event{
+				Name: "heartbeat",
+				Data: []byte(time.Now().Format(time.RFC3339)),
+			}
 		}
 	}
+}
+
+// Shutdown gracefully stops the broker and all its goroutines
+func (b *Broker) Shutdown() {
+	close(b.shutdown)
 }
 
 // Broadcast sends an event to all connected clients.

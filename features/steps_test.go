@@ -63,7 +63,11 @@ func (ts *TestSuite) Reset() {
 	ts.request = nil
 	ts.error = nil
 	ts.version = ""
-	ts.broker = nil
+	// Shutdown broker if it exists to prevent goroutine leaks
+	if ts.broker != nil {
+		ts.broker.Shutdown()
+		ts.broker = nil
+	}
 	if ts.shared != nil {
 		ts.shared.Reset()
 	}
@@ -1128,7 +1132,7 @@ func (ts *TestSuite) theEventDataShouldBe(expectedData string) error {
 }
 
 // Step: Given I connect to the SSE endpoint
-func (ts *TestSuite) iConnectToTheSSEEndpoint() error {
+func (ts *TestSuite) iConnectToTheSSEEndpointStandalone() error {
 	// Create a standalone broker for testing
 	ts.broker = ssr.NewBroker()
 	ts.clients = make(map[string]*ssr.Client)
@@ -1854,6 +1858,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ts := &TestSuite{}
 
 	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		// Shutdown broker if it exists to prevent goroutine leaks
+		if ts.broker != nil {
+			ts.broker.Shutdown()
+		}
 		ts.Reset()
 		if ts.shared != nil {
 			ts.shared.Cleanup()
