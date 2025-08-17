@@ -101,7 +101,7 @@ func RateLimitMiddleware(limiter *RateLimiter) buffalo.MiddlewareFunc {
 					// Only record failed attempts for login/reset endpoints
 					// Buffalo doesn't expose status directly, so we track it differently
 					// This will be called after the handler completes
-					_ = limiter.RecordAttempt(ip, email)
+					limiter.RecordAttempt(ip, email)
 				}()
 			}
 
