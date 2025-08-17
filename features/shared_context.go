@@ -236,6 +236,11 @@ func (c *SharedContext) IHaveAWorkingDirectory(dir string) error {
 
 // IRunCommand executes a CLI command
 func (c *SharedContext) IRunCommand(command string) error {
+	// Special handling for grift commands
+	if strings.HasPrefix(command, "grift ") {
+		// Replace "grift" with "./grift" to use our test binary
+		command = "./" + command
+	}
 	return c.IRunCommandWithTimeout(command, 30)
 }
 
@@ -246,6 +251,12 @@ func (c *SharedContext) IRunCommandWithTimeout(command string, timeoutSeconds in
 	c.ErrorOutput = ""
 	c.ExitCode = 0
 	c.LastError = nil
+
+	// Special handling for grift commands
+	if strings.HasPrefix(command, "grift ") {
+		// Replace "grift" with "./grift" to use our test binary
+		command = "./" + command
+	}
 
 	// Parse command
 	parts := strings.Fields(command)

@@ -6,6 +6,13 @@
 **Remaining:** ~100-120 (mostly domain-specific SSE reconnection and advanced auth)
 **Priority:** Complete for v0.1-alpha release
 
+### Latest Progress (Updated)
+- ✅ Fixed goroutine leaks by adding Shutdown() to SSR broker
+- ✅ Created grift CLI runner at cmd/grift/main.go
+- ✅ Verified grift tasks work: buffkit:migrate, jobs:worker, etc.
+- ⚠️  TestAllFeatures still hanging - needs investigation
+- ✅ Basic test suites (TestBasicFeatures) work correctly
+
 ### ✅ COMPLETED: Refactoring and Consolidation
 - Created `shared_context.go` with rock-solid universal step definitions
 - Created `shared_bridge.go` with 50+ regex patterns catching variations
@@ -390,6 +397,7 @@ We've implemented universal patterns that handle:
 - [ ] No undefined steps for core features
 
 ## Current Issues to Fix
-1. **Goroutine leaks** in SSR broker causing test hangs
-2. **Pattern matching** needs verification - patterns are defined but may not be matching exactly
-3. **Test execution** - need to ensure all patterns are registered before feature-specific steps
+1. ✅ **FIXED: Goroutine leaks** - Added Shutdown() method to broker and Kit
+2. **TestAllFeatures hanging** - Something in the test initialization is blocking
+3. **CLI test execution** - Need to ensure grift binary is available in test environment
+4. **Pattern matching verification** - Need to run full test suite once hanging is fixed

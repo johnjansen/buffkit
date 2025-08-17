@@ -51,6 +51,11 @@ func InitializeComponentsScenario(ctx *godog.ScenarioContext) {
 		return ctx, nil
 	})
 
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		suite.Reset()
+		return ctx, nil
+	})
+
 	// Background steps
 	ctx.Step(`^the component registry is initialized$`, suite.componentRegistryIsInitialized)
 	ctx.Step(`^the component expansion middleware is active$`, suite.componentExpansionMiddlewareIsActive)

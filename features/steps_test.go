@@ -56,6 +56,10 @@ type TestSuite struct {
 
 // Reset clears the test state between scenarios
 func (ts *TestSuite) Reset() {
+	// Shutdown kit if it exists to prevent goroutine leaks
+	if ts.kit != nil {
+		ts.kit.Shutdown()
+	}
 	ts.app = nil
 	ts.kit = nil
 	ts.config = buffkit.Config{}

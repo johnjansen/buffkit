@@ -19,7 +19,12 @@ type BasicTestSuite struct {
 }
 
 // Reset clears the test state
+// Reset clears the test state between scenarios
 func (bts *BasicTestSuite) Reset() {
+	// Shutdown kit if it exists to prevent goroutine leaks
+	if bts.kit != nil {
+		bts.kit.Shutdown()
+	}
 	bts.app = nil
 	bts.kit = nil
 	bts.config = buffkit.Config{}
@@ -80,6 +85,11 @@ func InitializeBasicScenario(ctx *godog.ScenarioContext) {
 	bts := &BasicTestSuite{}
 
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
+		bts.Reset()
+		return ctx, nil
+	})
+
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		bts.Reset()
 		return ctx, nil
 	})

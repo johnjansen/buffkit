@@ -44,6 +44,10 @@ func NewAuthEnhancedTestSuite() *AuthEnhancedTestSuite {
 
 // Reset clears the test state
 func (s *AuthEnhancedTestSuite) Reset() {
+	// Shutdown kit if it exists to prevent goroutine leaks
+	if s.kit != nil {
+		s.kit.Shutdown()
+	}
 	s.app = nil
 	s.kit = nil
 	s.request = nil
@@ -63,6 +67,11 @@ func InitializeAuthEnhancedScenario(ctx *godog.ScenarioContext) {
 	suite := NewAuthEnhancedTestSuite()
 
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
+		suite.Reset()
+		return ctx, nil
+	})
+
+	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		suite.Reset()
 		return ctx, nil
 	})

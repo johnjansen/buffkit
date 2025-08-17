@@ -421,3 +421,23 @@ func NewMigrationRunner(db *sql.DB, migrationFS embed.FS, dialect string) *migra
 func Version() string {
 	return "0.1.0-alpha"
 }
+
+// Shutdown gracefully shuts down the Kit and all its subsystems.
+// This should be called when the application is shutting down to prevent
+// goroutine leaks and ensure proper cleanup of resources.
+func (k *Kit) Shutdown() {
+	// Shutdown SSR broker if it exists
+	if k.Broker != nil {
+		k.Broker.Shutdown()
+	}
+
+	// Shutdown jobs runtime if it exists
+	if k.Jobs != nil {
+		// Jobs runtime shutdown would go here if it had a shutdown method
+		// For now, Asynq handles its own cleanup
+	}
+
+	// Close any other resources that need cleanup
+	// Mail sender typically doesn't need explicit shutdown
+	// Auth store uses the app's DB connection which is managed elsewhere
+}
