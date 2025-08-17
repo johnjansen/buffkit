@@ -31,7 +31,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 
 func TestNewRunner(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 
@@ -50,7 +50,7 @@ func TestNewRunner(t *testing.T) {
 
 func TestEnsureTable(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -89,7 +89,7 @@ func TestEnsureTable(t *testing.T) {
 
 func TestLoadMigrations(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 
@@ -133,7 +133,7 @@ func TestLoadMigrations(t *testing.T) {
 
 func TestMigrate(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -173,7 +173,7 @@ func TestMigrate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get table info: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	columns := make(map[string]bool)
 	for rows.Next() {
@@ -212,7 +212,7 @@ func TestMigrate(t *testing.T) {
 
 func TestStatus(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -263,7 +263,7 @@ func TestStatus(t *testing.T) {
 
 func TestDown(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -308,7 +308,7 @@ func TestDown(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get table info: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	columns := make(map[string]bool)
 	for rows.Next() {
@@ -354,7 +354,7 @@ func TestDown(t *testing.T) {
 
 func TestReset(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -397,7 +397,7 @@ func TestReset(t *testing.T) {
 
 func TestGetAppliedMigrations(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -447,7 +447,7 @@ func TestGetAppliedMigrations(t *testing.T) {
 
 func TestApplyMigration(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -497,7 +497,7 @@ func TestApplyMigration(t *testing.T) {
 
 func TestRollbackMigration(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()
@@ -561,7 +561,7 @@ func TestDialectSpecificSQL(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.dialect, func(t *testing.T) {
 			db := setupTestDB(t)
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			runner := NewRunner(db, testMigrations, tc.dialect)
 
@@ -575,7 +575,7 @@ func TestDialectSpecificSQL(t *testing.T) {
 
 func TestInvalidDialect(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "invalid")
 	ctx := context.Background()
@@ -591,7 +591,7 @@ func TestInvalidDialect(t *testing.T) {
 
 func TestDownWithInvalidN(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	runner := NewRunner(db, testMigrations, "sqlite3")
 	ctx := context.Background()

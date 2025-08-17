@@ -270,7 +270,7 @@ func (b *Broker) ServeHTTP(c buffalo.Context) error {
 	// Send initial connection event.
 	// This confirms to the client that SSE is working and provides the client ID.
 	// Format: "event: connected\ndata: {json}\n\n"
-	fmt.Fprintf(w, "event: connected\ndata: {\"id\":\"%s\"}\n\n", client.ID)
+	_, _ = fmt.Fprintf(w, "event: connected\ndata: {\"id\":\"%s\"}\n\n", client.ID)
 	flusher.Flush()
 
 	// Listen for client disconnect via request context.
@@ -286,9 +286,9 @@ func (b *Broker) ServeHTTP(c buffalo.Context) error {
 			// Format: "event: <name>\ndata: <data>\n\n"
 			// The double newline signals end of event.
 			if event.Name != "" {
-				fmt.Fprintf(w, "event: %s\n", event.Name)
+				_, _ = fmt.Fprintf(w, "event: %s\n", event.Name)
 			}
-			fmt.Fprintf(w, "data: %s\n\n", event.Data)
+			_, _ = fmt.Fprintf(w, "data: %s\n\n", event.Data)
 			flusher.Flush() // Immediately send to client
 
 		case <-notify:

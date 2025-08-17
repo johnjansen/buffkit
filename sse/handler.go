@@ -212,7 +212,7 @@ func (te *TestEndpoints) handleBroadcast(w http.ResponseWriter, r *http.Request)
 
 	te.handler.Broadcast(eventType, data)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Broadcast sent to %d clients\n", te.handler.broker.GetClientCount())
+	_, _ = fmt.Fprintf(w, "Broadcast sent to %d clients\n", te.handler.broker.GetClientCount())
 }
 
 // handleSend handles targeted sends
@@ -240,7 +240,7 @@ func (te *TestEndpoints) handleSend(w http.ResponseWriter, r *http.Request) {
 
 	te.handler.SendToClient(sessionID, eventType, data)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Event sent to session %s\n", sessionID)
+	_, _ = fmt.Fprintf(w, "Event sent to session %s\n", sessionID)
 }
 
 // handleStats returns SSE statistics
@@ -248,7 +248,7 @@ func (te *TestEndpoints) handleStats(w http.ResponseWriter, r *http.Request) {
 	stats := te.handler.GetStats()
 
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{
+	_, _ = fmt.Fprintf(w, `{
 		"active_clients": %v,
 		"total_sessions": %v,
 		"buffered_sessions": %v,
@@ -277,5 +277,5 @@ func (te *TestEndpoints) handleDisconnect(w http.ResponseWriter, r *http.Request
 
 	te.handler.broker.UnregisterClient(sessionID)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Disconnected session %s\n", sessionID)
+	_, _ = fmt.Fprintf(w, "Disconnected session %s\n", sessionID)
 }

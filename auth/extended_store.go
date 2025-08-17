@@ -85,7 +85,7 @@ func (s *SQLStore) List(ctx context.Context, limit, offset int) ([]*User, error)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	users := []*User{}
 	for rows.Next() {
@@ -487,7 +487,7 @@ func (s *SQLStore) ListUserSessions(ctx context.Context, userID string) ([]*Sess
 	if err != nil {
 		return nil, fmt.Errorf("failed to list sessions: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	sessions := []*Session{}
 	for rows.Next() {
@@ -568,7 +568,7 @@ func (s *SQLStore) GetUserAuditLogs(ctx context.Context, userID string, limit in
 	if err != nil {
 		return nil, fmt.Errorf("failed to get audit logs: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	logs := []*AuditLog{}
 	for rows.Next() {
@@ -680,7 +680,7 @@ func (s *SQLStore) ListUserDevices(ctx context.Context, userID string) ([]*UserD
 	if err != nil {
 		return nil, fmt.Errorf("failed to list devices: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	devices := []*UserDevice{}
 	for rows.Next() {

@@ -87,7 +87,7 @@ func (r *Runner) getAppliedMigrations(ctx context.Context) (map[string]Migration
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	applied := make(map[string]Migration)
 	for rows.Next() {
@@ -368,7 +368,7 @@ func (r *Runner) Down(ctx context.Context, n int) error {
 	if err != nil {
 		return fmt.Errorf("querying migrations to rollback: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	// Collect migrations to rollback
 	var toRollback []Migration

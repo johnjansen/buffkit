@@ -23,7 +23,7 @@ var templates embed.FS
 // App creates and configures the example Buffalo application demonstrating Buffkit features
 func App() *buffalo.App {
 	// Load environment
-	envy.Load()
+	_ = envy.Load()
 
 	// Create Buffalo app
 	app := buffalo.New(buffalo.Options{

@@ -47,7 +47,7 @@ func (suite *SSEReconnectionTestSuite) Reset() {
 	// Close any existing connections
 	for _, client := range suite.clients {
 		if client.connection != nil {
-			client.connection.Close()
+			_ = client.connection.Close()
 		}
 		if client.cancel != nil {
 			client.cancel()
@@ -186,7 +186,7 @@ func (suite *SSEReconnectionTestSuite) theServerShouldTrackMySessionInMemory() e
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var stats map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
@@ -249,7 +249,7 @@ func (suite *SSEReconnectionTestSuite) iHaveReceivedEventsWithIDs(id1, id2, id3 
 		if err != nil {
 			return err
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 
 	// Wait for events to be received
@@ -277,7 +277,7 @@ func (suite *SSEReconnectionTestSuite) myConnectionDropsForSeconds() error {
 
 	// Close the connection
 	if client.connection != nil {
-		client.connection.Close()
+		_ = client.connection.Close()
 		client.connected = false
 	}
 
@@ -296,7 +296,7 @@ func (suite *SSEReconnectionTestSuite) eventsAreBroadcastDuringTheDisconnection(
 		if err != nil {
 			return err
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		time.Sleep(100 * time.Millisecond)
 	}
 
@@ -390,7 +390,7 @@ func (suite *SSEReconnectionTestSuite) iShouldContinueReceivingNewLiveEvents() e
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	// Wait for event to be received
 	time.Sleep(200 * time.Millisecond)
@@ -429,7 +429,7 @@ func (suite *SSEReconnectionTestSuite) theReconnectionShouldBeLogged() error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var stats map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
