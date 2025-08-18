@@ -284,7 +284,7 @@ func Wire(app *buffalo.App, cfg Config) (*Kit, error) {
 	// This middleware intercepts HTML responses and expands any <bk-*>
 	// tags into their full HTML representation. It only processes
 	// text/html responses to avoid affecting API responses.
-	app.Use(components.ExpanderMiddleware(registry))
+	app.Use(components.ExpanderMiddleware(registry, cfg.DevMode))
 
 	// Add helper functions to Buffalo context.
 	// These helpers are available in handlers and templates, making it
@@ -432,10 +432,8 @@ func (k *Kit) Shutdown() {
 	}
 
 	// Shutdown jobs runtime if it exists
-	if k.Jobs != nil {
-		// Jobs runtime shutdown would go here if it had a shutdown method
-		// For now, Asynq handles its own cleanup
-	}
+	// Jobs runtime shutdown would go here if it had a shutdown method
+	// For now, Asynq handles its own cleanup
 
 	// Close any other resources that need cleanup
 	// Mail sender typically doesn't need explicit shutdown

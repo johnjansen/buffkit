@@ -68,7 +68,7 @@ func (c *CLIContext) iHaveACleanDatabase() error {
 	}
 	c.tempDir = tempDir
 	c.cleanupFuncs = append(c.cleanupFuncs, func() {
-		os.RemoveAll(tempDir)
+		_ = os.RemoveAll(tempDir)
 	})
 
 	dbPath := filepath.Join(tempDir, "test.db")
@@ -85,7 +85,7 @@ func (c *CLIContext) iHaveACleanDatabase() error {
 	}
 	c.testDB = db
 	c.cleanupFuncs = append(c.cleanupFuncs, func() {
-		db.Close()
+		_ = db.Close()
 	})
 
 	return nil

@@ -30,6 +30,7 @@ type GriftTestSuite struct {
 	tempDir      string
 	env          map[string]string
 	cleanupFuncs []func()
+	shared       *SharedContext // For accessing shared environment variables
 }
 
 // NewGriftTestSuite creates a new grift test suite
@@ -57,18 +58,22 @@ func (g *GriftTestSuite) Reset() {
 
 	// Close test database if open
 	if g.testDB != nil {
-		g.testDB.Close()
+		_ = g.testDB.Close()
 		g.testDB = nil
 	}
 
 	// Clean up temp directory
 	if g.tempDir != "" {
-		os.RemoveAll(g.tempDir)
+		_ = os.RemoveAll(g.tempDir)
 		g.tempDir = ""
 	}
 }
 
 // Step definitions
+
+func (g *GriftTestSuite) setSharedContext(shared *SharedContext) {
+	g.shared = shared
+}
 
 func (g *GriftTestSuite) iHaveACleanTestDatabase() error {
 	// Create a temporary directory for test database
@@ -78,16 +83,17 @@ func (g *GriftTestSuite) iHaveACleanTestDatabase() error {
 	}
 	g.tempDir = tempDir
 	g.cleanupFuncs = append(g.cleanupFuncs, func() {
-		os.RemoveAll(tempDir)
+		_ = os.RemoveAll(tempDir)
 	})
 
 	// Create test database path
 	g.dbPath = fmt.Sprintf("%s/test.db", tempDir)
 
 	// Set environment variable for database
-	os.Setenv("DATABASE_URL", g.dbPath)
+	_ = os.Setenv("DATABASE_URL", g.dbPath)
+	fmt.Printf("DEBUG: Set DATABASE_URL to %s in iHaveACleanTestDatabase\n", g.dbPath)
 	g.cleanupFuncs = append(g.cleanupFuncs, func() {
-		os.Unsetenv("DATABASE_URL")
+		_ = os.Unsetenv("DATABASE_URL")
 	})
 
 	// Open database to verify it works
@@ -152,17 +158,58 @@ func (g *GriftTestSuite) iRunGriftTask(taskName string) error {
 		errChan <- output.String()
 	}()
 
+	// Apply environment variables from shared context if available
+	if g.shared != nil {
+		for k, v := range g.shared.Environment {
+			oldVal := os.Getenv(k)
+			_ = os.Setenv(k, v)
+			defer func(key, val string) { _ = os.Setenv(key, val) }(k, oldVal)
+			fmt.Printf("DEBUG: Setting env %s=%s (was %s)\n", k, v, oldVal)
+		}
+	}
+
+	// Debug: Check current DATABASE_URL
+	fmt.Printf("DEBUG: DATABASE_URL before task: %s\n", os.Getenv("DATABASE_URL"))
+	fmt.Printf("DEBUG: Running grift task: %s\n", taskName)
+
+	// List available tasks for debugging
+	fmt.Printf("DEBUG: Available grift tasks:\n")
+	for _, name := range grift.List() {
+		fmt.Printf("DEBUG:   - %s\n", name)
+	}
+
 	// Create grift context and run task
 	ctx := grift.NewContext(taskName)
 	g.lastError = grift.Run(taskName, ctx)
 
+	fmt.Printf("DEBUG: Task error: %v\n", g.lastError)
+
 	// Close write ends to signal EOF
-	wOut.Close()
-	wErr.Close()
+	_ = wOut.Close()
+	_ = wErr.Close()
 
 	// Collect output
 	g.output = <-outChan
 	g.errorOutput = <-errChan
+
+	// Debug output to see what we're getting
+	if g.output != "" {
+		fmt.Printf("DEBUG: Grift task output: %q\n", g.output)
+	}
+	if g.errorOutput != "" {
+		fmt.Printf("DEBUG: Grift task error: %q\n", g.errorOutput)
+	}
+
+	// Sync output with shared context if available
+	if g.shared != nil {
+		g.shared.Output = g.output
+		g.shared.ErrorOutput = g.errorOutput
+		if g.lastError != nil {
+			g.shared.ExitCode = 1
+		} else {
+			g.shared.ExitCode = 0
+		}
+	}
 
 	return nil
 }
@@ -223,26 +270,24 @@ func (g *GriftTestSuite) iRunGriftTaskWithArgs(taskName string, args string) err
 	ctx.Args = argList
 	g.lastError = grift.Run(taskName, ctx)
 
-	wOut.Close()
-	wErr.Close()
+	_ = wOut.Close()
+	_ = wErr.Close()
 
+	// Collect output
 	g.output = <-outChan
 	g.errorOutput = <-errChan
 
-	return nil
-}
-
-func (g *GriftTestSuite) theOutputShouldContain(expected string) error {
-	if !strings.Contains(g.output, expected) {
-		return fmt.Errorf("output does not contain %q\nGot: %s", expected, g.output)
+	// Sync output with shared context if available
+	if g.shared != nil {
+		g.shared.Output = g.output
+		g.shared.ErrorOutput = g.errorOutput
+		if g.lastError != nil {
+			g.shared.ExitCode = 1
+		} else {
+			g.shared.ExitCode = 0
+		}
 	}
-	return nil
-}
 
-func (g *GriftTestSuite) theErrorOutputShouldContain(expected string) error {
-	if !strings.Contains(g.errorOutput, expected) {
-		return fmt.Errorf("error output does not contain %q\nGot: %s", expected, g.errorOutput)
-	}
 	return nil
 }
 
@@ -279,22 +324,22 @@ func (g *GriftTestSuite) theMigrationsTableShouldExist() error {
 	return nil
 }
 
-func (g *GriftTestSuite) iSetEnvironmentVariable(key, value string) error {
-	g.env[key] = value
-	os.Setenv(key, value)
-	g.cleanupFuncs = append(g.cleanupFuncs, func() {
-		os.Unsetenv(key)
-	})
-	return nil
-}
-
 // InitializeGriftScenario registers grift task testing steps
-func InitializeGriftScenario(ctx *godog.ScenarioContext) {
+func InitializeGriftScenario(ctx *godog.ScenarioContext, bridge ...*SharedBridge) {
 	suite := NewGriftTestSuite()
+
+	// If bridge is provided, use its shared context for environment variables
+	if len(bridge) > 0 && bridge[0] != nil {
+		suite.setSharedContext(bridge[0].shared)
+	}
 
 	// Before each scenario
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		suite.Reset()
+		// Re-set shared context after reset
+		if len(bridge) > 0 && bridge[0] != nil {
+			suite.setSharedContext(bridge[0].shared)
+		}
 		return ctx, nil
 	})
 
@@ -306,15 +351,11 @@ func InitializeGriftScenario(ctx *godog.ScenarioContext) {
 
 	// Given steps
 	ctx.Step(`^I have a clean test database$`, suite.iHaveACleanTestDatabase)
-	ctx.Step(`^I set environment variable "([^"]*)" to "([^"]*)"$`, suite.iSetEnvironmentVariable)
-
 	// When steps
 	ctx.Step(`^I run grift task "([^"]*)"$`, suite.iRunGriftTask)
 	ctx.Step(`^I run grift task "([^"]*)" with args "([^"]*)"$`, suite.iRunGriftTaskWithArgs)
 
 	// Then steps
-	ctx.Step(`^the output should contain "([^"]*)"$`, suite.theOutputShouldContain)
-	ctx.Step(`^the error output should contain "([^"]*)"$`, suite.theErrorOutputShouldContain)
 	ctx.Step(`^the task should succeed$`, suite.theTaskShouldSucceed)
 	ctx.Step(`^the task should fail$`, suite.theTaskShouldFail)
 	ctx.Step(`^the migrations table should exist$`, suite.theMigrationsTableShouldExist)
@@ -323,7 +364,14 @@ func InitializeGriftScenario(ctx *godog.ScenarioContext) {
 // TestGriftTasks runs grift task tests
 func TestGriftTasks(t *testing.T) {
 	suite := godog.TestSuite{
-		ScenarioInitializer: InitializeGriftScenario,
+		ScenarioInitializer: func(ctx *godog.ScenarioContext) {
+			// Create a shared bridge for environment variables
+			bridge := NewSharedBridge()
+			bridge.RegisterBridgedSteps(ctx)
+
+			// Initialize grift scenario with bridge
+			InitializeGriftScenario(ctx, bridge)
+		},
 		Options: &godog.Options{
 			Format:   "pretty",
 			Paths:    []string{"grift_tasks.feature"},

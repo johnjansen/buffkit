@@ -486,7 +486,7 @@ func (suite *SSEReconnectionTestSuite) readEvents(client *testSSEClient) {
 }
 
 // Register additional step definitions for SSE reconnection scenarios
-func InitializeSSEReconnectionScenario(ctx *godog.ScenarioContext) {
+func InitializeSSEReconnectionScenario(ctx *godog.ScenarioContext, bridge *SharedBridge) {
 	suite := &SSEReconnectionTestSuite{
 		clients:        make(map[string]*testSSEClient),
 		events:         make(map[string][]string),

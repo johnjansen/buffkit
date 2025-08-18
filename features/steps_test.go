@@ -255,6 +255,11 @@ func (ts *TestSuite) iHaveABuffaloApplicationWithBuffkitWired() error {
 	}
 	ts.kit = kit
 
+	// Sync app to shared context if it exists
+	if ts.shared != nil {
+		ts.shared.SetHTTPApp(ts.app)
+	}
+
 	return nil
 }
 
@@ -1136,22 +1141,6 @@ func (ts *TestSuite) theEventDataShouldBe(expectedData string) error {
 }
 
 // Step: Given I connect to the SSE endpoint
-func (ts *TestSuite) iConnectToTheSSEEndpointStandalone() error {
-	// Create a standalone broker for testing
-	ts.broker = ssr.NewBroker()
-	ts.clients = make(map[string]*ssr.Client)
-
-	// Create a mock client to simulate connection
-	client := &ssr.Client{
-		ID:      fmt.Sprintf("sse-client-%d", time.Now().UnixNano()),
-		Events:  make(chan ssr.Event, 10),
-		Closing: make(chan bool),
-	}
-	ts.clients[client.ID] = client
-	ts.clientCount = 1
-
-	return nil
-}
 
 // Step: When the connection is established
 func (ts *TestSuite) theConnectionIsEstablished() error {
@@ -1858,13 +1847,22 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 }
 
 // Initialize scenario context
-func InitializeScenario(ctx *godog.ScenarioContext) {
+func InitializeScenario(ctx *godog.ScenarioContext, bridge *SharedBridge) {
 	ts := &TestSuite{}
+
+	// Connect to shared context from bridge
+	if bridge != nil && bridge.shared != nil {
+		ts.shared = bridge.shared
+	}
 
 	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		// Shutdown broker if it exists to prevent goroutine leaks
 		if ts.broker != nil {
 			ts.broker.Shutdown()
+		}
+		// Also shutdown broker from kit if it exists
+		if ts.kit != nil && ts.kit.Broker != nil {
+			ts.kit.Broker.Shutdown()
 		}
 		ts.Reset()
 		if ts.shared != nil {

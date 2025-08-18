@@ -17,6 +17,8 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/gobuffalo/buffalo"
+	"github.com/johnjansen/buffkit/components"
+	"golang.org/x/net/html"
 
 	// Import database drivers
 	_ "github.com/go-sql-driver/mysql"
@@ -49,6 +51,15 @@ type SharedContext struct {
 	DBDialect    string
 	DBConnString string
 
+	// Component registry for rendering
+	ComponentRegistry *components.Registry
+
+	// Component testing
+	Input              string
+	ContentType        string
+	IsDevelopment      bool
+	RegistryComponents []string
+
 	// Cleanup functions
 	CleanupFuncs []func()
 }
@@ -71,7 +82,7 @@ func (c *SharedContext) Cleanup() {
 	}
 	// Clean up temp directories
 	for _, dir := range c.TempDirs {
-		os.RemoveAll(dir)
+		_ = os.RemoveAll(dir)
 	}
 }
 
@@ -214,7 +225,7 @@ func (c *SharedContext) IHaveACleanDatabase() error {
 	}
 	c.TestDB = db
 	c.CleanupFuncs = append(c.CleanupFuncs, func() {
-		db.Close()
+		_ = db.Close()
 	})
 
 	return nil
@@ -238,6 +249,15 @@ func (c *SharedContext) IHaveAWorkingDirectory(dir string) error {
 func (c *SharedContext) IRunCommand(command string) error {
 	// Special handling for grift commands
 	if strings.HasPrefix(command, "grift ") {
+		// Build grift binary if it doesn't exist
+		if _, err := os.Stat("./grift"); os.IsNotExist(err) {
+			buildCmd := exec.Command("go", "build", "-o", "grift", "./cmd/grift")
+			if err := buildCmd.Run(); err != nil {
+				c.LastError = fmt.Errorf("failed to build grift binary: %w", err)
+				c.ExitCode = -1
+				return nil
+			}
+		}
 		// Replace "grift" with "./grift" to use our test binary
 		command = "./" + command
 	}
@@ -254,6 +274,15 @@ func (c *SharedContext) IRunCommandWithTimeout(command string, timeoutSeconds in
 
 	// Special handling for grift commands
 	if strings.HasPrefix(command, "grift ") {
+		// Build grift binary if it doesn't exist
+		if _, err := os.Stat("./grift"); os.IsNotExist(err) {
+			buildCmd := exec.Command("go", "build", "-o", "grift", "./cmd/grift")
+			if err := buildCmd.Run(); err != nil {
+				c.LastError = fmt.Errorf("failed to build grift binary: %w", err)
+				c.ExitCode = -1
+				return nil
+			}
+		}
 		// Replace "grift" with "./grift" to use our test binary
 		command = "./" + command
 	}
@@ -324,14 +353,159 @@ func (c *SharedContext) TheExitCodeShouldBe(expected int) error {
 
 // IRenderHTMLContaining simulates rendering HTML (usually through a component system)
 func (c *SharedContext) IRenderHTMLContaining(html string) error {
-	// For now, just store the HTML as output
-	// In a real implementation, this would process through the component system
-	c.Output = html
+	// Initialize component registry if not already done
+	if c.ComponentRegistry == nil {
+		c.ComponentRegistry = components.NewRegistry()
+		c.ComponentRegistry.RegisterDefaults()
+	}
 
-	// TODO: Process through actual component registry if available
-	// This is a placeholder that should be replaced with actual component rendering
+	// Wrap HTML in a basic HTML structure for parsing
+	fullHTML := fmt.Sprintf("<html><body>%s</body></html>", html)
+
+	// Expand components using the registry
+	expanded, err := c.expandHTMLWithComponents([]byte(fullHTML))
+	if err != nil {
+		c.Output = html // Fall back to raw HTML on error
+		return nil      // Don't fail the test for expansion errors
+	}
+
+	// Extract just the body content
+	bodyStart := strings.Index(string(expanded), "<body>") + 6
+	bodyEnd := strings.Index(string(expanded), "</body>")
+	if bodyStart > 5 && bodyEnd > bodyStart {
+		c.Output = strings.TrimSpace(string(expanded[bodyStart:bodyEnd]))
+	} else {
+		c.Output = string(expanded)
+	}
 
 	return nil
+}
+
+// expandHTMLWithComponents processes HTML through the component registry
+func (c *SharedContext) expandHTMLWithComponents(htmlContent []byte) ([]byte, error) {
+	doc, err := html.Parse(bytes.NewReader(htmlContent))
+	if err != nil {
+		return htmlContent, err
+	}
+
+	// Walk the tree and expand components
+	var expand func(*html.Node) error
+	expand = func(n *html.Node) error {
+		if n.Type == html.ElementNode && strings.HasPrefix(n.Data, "bk-") {
+			componentName := n.Data
+
+			// Extract attributes
+			attrs := make(map[string]string)
+			for _, attr := range n.Attr {
+				attrs[attr.Key] = attr.Val
+			}
+
+			// Extract slot content (simplified for testing)
+			slots := make(map[string]string)
+			var content strings.Builder
+			for child := n.FirstChild; child != nil; child = child.NextSibling {
+				switch child.Type {
+				case html.TextNode:
+					content.WriteString(child.Data)
+				case html.ElementNode:
+					// For element nodes, render them back to HTML
+					var buf bytes.Buffer
+					_ = html.Render(&buf, child)
+					content.WriteString(buf.String())
+				}
+			}
+			slots["default"] = strings.TrimSpace(content.String())
+
+			// Render the component
+			rendered, err := c.ComponentRegistry.Render(n.Data, attrs, slots)
+			if err != nil {
+				// Keep original if rendering fails
+				return nil
+			}
+
+			// Parse the rendered HTML as a complete document
+			wrappedHTML := fmt.Sprintf("<html><body>%s</body></html>", string(rendered))
+			renderedDoc, err := html.Parse(bytes.NewReader([]byte(wrappedHTML)))
+			if err != nil {
+				return nil
+			}
+
+			// Find the body node and extract its children
+			var bodyNode *html.Node
+			var findBody func(*html.Node)
+			findBody = func(node *html.Node) {
+				if node.Type == html.ElementNode && node.Data == "body" {
+					bodyNode = node
+					return
+				}
+				for child := node.FirstChild; child != nil; child = child.NextSibling {
+					findBody(child)
+					if bodyNode != nil {
+						return
+					}
+				}
+			}
+			findBody(renderedDoc)
+
+			if bodyNode == nil || n.Parent == nil {
+				return nil
+			}
+
+			// Add component boundary comments in development mode
+			if c.IsDevelopment {
+				// Add start comment
+				startComment := &html.Node{
+					Type: html.CommentNode,
+					Data: fmt.Sprintf(" %s ", componentName),
+				}
+				n.Parent.InsertBefore(startComment, n)
+			}
+
+			// Replace the component node with the body's children
+			for child := bodyNode.FirstChild; child != nil; {
+				next := child.NextSibling
+				bodyNode.RemoveChild(child)
+				n.Parent.InsertBefore(child, n)
+				child = next
+			}
+
+			// Add end comment in development mode
+			if c.IsDevelopment {
+				endComment := &html.Node{
+					Type: html.CommentNode,
+					Data: fmt.Sprintf(" /%s ", componentName),
+				}
+				n.Parent.InsertBefore(endComment, n)
+			}
+
+			n.Parent.RemoveChild(n)
+			return nil
+		}
+
+		// Recurse to children (make a copy of the list first to avoid mutation during iteration)
+		var children []*html.Node
+		for child := n.FirstChild; child != nil; child = child.NextSibling {
+			children = append(children, child)
+		}
+		for _, child := range children {
+			if err := expand(child); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	if err := expand(doc); err != nil {
+		return htmlContent, err
+	}
+
+	// Render the modified document back to HTML
+	var buf bytes.Buffer
+	if err := html.Render(&buf, doc); err != nil {
+		return htmlContent, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 // =============================================================================

@@ -29,6 +29,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
@@ -119,6 +120,33 @@ func (r *Registry) RegisterDefaults() {
 	// Register form components
 	r.Register("bk-form", renderForm)
 	r.Register("bk-input", renderInput)
+
+	// Register text component (safe HTML escaping)
+	r.Register("bk-text", renderText)
+
+	// Register modal component
+	r.Register("bk-modal", renderModal)
+
+	// Register tabs component
+	r.Register("bk-tabs", renderTabs)
+
+	// Register code component
+	r.Register("bk-code", renderCode)
+
+	// Register icon component
+	r.Register("bk-icon", renderIcon)
+
+	// Register avatar component
+	r.Register("bk-avatar", renderAvatar)
+
+	// Register feature flag component
+	r.Register("bk-feature", renderFeatureFlag)
+
+	// Register progress bar component
+	r.Register("bk-progress-bar", renderProgressBar)
+
+	// Register form field component
+	r.Register("bk-form-field", renderFormField)
 }
 
 // Render renders a component by name.
@@ -151,17 +179,20 @@ func (r *Registry) Render(name string, attrs map[string]string, slots map[string
 //  3. If response is HTML, parses it and expands components
 //  4. Writes the expanded HTML to the real response writer
 //
-// The middleware only processes text/html responses, leaving JSON, images,
-// and other content types untouched.
+// The middleware only processes text/html responses to avoid breaking
+// JSON APIs, file downloads, etc.
+//
+// When devMode is true, component boundary comments are added to help
+// with debugging (e.g., <!-- bk-button --> ... <!-- /bk-button -->).
 //
 // Usage:
 //
-//	app.Use(components.ExpanderMiddleware(registry))
+//	app.Use(components.ExpanderMiddleware(registry, devMode))
 //
 // WHY middleware: This approach allows components to work transparently
 // with any template engine or HTML generation method. Templates don't need
 // to know about component expansion - they just write <bk-*> tags.
-func ExpanderMiddleware(registry *Registry) buffalo.MiddlewareFunc {
+func ExpanderMiddleware(registry *Registry, devMode bool) buffalo.MiddlewareFunc {
 	return func(next buffalo.Handler) buffalo.Handler {
 		return func(c buffalo.Context) error {
 			// Create a response wrapper to capture output.
@@ -198,7 +229,7 @@ func ExpanderMiddleware(registry *Registry) buffalo.MiddlewareFunc {
 			}
 
 			// Expand components in the captured HTML
-			expanded, err := expandComponents(wrapper.body.Bytes(), registry)
+			expanded, err := expandComponents(wrapper.body.Bytes(), registry, devMode)
 			if err != nil {
 				// On error, send original HTML
 				// Better to show unexpanded components than error page
@@ -234,7 +265,7 @@ func ExpanderMiddleware(registry *Registry) buffalo.MiddlewareFunc {
 //   - Handle component recursion limits
 //   - Preserve HTML comments and doctype
 //   - Optimize for large documents
-func expandComponents(htmlContent []byte, registry *Registry) ([]byte, error) {
+func expandComponents(htmlContent []byte, registry *Registry, devMode bool) ([]byte, error) {
 	doc, err := html.Parse(bytes.NewReader(htmlContent))
 	if err != nil {
 		return htmlContent, err
@@ -246,6 +277,7 @@ func expandComponents(htmlContent []byte, registry *Registry) ([]byte, error) {
 	expand = func(n *html.Node) error {
 		if n.Type == html.ElementNode && strings.HasPrefix(n.Data, "bk-") {
 			// Found a component tag - extract its data
+			componentName := n.Data
 
 			// Extract attributes from the component tag
 			attrs := make(map[string]string)
@@ -273,10 +305,30 @@ func expandComponents(htmlContent []byte, registry *Registry) ([]byte, error) {
 				return nil
 			}
 
+			// Add component boundary comments in development mode
+			if devMode {
+				// Add start comment
+				startComment := &html.Node{
+					Type: html.CommentNode,
+					Data: fmt.Sprintf(" %s ", componentName),
+				}
+				n.Parent.InsertBefore(startComment, n)
+			}
+
 			// Replace the component node with rendered nodes
 			for _, newNode := range renderedDoc {
 				n.Parent.InsertBefore(newNode, n)
 			}
+
+			// Add end comment in development mode
+			if devMode {
+				endComment := &html.Node{
+					Type: html.CommentNode,
+					Data: fmt.Sprintf(" /%s ", componentName),
+				}
+				n.Parent.InsertBefore(endComment, n)
+			}
+
 			n.Parent.RemoveChild(n)
 
 			return nil
@@ -403,27 +455,49 @@ func renderButton(attrs map[string]string, slots map[string]string) ([]byte, err
 		variant = "default"
 	}
 
+	size := attrs["size"]
 	href := attrs["href"]
 	class := attrs["class"]
 	content := slots["default"]
 
 	// Build class list
 	classes := []string{"bk-button", "bk-button-" + variant}
+	if size != "" {
+		classes = append(classes, "bk-button-"+size)
+	}
 	if class != "" {
 		classes = append(classes, class)
+	}
+
+	// Build attributes string for additional attributes
+	var attrStr strings.Builder
+	for key, value := range attrs {
+		// Skip attributes we've already handled
+		if key == "variant" || key == "size" || key == "class" || key == "href" {
+			continue
+		}
+		// Skip onclick and other potentially dangerous attributes
+		if strings.HasPrefix(key, "on") {
+			continue
+		}
+		attrStr.WriteString(` `)
+		attrStr.WriteString(html.EscapeString(key))
+		attrStr.WriteString(`="`)
+		attrStr.WriteString(html.EscapeString(value))
+		attrStr.WriteString(`"`)
 	}
 
 	// Render as link or button based on href presence
 	if href != "" {
 		return []byte(fmt.Sprintf(
-			`<a href="%s" class="%s">%s</a>`,
-			href, strings.Join(classes, " "), content,
+			`<a href="%s" class="%s"%s>%s</a>`,
+			html.EscapeString(href), strings.Join(classes, " "), attrStr.String(), content,
 		)), nil
 	}
 
 	return []byte(fmt.Sprintf(
-		`<button class="%s">%s</button>`,
-		strings.Join(classes, " "), content,
+		`<button class="%s"%s>%s</button>`,
+		strings.Join(classes, " "), attrStr.String(), content,
 	)), nil
 }
 
@@ -492,11 +566,40 @@ func renderDropdown(attrs map[string]string, slots map[string]string) ([]byte, e
 	if class != "" {
 		buf.WriteString(" " + class)
 	}
-	buf.WriteString(`" x-data="{ open: false }">`)
+	buf.WriteString(`"`)
+
+	// Add data-component attribute
+	buf.WriteString(` data-component="dropdown"`)
+	buf.WriteString(` data-state="closed"`)
+
+	// Add x-data if not already present
+	if xData, ok := attrs["x-data"]; ok {
+		buf.WriteString(` x-data="`)
+		buf.WriteString(html.EscapeString(xData))
+		buf.WriteString(`"`)
+	} else {
+		buf.WriteString(` x-data="{ open: false }"`)
+	}
+
+	// Add any other data attributes
+	for key, value := range attrs {
+		if key != "class" && key != "x-data" {
+			// Preserve all data attributes and other safe attributes
+			if strings.HasPrefix(key, "data-") || strings.HasPrefix(key, "aria-") || key == "id" {
+				buf.WriteString(` `)
+				buf.WriteString(html.EscapeString(key))
+				buf.WriteString(`="`)
+				buf.WriteString(html.EscapeString(value))
+				buf.WriteString(`"`)
+			}
+		}
+	}
+
+	buf.WriteString(`>`)
 
 	// Trigger button
 	buf.WriteString(fmt.Sprintf(
-		`<button class="bk-dropdown-trigger" @click="open = !open" aria-haspopup="true" :aria-expanded="open">%s</button>`,
+		`<button class="bk-dropdown-trigger" @click="open = !open" aria-haspopup="true" aria-expanded="false" :aria-expanded="open">%s</button>`,
 		trigger,
 	))
 
@@ -586,7 +689,11 @@ func renderInput(attrs map[string]string, slots map[string]string) ([]byte, erro
 	name := attrs["name"]
 	label := attrs["label"]
 	placeholder := attrs["placeholder"]
-	required := attrs["required"] == "true"
+	// Boolean attributes in HTML are present without a value or with any value
+	_, required := attrs["required"]
+	_, disabled := attrs["disabled"]
+	_, readonly := attrs["readonly"]
+	_, checked := attrs["checked"]
 	class := attrs["class"]
 	value := attrs["value"]
 
@@ -606,6 +713,22 @@ func renderInput(attrs map[string]string, slots map[string]string) ([]byte, erro
 	buf.WriteString(fmt.Sprintf(` id="%s"`, name))
 	buf.WriteString(fmt.Sprintf(` name="%s"`, name))
 
+	// Add aria-label for accessibility
+	if label != "" {
+		buf.WriteString(fmt.Sprintf(` aria-label="%s"`, html.EscapeString(label)))
+	} else if placeholder != "" {
+		buf.WriteString(fmt.Sprintf(` aria-label="%s"`, html.EscapeString(placeholder)))
+	} else if name != "" {
+		// Generate aria-label from name if no label or placeholder
+		// Convert snake_case or kebab-case to readable format
+		ariaLabel := strings.ReplaceAll(name, "_", " ")
+		ariaLabel = strings.ReplaceAll(ariaLabel, "-", " ")
+		buf.WriteString(fmt.Sprintf(` aria-label="%s"`, html.EscapeString(ariaLabel)))
+	} else {
+		// Fall back to input type
+		buf.WriteString(fmt.Sprintf(` aria-label="%s input"`, inputType))
+	}
+
 	if placeholder != "" {
 		buf.WriteString(fmt.Sprintf(` placeholder="%s"`, placeholder))
 	}
@@ -614,6 +737,15 @@ func renderInput(attrs map[string]string, slots map[string]string) ([]byte, erro
 	}
 	if required {
 		buf.WriteString(` required`)
+	}
+	if disabled {
+		buf.WriteString(` disabled`)
+	}
+	if readonly {
+		buf.WriteString(` readonly`)
+	}
+	if checked && (inputType == "checkbox" || inputType == "radio") {
+		buf.WriteString(` checked`)
 	}
 	if class != "" {
 		buf.WriteString(fmt.Sprintf(` class="bk-input %s"`, class))
@@ -625,6 +757,486 @@ func renderInput(attrs map[string]string, slots map[string]string) ([]byte, erro
 	buf.WriteString(`</div>`)
 
 	return buf.Bytes(), nil
+}
+
+// renderText renders a text component with safe HTML escaping.
+// This component escapes all HTML to prevent XSS attacks.
+func renderText(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	buf.WriteString(`<span class="bk-text"`)
+
+	// Add any custom attributes
+	for key, value := range attrs {
+		if key != "class" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(value))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(`>`)
+	// Escape the content to prevent XSS
+	buf.WriteString(html.EscapeString(slots["default"]))
+	buf.WriteString(`</span>`)
+
+	return []byte(buf.String()), nil
+}
+
+// renderModal renders a modal dialog component with ARIA attributes.
+func renderModal(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	title := attrs["title"]
+	if title == "" {
+		title = "Modal"
+	}
+
+	modalID := fmt.Sprintf("modal-%d", hashString(title))
+	titleID := fmt.Sprintf("modal-title-%d", hashString(title))
+
+	buf.WriteString(`<div class="bk-modal"`)
+
+	// Add ARIA attributes for accessibility
+	buf.WriteString(` role="dialog"`)
+	buf.WriteString(` aria-modal="true"`)
+	buf.WriteString(` aria-labelledby="`)
+	buf.WriteString(titleID)
+	buf.WriteString(`"`)
+
+	// Add other attributes
+	for key, value := range attrs {
+		if key != "title" && key != "class" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(value))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(` id="`)
+	buf.WriteString(modalID)
+	buf.WriteString(`">`)
+
+	// Modal header
+	buf.WriteString(`<div class="bk-modal-header">`)
+	buf.WriteString(`<h2 id="`)
+	buf.WriteString(titleID)
+	buf.WriteString(`">`)
+	buf.WriteString(html.EscapeString(title))
+	buf.WriteString(`</h2>`)
+
+	if headerSlot, ok := slots["header"]; ok {
+		buf.WriteString(headerSlot)
+	}
+
+	buf.WriteString(`</div>`)
+
+	// Modal body
+	buf.WriteString(`<div class="bk-modal-body">`)
+	buf.WriteString(slots["default"])
+	if bodySlot, ok := slots["body"]; ok {
+		buf.WriteString(bodySlot)
+	}
+	buf.WriteString(`</div>`)
+
+	// Modal footer (if provided)
+	if footerSlot, ok := slots["footer"]; ok {
+		buf.WriteString(`<div class="bk-modal-footer">`)
+		buf.WriteString(footerSlot)
+		buf.WriteString(`</div>`)
+	}
+
+	buf.WriteString(`</div>`)
+
+	return []byte(buf.String()), nil
+}
+
+// renderTabs renders a tabs component with state management attributes.
+func renderTabs(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	defaultTab := attrs["default-tab"]
+	if defaultTab == "" {
+		defaultTab = "1"
+	}
+
+	buf.WriteString(`<div class="bk-tabs"`)
+	buf.WriteString(` data-component="tabs"`)
+	buf.WriteString(` data-initial-tab="`)
+	buf.WriteString(html.EscapeString(defaultTab))
+	buf.WriteString(`"`)
+
+	// Add other attributes
+	for key, value := range attrs {
+		if key != "default-tab" && key != "class" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(value))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(`>`)
+
+	// Tab navigation
+	if navSlot, ok := slots["nav"]; ok {
+		buf.WriteString(`<div class="bk-tabs-nav">`)
+		buf.WriteString(navSlot)
+		buf.WriteString(`</div>`)
+	}
+
+	// Tab content
+	buf.WriteString(`<div class="bk-tabs-content">`)
+	buf.WriteString(slots["default"])
+	buf.WriteString(`</div>`)
+
+	buf.WriteString(`</div>`)
+
+	return []byte(buf.String()), nil
+}
+
+// renderCode renders a code block component with syntax highlighting support.
+func renderCode(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	language := attrs["language"]
+	if language == "" {
+		language = "plaintext"
+	}
+
+	buf.WriteString(`<pre class="bk-code"`)
+
+	// Add other attributes
+	for key, value := range attrs {
+		if key != "language" && key != "class" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(value))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(`><code class="language-`)
+	buf.WriteString(html.EscapeString(language))
+	buf.WriteString(`">`)
+
+	// Preserve whitespace and escape HTML
+	content := slots["default"]
+	// Don't escape if it looks like it's already escaped or is meant to be raw
+	if strings.Contains(content, "&lt;") || strings.Contains(content, "&gt;") {
+		buf.WriteString(content)
+	} else {
+		buf.WriteString(html.EscapeString(content))
+	}
+
+	buf.WriteString(`</code></pre>`)
+
+	return []byte(buf.String()), nil
+}
+
+// renderIcon renders an icon component.
+func renderIcon(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	name := attrs["name"]
+	if name == "" {
+		name = "default"
+	}
+
+	buf.WriteString(`<span class="bk-icon bk-icon-`)
+	buf.WriteString(html.EscapeString(name))
+	buf.WriteString(`"`)
+
+	// Add ARIA label for accessibility
+	if label, ok := attrs["aria-label"]; ok {
+		buf.WriteString(` aria-label="`)
+		buf.WriteString(html.EscapeString(label))
+		buf.WriteString(`"`)
+	} else {
+		buf.WriteString(` aria-hidden="true"`)
+	}
+
+	// Add other attributes
+	for key, value := range attrs {
+		if key != "name" && key != "class" && key != "aria-label" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(value))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(`>`)
+
+	// Icon content (could be SVG, font icon, etc.)
+	if slots["default"] != "" {
+		buf.WriteString(slots["default"])
+	} else {
+		// Default icon representation
+		buf.WriteString(`<svg viewBox="0 0 24 24" fill="currentColor">`)
+		switch name {
+		case "check":
+			buf.WriteString(`<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>`)
+		case "close":
+			buf.WriteString(`<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>`)
+		default:
+			buf.WriteString(`<circle cx="12" cy="12" r="10"/>`)
+		}
+		buf.WriteString(`</svg>`)
+	}
+
+	buf.WriteString(`</span>`)
+
+	return []byte(buf.String()), nil
+}
+
+// renderAvatar renders a user avatar component.
+func renderAvatar(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	userID := attrs["user-id"]
+	size := attrs["size"]
+	if size == "" {
+		size = "medium"
+	}
+
+	// In a real app, this would fetch user data from the database
+	// For testing, we'll generate a placeholder
+	avatarURL := fmt.Sprintf("/avatars/user-%s.jpg", userID)
+	userName := fmt.Sprintf("User %s", userID)
+
+	if url, ok := attrs["src"]; ok {
+		avatarURL = url
+	}
+	if name, ok := attrs["alt"]; ok {
+		userName = name
+	}
+
+	buf.WriteString(`<div class="bk-avatar bk-avatar-`)
+	buf.WriteString(html.EscapeString(size))
+	buf.WriteString(`"`)
+
+	// Add data attributes
+	if userID != "" {
+		buf.WriteString(` data-user-id="`)
+		buf.WriteString(html.EscapeString(userID))
+		buf.WriteString(`"`)
+	}
+
+	// Add other attributes
+	for key, value := range attrs {
+		if key != "user-id" && key != "size" && key != "src" && key != "alt" && key != "class" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(value))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(`>`)
+	buf.WriteString(`<img src="`)
+	buf.WriteString(html.EscapeString(avatarURL))
+	buf.WriteString(`" alt="`)
+	buf.WriteString(html.EscapeString(userName))
+	buf.WriteString(`" class="bk-avatar-img">`)
+
+	// Optional status indicator
+	if status, ok := attrs["status"]; ok {
+		buf.WriteString(`<span class="bk-avatar-status bk-avatar-status-`)
+		buf.WriteString(html.EscapeString(status))
+		buf.WriteString(`"></span>`)
+	}
+
+	buf.WriteString(`</div>`)
+
+	return []byte(buf.String()), nil
+}
+
+// Global feature flags for testing (in production, this would come from config)
+var featureFlags = make(map[string]bool)
+
+// SetFeatureFlag sets a feature flag for testing purposes.
+func SetFeatureFlag(flag string, enabled bool) {
+	featureFlags[flag] = enabled
+}
+
+// renderFeatureFlag renders content conditionally based on feature flags.
+func renderFeatureFlag(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	flag := attrs["flag"]
+	if flag == "" {
+		// If no flag specified, don't render anything
+		return []byte(""), nil
+	}
+
+	// Check if the flag is enabled
+	if enabled, ok := featureFlags[flag]; ok && enabled {
+		// Flag is enabled, render the content
+		return []byte(slots["default"]), nil
+	}
+
+	// Flag is disabled or not set, check for fallback slot
+	if fallback, ok := slots["fallback"]; ok {
+		return []byte(fallback), nil
+	}
+
+	// No content to render
+	return []byte(""), nil
+}
+
+// renderProgressBar renders a progress bar component.
+func renderProgressBar(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	value := attrs["value"]
+	if value == "" {
+		value = "0"
+	}
+
+	max := attrs["max"]
+	if max == "" {
+		max = "100"
+	}
+
+	buf.WriteString(`<div class="bk-progress-bar"`)
+	buf.WriteString(` role="progressbar"`)
+	buf.WriteString(` aria-valuenow="`)
+	buf.WriteString(html.EscapeString(value))
+	buf.WriteString(`"`)
+	buf.WriteString(` aria-valuemin="0"`)
+	buf.WriteString(` aria-valuemax="`)
+	buf.WriteString(html.EscapeString(max))
+	buf.WriteString(`"`)
+
+	// Add other attributes
+	for key, val := range attrs {
+		if key != "value" && key != "max" && key != "class" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(val))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(`>`)
+
+	// Calculate percentage
+	valueInt, _ := strconv.Atoi(value)
+	maxInt, _ := strconv.Atoi(max)
+	percentage := 0
+	if maxInt > 0 {
+		percentage = (valueInt * 100) / maxInt
+	}
+
+	buf.WriteString(`<div class="bk-progress-bar-fill" style="width: `)
+	buf.WriteString(strconv.Itoa(percentage))
+	buf.WriteString(`%">`)
+
+	// Optional label
+	if label, ok := slots["default"]; ok && label != "" {
+		buf.WriteString(`<span class="bk-progress-bar-label">`)
+		buf.WriteString(label)
+		buf.WriteString(`</span>`)
+	}
+
+	buf.WriteString(`</div>`)
+	buf.WriteString(`</div>`)
+
+	return []byte(buf.String()), nil
+}
+
+// renderFormField renders a form field wrapper with label, input, and error slots.
+func renderFormField(attrs map[string]string, slots map[string]string) ([]byte, error) {
+	var buf strings.Builder
+
+	label := attrs["label"]
+	name := attrs["name"]
+	if name == "" {
+		name = fmt.Sprintf("field-%d", hashString(label))
+	}
+
+	fieldID := fmt.Sprintf("field-%s", name)
+	errorID := fmt.Sprintf("error-%s", name)
+
+	buf.WriteString(`<div class="bk-form-field"`)
+
+	// Add other attributes
+	for key, value := range attrs {
+		if key != "label" && key != "name" && key != "class" {
+			buf.WriteString(` `)
+			buf.WriteString(html.EscapeString(key))
+			buf.WriteString(`="`)
+			buf.WriteString(html.EscapeString(value))
+			buf.WriteString(`"`)
+		}
+	}
+
+	buf.WriteString(`>`)
+
+	// Label
+	if label != "" {
+		buf.WriteString(`<label for="`)
+		buf.WriteString(fieldID)
+		buf.WriteString(`" class="bk-form-field-label">`)
+		buf.WriteString(html.EscapeString(label))
+
+		// Add required indicator if present
+		if required, ok := attrs["required"]; ok && required == "true" {
+			buf.WriteString(`<span class="bk-form-field-required" aria-label="required">*</span>`)
+		}
+
+		buf.WriteString(`</label>`)
+	}
+
+	// Input area (from default slot or input slot)
+	buf.WriteString(`<div class="bk-form-field-input" id="`)
+	buf.WriteString(fieldID)
+	buf.WriteString(`"`)
+
+	// Add ARIA describedby if there's an error slot
+	if _, hasError := slots["error"]; hasError {
+		buf.WriteString(` aria-describedby="`)
+		buf.WriteString(errorID)
+		buf.WriteString(`"`)
+	}
+
+	buf.WriteString(`>`)
+
+	if inputSlot, ok := slots["input"]; ok {
+		buf.WriteString(inputSlot)
+	} else {
+		buf.WriteString(slots["default"])
+	}
+
+	buf.WriteString(`</div>`)
+
+	// Help text (if provided)
+	if helpSlot, ok := slots["help"]; ok {
+		buf.WriteString(`<div class="bk-form-field-help">`)
+		buf.WriteString(helpSlot)
+		buf.WriteString(`</div>`)
+	}
+
+	// Error message (if provided)
+	if errorSlot, ok := slots["error"]; ok {
+		buf.WriteString(`<div class="bk-form-field-error" id="`)
+		buf.WriteString(errorID)
+		buf.WriteString(`" role="alert">`)
+		buf.WriteString(errorSlot)
+		buf.WriteString(`</div>`)
+	}
+
+	buf.WriteString(`</div>`)
+
+	return []byte(buf.String()), nil
 }
 
 // hashString generates a simple hash for creating unique IDs.

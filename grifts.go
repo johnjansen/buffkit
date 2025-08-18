@@ -26,20 +26,24 @@ var migrationFS embed.FS
 
 func init() {
 	// Register all Buffkit grift tasks when package is imported
+	fmt.Println("DEBUG: Registering Buffkit grift tasks")
 	registerMigrationTasks()
 	registerJobTasks()
+	fmt.Println("DEBUG: Finished registering Buffkit grift tasks")
 }
 
 // registerMigrationTasks registers database migration tasks
 func registerMigrationTasks() {
+	fmt.Println("DEBUG: Registering migration tasks")
 	_ = grift.Namespace("buffkit", func() {
 		_ = grift.Desc("migrate", "Apply all pending database migrations")
 		_ = grift.Add("migrate", func(c *grift.Context) error {
+			fmt.Println("DEBUG: Running buffkit:migrate task")
 			db, dialect, err := getDatabaseConnection()
 			if err != nil {
 				return fmt.Errorf("database connection failed: %w", err)
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			// Create runner with embedded migrations
 			runner := migrations.NewRunner(db, migrationFS, dialect)
@@ -59,7 +63,7 @@ func registerMigrationTasks() {
 			if err != nil {
 				return fmt.Errorf("database connection failed: %w", err)
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			runner := migrations.NewRunner(db, migrationFS, dialect)
 
@@ -106,7 +110,7 @@ func registerMigrationTasks() {
 			if err != nil {
 				return fmt.Errorf("database connection failed: %w", err)
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			runner := migrations.NewRunner(db, migrationFS, dialect)
 
@@ -115,6 +119,12 @@ func registerMigrationTasks() {
 				return fmt.Errorf("rollback failed: %w", err)
 			}
 
+			// Add summary message for tests
+			if n == 1 {
+				fmt.Println("Rolled back 1 migration")
+			} else {
+				fmt.Printf("Rolled back %d migrations\n", n)
+			}
 			fmt.Println("✅ Rollback complete!")
 			return nil
 		})
@@ -326,6 +336,8 @@ func getDatabaseConnection() (*sql.DB, string, error) {
 	if dialect == "sqlite" || dialect == "sqlite3" {
 		if strings.HasPrefix(dbURL, "sqlite://") {
 			dbURL = dbURL[9:] // Remove "sqlite://" prefix
+		} else if strings.HasPrefix(dbURL, "sqlite3://") {
+			dbURL = dbURL[10:] // Remove "sqlite3://" prefix
 		}
 		if dbURL == "" {
 			dbURL = "buffkit_development.db" // Default SQLite file
@@ -339,7 +351,7 @@ func getDatabaseConnection() (*sql.DB, string, error) {
 
 	// Test connection
 	if err := db.Ping(); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, "", fmt.Errorf("failed to ping database: %w", err)
 	}
 

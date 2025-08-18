@@ -13,7 +13,7 @@ Feature: Component System
     When I render HTML containing "<bk-button>Click me</bk-button>"
     Then the output should contain "<button"
     And the output should contain "Click me</button>"
-    And the output should not contain "bk-button"
+    And the output should not contain "<bk-button"
 
   Scenario: Render component with attributes
     Given I have registered a button component

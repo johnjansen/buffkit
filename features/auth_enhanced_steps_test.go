@@ -63,7 +63,7 @@ func (s *AuthEnhancedTestSuite) Reset() {
 }
 
 // InitializeAuthEnhancedScenario registers all enhanced auth step definitions
-func InitializeAuthEnhancedScenario(ctx *godog.ScenarioContext) {
+func InitializeAuthEnhancedScenario(ctx *godog.ScenarioContext, bridge *SharedBridge) {
 	suite := NewAuthEnhancedTestSuite()
 
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
