@@ -1,0 +1,400 @@
+^(?:the )?application is wired with DevMode set to (true|false)$
+^(?:the )?error output should contain ["']([^"']+)["']$
+^(?:the )?output should contain ["']([^"']+)["']$
+^(?:the )?output should not contain ["']([^"']+)["']$
+^Buffkit is configured with development mode enabled$
+^CSP should prevent inline scripts$
+^DevMode is false and I send an email$
+^I access a protected route$
+^I access the protected route without authentication$
+^I am connected to SSE with session ID "([^"]*)"$
+^I am logged in as a valid user$
+^I am logged in on device A$
+^I am logged in with multiple sessions$
+^I am not logged in$
+^I apply the RequireLogin middleware to a handler$
+^I attempt to login with correct credentials$
+^I broadcast an event "([^"]*)" with data "([^"]*)"$
+^I broadcast an event ["']([^"']+)["'] with data ["']([^"']+)["']$
+^I broadcast an event directly to the broker$
+^I can access user information$
+^I can switch between devices$
+^I capture the response body$
+^I change my password$
+^I check the Buffkit version$
+^I connect to "([^"]*)" with SSE headers$
+^I connect to the SSE endpoint for the first time$
+^I connect to the SSE endpoint$
+^I have a Buffalo application with Buffkit wired$
+^I have a Buffalo application$
+^I have a clean database$
+^I have a clean test database$
+^I have a client connected to SSE$
+^I have a development mail sender$
+^I have a handler that requires login$
+^I have a password reset token older than (\d+) hour$
+^I have a valid password reset token$
+^I have a valid verification token$
+^I have a verification token older than (\d+) hours$
+^I have a working directory "([^"]*)"$
+^I have a working directory ["']([^"']+)["']$
+^I have an SSE broker with a connected client$
+^I have an SSE broker with connected clients$
+^I have an SSE broker with multiple clients$
+^I have an SSE broker$
+^I have an extended user store configured$
+^I have clients connected to SSE$
+^I have multiple clients connected to SSE$
+^I have received events with IDs "([^"]*)", "([^"]*)", "([^"]*)"$
+^I have registered a button component with variants$
+^I have registered a button component$
+^I have registered a card component with named slots$
+^I have registered a card component$
+^I have registered a code component$
+^I have registered a component named "([^"]*)"$
+^I have registered a default button component$
+^I have registered a dropdown component$
+^I have registered a feature flag component$
+^I have registered a form field component$
+^I have registered a modal component$
+^I have registered a tabs component$
+^I have registered a text component$
+^I have registered a user avatar component$
+^I have registered an alert component$
+^I have registered an icon component$
+^I have registered an input component$
+^I have registered but not verified my email$
+^I have registered button and card components$
+^I have registered button, card, and modal components$
+^I have registered multiple components$
+^I initialize a new SSE broker$
+^I inspect the middleware stack$
+^I login on device B$
+^I login with "remember me" checked$
+^I login with remember me checked$
+^I login without "remember me"$
+^I make (\d+) consecutive failed login attempts$
+^I make (\d+) failed login attempts within (\d+) minute$
+^I make (\d+) registration attempts within (\d+) minute$
+^I make a request to any endpoint$
+^I query the component registry$
+^I reconnect with the same session ID$
+^I register a custom button component$
+^I register a mock client$
+^I register a new account$
+^I register with password "([^"]*)"$
+^I render HTML containing "([^"]*)"$
+^I render HTML containing '([^']*)'$
+^I render HTML containing '<([^>]+)>'$
+^I render HTML containing '<bk-button hx-post="([^"]*)" hx-target="([^"]*)">Save</bk-button>'$
+^I render HTML containing '<bk-button id="([^"]*)" data-turbo="([^"]*)">Submit</bk-button>'$
+^I render HTML containing '<bk-button onclick="([^"]*)">Click</bk-button>'$
+^I render HTML containing '<bk-button variant="([^"]*)" size="([^"]*)">Submit</bk-button>'$
+^I render HTML containing '<bk-button variant="([^"]*)">Click</bk-button>'$
+^I render HTML containing '<bk-dropdown data-test-id="([^"]*)" data-track-event="([^"]*)">Menu</bk-dropdown>'$
+^I render HTML containing '<bk-dropdown x-data="([^"]*)">Menu</bk-dropdown>'$
+^I render HTML containing '<bk-feature flag="([^"]*)">New feature content</bk-feature>'$
+^I render HTML containing '<bk-input type="([^"]*)" required name="([^"]*)" />'$
+^I render HTML containing '<bk-modal title="([^"]*)">Are you sure\?</bk-modal>'$
+^I render HTML containing '<bk-tabs default-tab="([^"]*)">...</bk-tabs>'$
+^I render HTML containing '<bk-text><script>alert\("([^"]*)"\)</script></bk-text>'$
+^I render HTML containing <([^>]+)>$
+^I render HTML containing <([^>]+)>([^<]*)</[^>]+>$
+^I render HTML containing ["']([^"']+)["']$
+^I render HTML containing multiple '<bk-input label="([^"]*)" />' components$
+^I render HTML containing:$
+^I render HTML with (\d+) component instances$
+^I render JSON containing component tags$
+^I render a page with (\d+) components$
+^I render a partial template and broadcast it$
+^I request a password reset$
+^I reset my password to "([^"]*)"$
+^I revoke a specific session$
+^I revoke the session for device B$
+^I run "([^"]*)" with timeout (\d+) seconds$
+^I run "([^"]*)"$
+^I run '([^']*)'$
+^I run ["']([^"']+)["'] with timeout (\d+) seconds?$
+^I run ["']([^"']+)["']$
+^I run grift task "([^"]*)" with args "([^"]*)"$
+^I run grift task "([^"]*)"$
+^I send an HTML email with content "([^"]*)"$
+^I send an email with subject "([^"]*)"$
+^I set environment variable "([^"]*)" to "([^"]*)"$
+^I set environment variable '([^']*)' to '([^']*)'$
+^I set environment variable ["']([^"']+)["'] to ["']([^"']*)["']$
+^I should be able to login$
+^I should be able to preview the rendered HTML$
+^I should be able to view them in the mail preview$
+^I should be redirected to a success page$
+^I should be redirected to login$
+^I should continue receiving new live events$
+^I should get a list containing "([^"]*)", "([^"]*)", and "([^"]*)"$
+^I should get a non-empty version string$
+^I should get an error "([^"]*)"$
+^I should get an error containing "([^"]*)"$
+^I should not be redirected$
+^I should receive a unique session ID in the response headers$
+^I should receive a verification email$
+^I should receive an SSE connection$
+^I should receive heartbeat events$
+^I should receive the missed events "([^"]*)", "([^"]*)", "([^"]*)" immediately$
+^I should see a list of active sessions$
+^I should see a list of sent emails$
+^I should see a success message$
+^I should see an account locked message$
+^I should see an error about expired token$
+^I should see an error about passwords not matching$
+^I should see an error message about email already taken$
+^I should see an error message about password strength$
+^I should see an error message$
+^I should see an expiration error message$
+^I should see detailed error messages$
+^I should see my active sessions$
+^I should see my profile information$
+^I should see session details like IP and user agent$
+^I should see the forgot password form$
+^I should see the login form$
+^I should see the mail preview interface$
+^I should see the protected content$
+^I should see the registration form$
+^I submit a POST request to "([^"]*)"$
+^I submit a POST request to ["']([^"']+)["']$
+^I submit a new password "([^"]*)"$
+^I submit a password reset request for "([^"]*)"$
+^I submit a registration with email "([^"]*)" and password "([^"]*)"$
+^I submit passwords "([^"]*)" and "([^"]*)"$
+^I submit profile updates with name "([^"]*)"$
+^I successfully log in$
+^I unregister the client$
+^I visit "([^"]*)"$
+^I visit ["']([^"']+)["']$
+^I visit any authentication page$
+^I visit the reset password link$
+^I visit the verification link$
+^I wire Buffkit with a nil auth secret$
+^I wire Buffkit with a valid configuration$
+^I wire Buffkit with an empty auth secret$
+^I wire Buffkit with an invalid Redis URL "([^"]*)"$
+^SSE reconnection support is enabled with a (\d+) second buffer window$
+^X-Frame-Options should prevent clickjacking$
+^a broadcast error occurs$
+^a file "([^"]*)" should exist$
+^a file ["']([^"']+)["'] should exist$
+^a new user account should be created$
+^a password reset email should be sent$
+^a persistent cookie should be set$
+^a reset token should be created$
+^a user exists with email "([^"]*)"$
+^active sessions should remain$
+^all clients should receive a heartbeat event$
+^all clients should receive the event in their channels$
+^all components should be expanded correctly$
+^all components should be initialized$
+^all components should be properly expanded$
+^all connected clients should receive the event$
+^all data attributes should be preserved$
+^an account is locked until (\d+) minutes ago$
+^an audit log entry should be created$
+^an error occurs during request processing$
+^aria-expanded should reflect the state$
+^aria-label should be preserved$
+^both sessions should be active$
+^client ([A-Z]) is connected with session ["']([^"']+)["']$
+^clients should receive the rendered HTML$
+^component tags should not be expanded$
+^connections should remain alive$
+^debugging information should be available$
+^debugging should be easier$
+^debugging tools should be available$
+^development-specific middleware should be present$
+^device A should remain logged in$
+^device B should be logged out$
+^disabled should be present without value$
+^each input should have a unique ID$
+^each label should have a matching "for" attribute$
+^events "([^"]*)", "([^"]*)", "([^"]*)" are broadcast during the disconnection$
+^expired sessions should be deleted$
+^hx-trigger and hx-swap should be preserved$
+^it should be ready to accept connections$
+^it should initialize the client tracking systems$
+^it should return a handler function$
+^it should start the message handling goroutine$
+^my account should be locked$
+^my account should be marked as verified$
+^my account should remain unverified$
+^my connection drops for (\d+) seconds$
+^my connection should be tracked by the broker$
+^my password should be updated$
+^my password should not be changed$
+^my profile should be updated$
+^my session should persist across browser restarts$
+^no accounts should be verified$
+^no error should be raised$
+^no page refresh should be required$
+^no reset token should be created$
+^no user account should be created$
+^onclick should not be present in the output$
+^only a session cookie should be set$
+^only one user should exist with that email$
+^production optimizations should be disabled$
+^registration should fail with weak password error$
+^reset should fail with weak password error$
+^resources should be cleaned up$
+^stack traces should be included$
+^subsequent login attempts should be blocked$
+^subsequent registration attempts should be blocked$
+^that session should be terminated$
+^the "([^"]*)" flag is enabled$
+^the Content-Security-Policy should allow development tools$
+^the HTML should be properly formatted$
+^the JSON should be returned unchanged$
+^the JSON should be unchanged$
+^the Kit should contain a broker$
+^the Kit should contain a component registry$
+^the Kit should contain a mail sender$
+^the Kit should contain an auth store$
+^the Kit should contain an import map manager$
+^the account should be locked$
+^the account should be unlocked$
+^the account unlock job runs$
+^the application is in development mode$
+^the application is in production mode$
+^the application is running in development mode$
+^the application is wired with DevMode set to false$
+^the application is wired with DevMode set to true$
+^the application is wired with development mode$
+^the avatar should be rendered with user data$
+^the broker should remove the client$
+^the broker should remove the connection$
+^the broker should track the client$
+^the client connection should remain stable$
+^the client count should decrease$
+^the client count should increase$
+^the client disconnects$
+^the comments should include the component name$
+^the component expansion middleware is active$
+^the component expansion should be skipped$
+^the component registry is initialized$
+^the component should be properly expanded$
+^the component should fetch user data during rendering$
+^the component should handle boolean attributes correctly$
+^the component should not be expanded$
+^the component should preserve custom attributes$
+^the connection is established$
+^the content type should be "([^"]*)"$
+^the content type should be ["']([^"']+)["']$
+^the cookie should have extended expiry$
+^the current output is ["']([^"']+)["']$
+^the current user should be available in the context$
+^the custom button should be used instead of default$
+^the custom component should be used for rendering$
+^the default component should be replaced$
+^the email should be sent via SMTP$
+^the email should be stored with HTML content$
+^the email should contain a reset link$
+^the email should contain a verification link$
+^the email should include both HTML and text versions$
+^the emails should be logged instead of sent$
+^the endpoint should not exist$
+^the error output should contain "([^"]*)"$
+^the error output should contain '([^']*)'$
+^the error should be logged appropriately$
+^the event data should be "([^"]*)"$
+^the event data should be ["']([^"']+)["']$
+^the event should contain the correct data$
+^the event type should be "([^"]*)"$
+^the event type should be ["']([^"']+)["']$
+^the exit code should be (\d+)$
+^the expansion should complete within (\d+)ms$
+^the file "([^"]*)" should contain "([^"]*)"$
+^the file ["']([^"']+)["'] should contain ["']([^"']+)["']$
+^the heartbeat timer triggers$
+^the initialization code should be present$
+^the log should contain login details$
+^the log should contain password change details$
+^the mail system should receive a send request$
+^the middleware should be callable$
+^the migrations table should exist$
+^the original HTML should be preserved$
+^the output should be accessible without JavaScript$
+^the output should be properly structured HTML$
+^the output should be safely escaped$
+^the output should conditionally show or hide content$
+^the output should contain "([^"]*)"$
+^the output should contain '([^']*)'$
+^the output should contain '<([^>]+)>'$
+^the output should contain 'aria-expanded="([^"]*)"'$
+^the output should contain 'aria-modal=["']([^"']+)["']'$
+^the output should contain 'class="'$
+^the output should contain 'class=["']([^"']+)["']'$
+^the output should contain 'data-component=["']([^"']+)["']'$
+^the output should contain 'data-initial-tab="([^"]*)"'$
+^the output should contain 'data-state="([^"]*)"'$
+^the output should contain 'data-test-id="([^"]*)"'$
+^the output should contain 'data-track-event="([^"]*)"'$
+^the output should contain 'data-turbo="([^"]*)"'$
+^the output should contain 'hx-post=["']([^"']+)["']'$
+^the output should contain 'hx-target="([^"]*)"'$
+^the output should contain 'id="([^"]*)"'$
+^the output should contain 'name=["']([^"']+)["']'$
+^the output should contain 'role="([^"]*)"'$
+^the output should contain 'type=["']([^"']+)["']'$
+^the output should contain 'x-data="([^"]*)"'$
+^the output should contain HTML comments marking component boundaries$
+^the output should contain HTML comments with component boundaries$
+^the output should contain appropriate ARIA labels$
+^the output should contain appropriate alert styling$
+^the output should contain appropriate classes for "([^"]*)"$
+^the output should contain attribute "([^"]*)" with value "([^"]*)"$
+^the output should contain class "([^"]*)"$
+^the output should contain data attributes for progressive enhancement$
+^the output should contain enhancement attributes$
+^the output should contain expanded button HTML$
+^the output should contain expanded card HTML$
+^the output should contain proper form attributes$
+^the output should contain sanitized content$
+^the output should contain the rendered icon HTML$
+^the output should contain the user's avatar URL$
+^the output should have proper ARIA attributes$
+^the output should have valid HTML5 structure$
+^the output should maintain line breaks$
+^the output should match "([^"]*)"$
+^the output should not contain "([^"]*)"$
+^the output should not contain '([^']*)'$
+^the output should not contain HTML comments$
+^the output should not contain an actual script tag$
+^the output should not contain component boundary comments$
+^the output should preserve the indentation$
+^the output should work with Alpine\.js$
+^the output should work with htmx$
+^the page should update dynamically$
+^the password should be validated for strength$
+^the password should not be changed$
+^the preview should show both email subjects$
+^the reconnection should be logged$
+^the registration should fail$
+^the rendered icon HTML$
+^the rendered progress bar HTML$
+^the rendering should complete within reasonable time$
+^the reset email should be sent through the mail system$
+^the response content-type is "([^"]*)"$
+^the response should include security headers$
+^the response should not be (\d+)$
+^the response status should be (\d+)$
+^the route should exist$
+^the second tab should be marked as active$
+^the security headers should be present but relaxed$
+^the server should track my session in memory$
+^the session ID should be stored as a secure cookie$
+^the session cleanup job runs$
+^the task should fail$
+^the task should succeed$
+^the verification email should be sent through the mail system$
+^the version should contain "([^"]*)"$
+^there are accounts with expired lock times$
+^there are expired sessions older than (\d+) hours$
+^those accounts should be unlocked$
+^valid credentials should also fail$
+^whitespace should be preserved inside the pre element$
+^x-data and x-show should be preserved$

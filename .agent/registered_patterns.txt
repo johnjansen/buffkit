@@ -1,0 +1,444 @@
+^I have a Buffalo application with Buffkit wired$
+^I have an extended user store configured$
+^I visit "([^"]*)"$
+^I should see the registration form$
+^I should see the forgot password form$
+^the response status should be (\d+)$
+^I submit a registration with email "([^"]*)" and password "([^"]*)"$
+^a new user account should be created$
+^I should receive a verification email$
+^I should be redirected to a success page$
+^I should see an error message about password strength$
+^no user account should be created$
+^a user exists with email "([^"]*)"$
+^I should see an error message about email already taken$
+^only one user should exist with that email$
+^I have registered but not verified my email$
+^I have a valid verification token$
+^I visit the verification link$
+^my account should be marked as verified$
+^I should see a success message$
+^I should see an error message$
+^no accounts should be verified$
+^I have a verification token older than (\d+) hours$
+^I should see an expiration error message$
+^my account should remain unverified$
+^I submit a password reset request for "([^"]*)"$
+^a password reset email should be sent$
+^a reset token should be created$
+^no reset token should be created$
+^I have a valid password reset token$
+^I visit the reset password link$
+^I submit a new password "([^"]*)"$
+^my password should be updated$
+^I should be redirected to login$
+^I submit passwords "([^"]*)" and "([^"]*)"$
+^I should see an error about passwords not matching$
+^my password should not be changed$
+^I have a password reset token older than (\d+) hour$
+^I should see an error about expired token$
+^I am logged in as a valid user$
+^I should see my profile information$
+^I submit profile updates with name "([^"]*)"$
+^my profile should be updated$
+^I am not logged in$
+^I should see a list of active sessions$
+^I should see session details like IP and user agent$
+^I am logged in with multiple sessions$
+^I revoke a specific session$
+^that session should be terminated$
+^I make (\d+) failed login attempts within (\d+) minute$
+^subsequent login attempts should be blocked$
+^valid credentials should also fail$
+^I make (\d+) registration attempts within (\d+) minute$
+^subsequent registration attempts should be blocked$
+^I make (\d+) consecutive failed login attempts$
+^my account should be locked$
+^I should see an account locked message$
+^an account is locked until (\d+) minutes ago$
+^I attempt to login with correct credentials$
+^the account should be unlocked$
+^I should be able to login$
+^I successfully log in$
+^an audit log entry should be created$
+^the log should contain login details$
+^I change my password$
+^the log should contain password change details$
+^there are expired sessions older than (\d+) hours$
+^the session cleanup job runs$
+^expired sessions should be deleted$
+^active sessions should remain$
+^there are accounts with expired lock times$
+^the account unlock job runs$
+^those accounts should be unlocked$
+^I register a new account$
+^the verification email should be sent through the mail system$
+^the email should contain a verification link$
+^I request a password reset$
+^the reset email should be sent through the mail system$
+^the email should contain a reset link$
+^I login with "remember me" checked$
+^a persistent cookie should be set$
+^the cookie should have extended expiry$
+^I login without "remember me"$
+^only a session cookie should be set$
+^I visit any authentication page$
+^the response should include security headers$
+^CSP should prevent inline scripts$
+^X-Frame-Options should prevent clickjacking$
+^I register with password "([^"]*)"$
+^the password should be validated for strength$
+^registration should fail with weak password error$
+^I reset my password to "([^"]*)"$
+^reset should fail with weak password error$
+^I am logged in on device A$
+^I login on device B$
+^both sessions should be active$
+^I can switch between devices$
+^I revoke the session for device B$
+^device B should be logged out$
+^device A should remain logged in$
+^I have a Buffalo application$
+^I wire Buffkit with a valid configuration$
+^I check the Buffkit version$
+^all components should be initialized$
+^I should get a non-empty version string$
+^I have a clean database$
+^I set environment variable "([^"]*)" to "([^"]*)"$
+^I set environment variable '([^']*)' to '([^']*)'$
+^I have a working directory "([^"]*)"$
+^I run "([^"]*)"$
+^I run "([^"]*)" with timeout (\d+) seconds$
+^the output should contain "([^"]*)"$
+^the output should contain '([^']*)'$
+^the output should not contain "([^"]*)"$
+^the output should not contain '([^']*)'$
+^the error output should contain "([^"]*)"$
+^the error output should contain '([^']*)'$
+^the exit code should be (\d+)$
+^the migrations table should exist$
+^a file "([^"]*)" should exist$
+^the file "([^"]*)" should contain "([^"]*)"$
+^the component registry is initialized$
+^the component expansion middleware is active$
+^I have registered a button component$
+^I have registered a button component with variants$
+^I have registered a code component$
+^I have registered a form field component$
+^I have registered a modal component$
+^I have registered a text component$
+^I have registered multiple components$
+^I render HTML containing '<bk-button hx-post="([^"]*)" hx-target="([^"]*)">Save</bk-button>'$
+^I render HTML containing '<bk-button id="([^"]*)" data-turbo="([^"]*)">Submit</bk-button>'$
+^I render HTML containing '<bk-button onclick="([^"]*)">Click</bk-button>'$
+^I render HTML containing '<bk-button variant="([^"]*)">Click</bk-button>'$
+^I render HTML containing '<bk-button variant="([^"]*)" size="([^"]*)">Submit</bk-button>'$
+^I render HTML containing '<bk-dropdown data-test-id="([^"]*)" data-track-event="([^"]*)">Menu</bk-dropdown>'$
+^I render HTML containing '<bk-dropdown x-data="([^"]*)">Menu</bk-dropdown>'$
+^I render HTML containing '<bk-feature flag="([^"]*)">New feature content</bk-feature>'$
+^I render HTML containing '<bk-modal title="([^"]*)">Are you sure\?</bk-modal>'$
+^I render HTML containing '<bk-tabs default-tab="([^"]*)">...</bk-tabs>'$
+^I render HTML containing '<bk-text><script>alert\("([^"]*)"\)</script></bk-text>'$
+^I render HTML containing multiple '<bk-input label="([^"]*)" />' components$
+^I render HTML with (\d+) component instances$
+^I render HTML containing '<bk-input type="([^"]*)" required name="([^"]*)" />'$
+^I render HTML containing '<([^>]+)>'$
+^I render HTML containing:$
+^the output should contain '<([^>]+)>'$
+^the output should contain class "([^"]*)"$
+^the output should contain attribute "([^"]*)" with value "([^"]*)"$
+^the output should be properly structured HTML$
+^I have registered a card component$
+^I have registered a dropdown component$
+^I have registered a card component with named slots$
+^I have registered an alert component$
+^I have registered an input component$
+^I have registered an icon component$
+^I have registered a component named "([^"]*)"$
+^I have registered button and card components$
+^I have registered button, card, and modal components$
+^I have registered a default button component$
+^I register a custom button component$
+^I have registered a tabs component$
+^I have registered a feature flag component$
+^I have registered a user avatar component$
+^the component expansion should be skipped$
+^the component should be properly expanded$
+^the component should fetch user data during rendering$
+^the component should not be expanded$
+^the custom component should be used for rendering$
+^the default component should be replaced$
+^the expansion should complete within (\d+)ms$
+^the "([^"]*)" flag is enabled$
+^the JSON should be returned unchanged$
+^the original HTML should be preserved$
+^the output should contain appropriate classes for "([^"]*)"$
+^the output should contain 'aria-expanded="([^"]*)"'$
+^the output should contain 'class="'$
+^the output should contain data attributes for progressive enhancement$
+^the output should contain 'data-initial-tab="([^"]*)"'$
+^the output should contain 'data-state="([^"]*)"'$
+^the output should contain 'data-test-id="([^"]*)"'$
+^the output should contain 'data-track-event="([^"]*)"'$
+^the output should contain 'data-turbo="([^"]*)"'$
+^the output should contain expanded button HTML$
+^the output should contain expanded card HTML$
+^the output should contain HTML comments marking component boundaries$
+^the output should contain 'hx-target="([^"]*)"'$
+^the output should contain 'id="([^"]*)"'$
+^the output should contain 'role="([^"]*)"'$
+^the output should contain the rendered icon HTML$
+^the output should contain the user's avatar URL$
+^the output should contain 'x-data="([^"]*)"'$
+^the output should not contain an actual script tag$
+^the output should not contain component boundary comments$
+^the output should preserve the indentation$
+^the response content-type is "([^"]*)"$
+^the output should contain appropriate alert styling$
+^all components should be properly expanded$
+^the output should contain enhancement attributes$
+^the output should be accessible without JavaScript$
+^the output should contain proper form attributes$
+^the output should have valid HTML5 structure$
+^no error should be raised$
+^the output should be safely escaped$
+^onclick should not be present in the output$
+^the custom button should be used instead of default$
+^the output should contain HTML comments with component boundaries$
+^the comments should include the component name$
+^the output should not contain HTML comments$
+^the rendered icon HTML$
+^the rendered progress bar HTML$
+^whitespace should be preserved inside the pre element$
+^the initialization code should be present$
+^the second tab should be marked as active$
+^the output should conditionally show or hide content$
+^the avatar should be rendered with user data$
+^all data attributes should be preserved$
+^I render a page with (\d+) components$
+^the rendering should complete within reasonable time$
+^all components should be expanded correctly$
+^I render JSON containing component tags$
+^the JSON should be unchanged$
+^component tags should not be expanded$
+^the component should preserve custom attributes$
+^aria-label should be preserved$
+^the component should handle boolean attributes correctly$
+^disabled should be present without value$
+^I query the component registry$
+^I should get a list containing "([^"]*)", "([^"]*)", and "([^"]*)"$
+^the application is in development mode$
+^the application is in production mode$
+^the output should have proper ARIA attributes$
+^aria-expanded should reflect the state$
+^each input should have a unique ID$
+^each label should have a matching "for" attribute$
+^the output should work with htmx$
+^hx-trigger and hx-swap should be preserved$
+^the output should work with Alpine\.js$
+^x-data and x-show should be preserved$
+^I have a clean test database$
+^I run grift task "([^"]*)"$
+^I run grift task "([^"]*)" with args "([^"]*)"$
+^the task should succeed$
+^the task should fail$
+^the migrations table should exist$
+^the current output is ["']([^"']+)["']$
+^I capture the response body$
+^(?:the )?output should contain ["']([^"']+)["']$
+^(?:the )?output should not contain ["']([^"']+)["']$
+^(?:the )?error output should contain ["']([^"']+)["']$
+^I set environment variable ["']([^"']+)["'] to ["']([^"']*)["']$
+^I run ["']([^"']+)["']$
+^I run ["']([^"']+)["'] with timeout (\d+) seconds?$
+^the exit code should be (\d+)$
+^I render HTML containing ["']([^"']+)["']$
+^I render HTML containing <([^>]+)>$
+^I visit ["']([^"']+)["']$
+^I submit a POST request to ["']([^"']+)["']$
+^the response status should be (\d+)$
+^the content type should be ["']([^"']+)["']$
+^I have a clean database$
+^the migrations table should exist$
+^I have a working directory ["']([^"']+)["']$
+^a file ["']([^"']+)["'] should exist$
+^the file ["']([^"']+)["'] should contain ["']([^"']+)["']$
+^the event type should be ["']([^"']+)["']$
+^the event data should be ["']([^"']+)["']$
+^the content type should be ["']([^"']+)["']$
+^the response status should be (\d+)$
+^all connected clients should receive the event$
+^I have multiple clients connected to SSE$
+^the page should update dynamically$
+^no page refresh should be required$
+^I broadcast an event ["']([^"']+)["'] with data ["']([^"']+)["']$
+^I submit a POST request to ["']([^"']+)["']$
+^I visit ["']([^"']+)["']$
+^I render HTML containing <([^>]+)>([^<]*)</[^>]+>$
+^client ([A-Z]) is connected with session ["']([^"']+)["']$
+^(?:the )?application is wired with DevMode set to (true|false)$
+^I login with remember me checked$
+^I should see my active sessions$
+^the account should be locked$
+^the password should not be changed$
+^the registration should fail$
+^my session should persist across browser restarts$
+^the mail system should receive a send request$
+^the email should be sent via SMTP$
+^DevMode is false and I send an email$
+^the output should contain 'class=["']([^"']+)["']'$
+^the output should contain 'data-component=["']([^"']+)["']'$
+^the output should contain 'aria-modal=["']([^"']+)["']'$
+^the output should contain 'type=["']([^"']+)["']'$
+^the output should contain 'name=["']([^"']+)["']'$
+^the output should contain 'hx-post=["']([^"']+)["']'$
+^the output should contain appropriate ARIA labels$
+^the output should contain sanitized content$
+^the output should maintain line breaks$
+^the migrations table should exist$
+^a file ["']([^"']+)["'] should exist$
+^the output should contain "([^"]*)"$
+^the output should contain '([^']*)'$
+^the output should not contain "([^"]*)"$
+^the output should not contain '([^']*)'$
+^the output should match "([^"]*)"$
+^the error output should contain "([^"]*)"$
+^the error output should contain '([^']*)'$
+^I set environment variable "([^"]*)" to "([^"]*)"$
+^I set environment variable '([^']*)' to '([^']*)'$
+^I have a clean database$
+^I have a working directory "([^"]*)"$
+^I run "([^"]*)"$
+^I run '([^']*)'$
+^I run "([^"]*)" with timeout (\d+) seconds$
+^the exit code should be (\d+)$
+^I render HTML containing "([^"]*)"$
+^I render HTML containing '([^']*)'$
+^I visit "([^"]*)"$
+^I submit a POST request to "([^"]*)"$
+^the response status should be (\d+)$
+^the content type should be "([^"]*)"$
+^a file "([^"]*)" should exist$
+^the file "([^"]*)" should contain "([^"]*)"$
+^the migrations table should exist$
+^I have a Buffalo application with Buffkit wired$
+^SSE reconnection support is enabled with a (\d+) second buffer window$
+^I connect to the SSE endpoint for the first time$
+^I should receive a unique session ID in the response headers$
+^the session ID should be stored as a secure cookie$
+^the server should track my session in memory$
+^I am connected to SSE with session ID "([^"]*)"$
+^I have received events with IDs "([^"]*)", "([^"]*)", "([^"]*)"$
+^my connection drops for (\d+) seconds$
+^events "([^"]*)", "([^"]*)", "([^"]*)" are broadcast during the disconnection$
+^I reconnect with the same session ID$
+^I should receive the missed events "([^"]*)", "([^"]*)", "([^"]*)" immediately$
+^I should continue receiving new live events$
+^the reconnection should be logged$
+^I have a Buffalo application$
+^I wire Buffkit with a valid configuration$
+^I wire Buffkit with an empty auth secret$
+^I wire Buffkit with a nil auth secret$
+^I wire Buffkit with an invalid Redis URL "([^"]*)"$
+^I check the Buffkit version$
+^all components should be initialized$
+^the Kit should contain a broker$
+^the Kit should contain an auth store$
+^the Kit should contain a mail sender$
+^the Kit should contain an import map manager$
+^the Kit should contain a component registry$
+^I should get an error "([^"]*)"$
+^I should get an error containing "([^"]*)"$
+^I should get a non-empty version string$
+^the version should contain "([^"]*)"$
+^I have a Buffalo application with Buffkit wired$
+^I visit "([^"]*)"$
+^I submit a POST request to "([^"]*)"$
+^I should see the login form$
+^the response status should be (\d+)$
+^the route should exist$
+^the response should not be (\d+)$
+^I connect to "([^"]*)" with SSE headers$
+^I should receive an SSE connection$
+^the content type should be "([^"]*)"$
+^Buffkit is configured with development mode enabled$
+^the application is wired with DevMode set to true$
+^the application is wired with DevMode set to false$
+^I should see the mail preview interface$
+^I should see a list of sent emails$
+^the endpoint should not exist$
+^I have a handler that requires login$
+^I access the protected route without authentication$
+^I should be redirected to login$
+^I apply the RequireLogin middleware to a handler$
+^the middleware should be callable$
+^it should return a handler function$
+^I am logged in as a valid user$
+^I access a protected route$
+^I should see the protected content$
+^I should not be redirected$
+^the current user should be available in the context$
+^I can access user information$
+^I have multiple clients connected to SSE$
+^I broadcast an event "([^"]*)" with data "([^"]*)"$
+^all connected clients should receive the event$
+^the event type should be "([^"]*)"$
+^the event data should be "([^"]*)"$
+^I connect to the SSE endpoint$
+^the connection is established$
+^I should receive heartbeat events$
+^my connection should be tracked by the broker$
+^I have a client connected to SSE$
+^the client disconnects$
+^the broker should remove the connection$
+^resources should be cleaned up$
+^I have clients connected to SSE$
+^I render a partial template and broadcast it$
+^clients should receive the rendered HTML$
+^the HTML should be properly formatted$
+^I have a development mail sender$
+^I send an email with subject "([^"]*)"$
+^the emails should be logged instead of sent$
+^I should be able to view them in the mail preview$
+^the preview should show both email subjects$
+^I send an HTML email with content "([^"]*)"$
+^the email should be stored with HTML content$
+^I should be able to preview the rendered HTML$
+^the email should include both HTML and text versions$
+^the application is running in development mode$
+^I make a request to any endpoint$
+^the security headers should be present but relaxed$
+^the Content-Security-Policy should allow development tools$
+^debugging should be easier$
+^an error occurs during request processing$
+^I should see detailed error messages$
+^stack traces should be included$
+^debugging information should be available$
+^I initialize a new SSE broker$
+^it should start the message handling goroutine$
+^it should initialize the client tracking systems$
+^it should be ready to accept connections$
+^a broadcast error occurs$
+^the client connection should remain stable$
+^the error should be logged appropriately$
+^the application is wired with development mode$
+^I inspect the middleware stack$
+^development-specific middleware should be present$
+^production optimizations should be disabled$
+^debugging tools should be available$
+^I have an SSE broker$
+^I register a mock client$
+^the broker should track the client$
+^the client count should increase$
+^I have an SSE broker with a connected client$
+^I unregister the client$
+^the broker should remove the client$
+^the client count should decrease$
+^I have an SSE broker with multiple clients$
+^I broadcast an event directly to the broker$
+^all clients should receive the event in their channels$
+^the event should contain the correct data$
+^I have an SSE broker with connected clients$
+^the heartbeat timer triggers$
+^all clients should receive a heartbeat event$
+^connections should remain alive$

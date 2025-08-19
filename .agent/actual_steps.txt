@@ -1,0 +1,559 @@
+    And 150 events are broadcast while disconnected
+    And Buffkit is configured with development mode enabled
+    And CSP should prevent inline scripts
+    And I can access user information
+    And I have a valid verification token
+    And I have an extended user store configured
+    And I have received events up to ID "10"
+    And I have received events with IDs "1", "2", "3"
+    And I have registered a card component
+    And I reconnect requesting replay
+    And I reconnect with Last-Event-ID "2"
+    And I reconnect with Last-Event-ID header set to "10"
+    And I reconnect with my session ID
+    And I reconnect with the same session ID
+    And I send an email with subject "Another Test"
+    And I set environment variable "MIGRATION_PATH" to "temp_migrations"
+    And I should be able to preview the rendered HTML
+    And I should be able to view them in the mail preview
+    And I should be redirected to a success page
+    And I should be redirected to forgot password
+    And I should be redirected to login
+    And I should continue receiving new live events
+    And I should not be redirected
+    And I should receive a verification email
+    And I should receive any events missed during page reload
+    And I should receive the most recent 100 events
+    And I should see a list of sent emails
+    And I should see a rate limit error message
+    And I should see a success message
+    And I should see an account locked message
+    And I should see both devices in sessions list
+    And I should see session details like IP and user agent
+    And I submit a new password "NewSecurePass123!"
+    And I submit mismatched passwords
+    And I submit the profile form
+    And I update my name to "New Name"
+    And SSE reconnection support is enabled with a 30 second buffer window
+    And X-Frame-Options should prevent clickjacking
+    And a "no-buffer" indicator should be sent
+    And a reset token should be created
+    And a security event should be logged
+    And active sessions should remain
+    And all components should be properly expanded
+    And an event "shared-event" is broadcast to all clients
+    And asset serving should prioritize development speed
+    And both servers share session state via Redis
+    And buffers should be cleaned up according to TTL
+    And client A should receive "shared-event" upon reconnection
+    And client B is connected with session "session-B"
+    And client B remains connected
+    And client preferences should persist
+    And connection thrashing should be logged
+    And connections should remain alive
+    And debugging information should be available
+    And debugging should be easier
+    And debugging tools should be available
+    And device A should remain logged in
+    And duplicate detection should prevent double delivery
+    And each client has a buffer limit of 1000 events
+    And each label should have a matching "for" attribute
+    And event "3" is still in the buffer when I reconnect
+    And events "4", "5", "6" are broadcast during the disconnection
+    And events continue to be broadcast
+    And it should be ready to accept connections
+    And it should include timestamp, IP, and result
+    And it should initialize the client tracking systems
+    And it should record the password change event
+    And it should return a handler function
+    And my account should remain unverified
+    And my buffered events should be available
+    And my connection should be tracked by the broker
+    And my event buffer should be freed
+    And my password should not be changed
+    And my session should end when browser closes
+    And my session should persist across browser restarts
+    And no accounts should be verified
+    And no email should be sent
+    And no error should be raised
+    And no events should be duplicated
+    And no events should be lost during the cycles
+    And no page refresh should be required
+    And no preview should be generated
+    And no replay should occur
+    And no reset token should be created
+    And no user account should be created
+    And older events should be marked as dropped
+    And only one active connection should exist per session
+    And only one user should exist with that email
+    And other clients should not be affected
+    And production optimizations should be disabled
+    And recently locked accounts should remain locked
+    And replayed events should be marked with a "replayed" flag
+    And resources should be cleaned up
+    And stack traces should be included
+    And subscription filters should be maintained
+    And subsequent reconnection attempts should create a new session
+    And the "new-ui" flag is enabled
+    And the Content-Security-Policy should allow development tools
+    And the HTML should be properly formatted
+    And the JSON should be returned unchanged
+    And the Kit should contain a broker
+    And the Kit should contain a component registry
+    And the Kit should contain a mail sender
+    And the Kit should contain an auth store
+    And the Kit should contain an import map manager
+    And the account should be unlocked
+    And the buffers should remain independent
+    And the client count should decrease
+    And the client count should increase
+    And the comments should include the component name
+    And the component expansion middleware is active
+    And the content type should be "text/event-stream"
+    And the default component should be replaced
+    And the email should contain a reset link
+    And the email should contain a verification link
+    And the email should include both HTML and text versions
+    And the endpoint should not exist
+    And the error output should contain "database"
+    And the error output should contain "redis"
+    And the error output should contain 'error'
+    And the error should be logged appropriately
+    And the event data should be "Hello World"
+    And the event sequence should be continuous
+    And the event should contain the correct data
+    And the event type should be "user-update"
+    And the events should arrive in chronological order
+    And the exit code should be 0
+    And the exit code should be 1
+    And the file "test.txt" should contain "test content"
+    And the handoff should be transparent
+    And the import maps should support development workflows
+    And the legitimate client should remain connected
+    And the migrations table should exist
+    And the original HTML should be preserved
+    And the output should be accessible without JavaScript
+    And the output should be properly structured HTML
+    And the output should contain "<button>"
+    And the output should contain "Card actions"
+    And the output should contain "Card content goes here"
+    And the output should contain "Click me</button>"
+    And the output should contain "Concurrency: 10"
+    And the output should contain "Connecting to Redis"
+    And the output should contain "Creating migration table"
+    And the output should contain "Migration Status"
+    And the output should contain "Migrations complete"
+    And the output should contain "Processing scheduled jobs"
+    And the output should contain "Rolled back 1 migration"
+    And the output should contain "Rolled back"
+    And the output should contain "Running migrations"
+    And the output should contain "Submit</button>"
+    And the output should contain "buffkit:rollback"
+    And the output should contain "buffkit:scheduler"
+    And the output should contain "buffkit:status"
+    And the output should contain "buffkit:worker"
+    And the output should contain "checked"
+    And the output should contain "large"
+    And the output should contain "primary"
+    And the output should contain "readonly"
+    And the output should contain "required"
+    And the output should contain "world"
+    And the output should contain 'aria-expanded="false"'
+    And the output should contain 'aria-labelledby='
+    And the output should contain 'aria-modal="true"'
+    And the output should contain 'class="test"'
+    And the output should contain 'data-component="dropdown"'
+    And the output should contain 'data-state="closed"'
+    And the output should contain 'data-track-event="open"'
+    And the output should contain 'data-turbo="false"'
+    And the output should contain 'double quotes'
+    And the output should contain 'hx-target="#result"'
+    And the output should contain 'name="user_email"'
+    And the output should contain appropriate ARIA labels
+    And the output should contain appropriate alert styling
+    And the output should contain data attributes for progressive enhancement
+    And the output should contain expanded button HTML
+    And the output should contain sanitized content
+    And the output should contain the user's avatar URL
+    And the output should maintain line breaks
+    And the output should not contain "<bk-button"
+    And the output should not contain "bk-button"
+    And the output should not contain "bk-card"
+    And the output should not contain "goodbye"
+    And the output should not contain 'failing'
+    And the output should not contain an actual script tag
+    And the page reloads and re-establishes SSE connection
+    And the password should not be changed
+    And the preview should show both email subjects
+    And the reconnection should be logged
+    And the registration should fail
+    And the reset token should be invalidated
+    And the response should not be 404
+    And the response status should be 200
+    And the second tab should be marked as active
+    And the server should remain responsive
+    And the server should track my session in memory
+    And the session ID should be stored as a secure cookie
+    And the transition should be seamless
+    And the version should contain "alpha"
+    And valid credentials should also fail
+    Given I am connected and have received timestamped events
+    Given I am connected and tracking received event IDs
+    Given I am connected through a load balancer to server A
+    Given I am connected to SSE
+    Given I am connected to SSE with a buffer limit of 100 events
+    Given I am connected to SSE with a session cookie
+    Given I am connected to SSE with session ID "test-session-123"
+    Given I am connected to SSE with session ID "test-session-456"
+    Given I am connected to SSE with session ID "test-session-789"
+    Given I am connected with custom headers and query parameters
+    Given I am logged in as a valid user
+    Given I am logged in on device A
+    Given I am logged in on multiple devices
+    Given I am logged in with multiple sessions
+    Given I am not logged in
+    Given I connect to the SSE endpoint
+    Given I have a Buffalo application
+    Given I have a Buffalo application with Buffkit wired
+    Given I have a JSON API endpoint
+    Given I have a clean database
+    Given I have a clean test database
+    Given I have a client connected to SSE
+    Given I have a development mail sender
+    Given I have a handler that requires login
+    Given I have a password reset token older than 1 hour
+    Given I have a valid password reset token
+    Given I have a verification token older than 24 hours
+    Given I have a working directory "file_test"
+    Given I have a working directory "temp_migrations"
+    Given I have a working directory "test_dir"
+    Given I have an SSE broker
+    Given I have an SSE broker with a connected client
+    Given I have an SSE broker with connected clients
+    Given I have an SSE broker with multiple clients
+    Given I have an htmx-enabled page connected to SSE
+    Given I have clients connected to SSE
+    Given I have multiple clients connected to SSE
+    Given I have multiple clients with different interests
+    Given I have registered a button component
+    Given I have registered a button component with variants
+    Given I have registered a card component with named slots
+    Given I have registered a code component
+    Given I have registered a component named "progress-bar"
+    Given I have registered a default button component
+    Given I have registered a dropdown component
+    Given I have registered a feature flag component
+    Given I have registered a form field component
+    Given I have registered a modal component
+    Given I have registered a tabs component
+    Given I have registered a text component
+    Given I have registered a user avatar component
+    Given I have registered an alert component
+    Given I have registered an icon component
+    Given I have registered an input component
+    Given I have registered but not verified my email
+    Given I have registered button and card components
+    Given I have registered button, card, and modal components
+    Given I have registered multiple components
+    Given I have the same Buffkit configuration
+    Given I run "grift buffkit:migrate"
+    Given I run grift task "buffkit:migrate"
+    Given I set environment variable "DATABASE_URL" to ""
+    Given I set environment variable "DATABASE_URL" to "invalid://url"
+    Given I set environment variable "DATABASE_URL" to "mysql://user:pass@localhost/testdb"
+    Given I set environment variable "DATABASE_URL" to "postgres://user:pass@localhost/testdb"
+    Given I set environment variable "REDIS_URL" to "redis://invalid:9999"
+    Given I set environment variable "REDIS_URL" to "redis://localhost:6379"
+    Given I set environment variable "TEST_VAR" to "test_value"
+    Given I set environment variable "VERBOSE" to "true"
+    Given I set environment variable 'ANOTHER_VAR' to 'another_value'
+    Given SSE reconnection is configured with buffer size 0
+    Given a client is connected with session ID "legitimate-session"
+    Given a user exists with email "existing@example.com"
+    Given a user exists with email "user@example.com"
+    Given an account is locked until 5 minutes ago
+    Given client A is connected with session "session-A"
+    Given the application is in development mode
+    Given the application is in production mode
+    Given the application is running in development mode
+    Given the application is wired with DevMode set to false
+    Given the application is wired with DevMode set to true
+    Given the application is wired with development mode
+    Given the component registry is initialized
+    Given the server has 100 connected clients
+    Given there are accounts with expired lock times
+    Given there are expired sessions older than 24 hours
+    Then I should be redirected to login
+    Then I should get a list containing "button", "card", and "modal"
+    Then I should get a non-empty version string
+    Then I should get an error "AuthSecret is required"
+    Then I should get an error containing "failed to initialize jobs"
+    Then I should receive a special "buffer-overflow" event
+    Then I should receive a unique session ID in the response headers
+    Then I should receive an SSE connection
+    Then I should receive event "3" only once
+    Then I should receive events "11" through "15" in order
+    Then I should receive heartbeat events
+    Then I should receive the missed events "4", "5", "6" immediately
+    Then I should reconnect with the same session ID from the cookie
+    Then I should see a success message
+    Then I should see an error about passwords not matching
+    Then I should see an error message
+    Then I should see an error message about email already taken
+    Then I should see an error message about password strength
+    Then I should see an expiration error
+    Then I should see an expiration error message
+    Then I should see detailed error messages
+    Then I should see information about:
+    Then I should see my active sessions
+    Then I should see my profile information
+    Then I should see password strength requirements
+    Then I should see the forgot password form
+    Then I should see the login form
+    Then I should see the mail preview interface
+    Then I should see the protected content
+    Then I should see the registration form
+    Then I should successfully reconnect on server B
+    Then a file "test.txt" should exist
+    Then a new user account should be created
+    Then a password reset email should be sent
+    Then a persistent cookie should be set
+    Then all clients should receive a heartbeat event
+    Then all clients should receive the event in their channels
+    Then all components should be initialized
+    Then all connected clients should receive the event
+    Then an audit log entry should be created
+    Then both sessions should be active
+    Then client B should receive "shared-event" immediately
+    Then clients should receive the rendered HTML
+    Then development-specific middleware should be present
+    Then device B should be logged out
+    Then each input should have a unique ID
+    Then each reconnection should be handled gracefully
+    Then expired sessions should be deleted
+    Then it should start the message handling goroutine
+    Then memory usage should not exceed expected bounds
+    Then my account should be marked as verified
+    Then my connection metadata should be restored
+    Then my password should be updated
+    Then my profile should be updated
+    Then my session should be cleaned up after 30 seconds
+    Then only a session cookie should be set
+    Then only targeted clients should receive the event
+    Then replayed events should maintain their original timestamps
+    Then subsequent login attempts should be blocked
+    Then subsequent registration attempts should be blocked
+    Then that session should be invalidated
+    Then the account should be locked
+    Then the broker should remove the client
+    Then the broker should remove the connection
+    Then the broker should track the client
+    Then the changes should be reflected without restart
+    Then the client connection should remain stable
+    Then the client should receive only new events
+    Then the component expansion should be skipped
+    Then the component should be properly expanded
+    Then the component should fetch user data during rendering
+    Then the component should not be expanded
+    Then the connection attempt should be rejected
+    Then the current user should be available in the context
+    Then the custom component should be used for rendering
+    Then the email should be captured for preview
+    Then the email should be sent via SMTP
+    Then the email should be stored with HTML content
+    Then the emails should be logged instead of sent
+    Then the error output should contain "Redis connection failed"
+    Then the error output should contain "database configuration"
+    Then the error output should contain "error message"
+    Then the error output should contain "no migrations found"
+    Then the error output should contain "unsupported database"
+    Then the exit code should be 0
+    Then the exit code should be 1
+    Then the expansion should complete within 100ms
+    Then the login should succeed
+    Then the mail system should receive a send request
+    Then the middleware should be callable
+    Then the output should contain "&lt;script&gt;"
+    Then the output should contain "<bk-unknown>Content</bk-unknown>"
+    Then the output should contain "<button"
+    Then the output should contain "Card Title"
+    Then the output should contain "Click me"
+    Then the output should contain "Connected to Redis"
+    Then the output should contain "DEBUG"
+    Then the output should contain "Migration Status"
+    Then the output should contain "New feature content"
+    Then the output should contain "No pending migrations"
+    Then the output should contain "Rolling back 1 migration"
+    Then the output should contain "Rolling back migration"
+    Then the output should contain "Running migrations"
+    Then the output should contain "Starting job worker"
+    Then the output should contain "Starting scheduler"
+    Then the output should contain "This is a warning message"
+    Then the output should contain "Using MySQL dialect"
+    Then the output should contain "Using PostgreSQL dialect"
+    Then the output should contain "buffkit:migrate"
+    Then the output should contain "disabled"
+    Then the output should contain "hello"
+    Then the output should contain "single quotes"
+    Then the output should contain "test_dir"
+    Then the output should contain "test_value"
+    Then the output should contain "worker"
+    Then the output should contain 'Content'
+    Then the output should contain 'another_value'
+    Then the output should contain 'class="'
+    Then the output should contain 'data-component="dropdown"'
+    Then the output should contain 'data-initial-tab="2"'
+    Then the output should contain 'data-test-id="menu"'
+    Then the output should contain 'hx-post="/api/save"'
+    Then the output should contain 'id="submit-btn"'
+    Then the output should contain 'role="dialog"'
+    Then the output should contain 'testing'
+    Then the output should contain 'type="email"'
+    Then the output should contain 'x-data="{ open: false }"'
+    Then the output should contain HTML comments marking component boundaries
+    Then the output should contain appropriate classes for "<variant>"
+    Then the output should contain expanded card HTML
+    Then the output should contain the rendered icon HTML
+    Then the output should not contain "onclick"
+    Then the output should not contain component boundary comments
+    Then the output should preserve the indentation
+    Then the page content should update automatically
+    Then the response should include security headers
+    Then the response status should be 404
+    Then the route should exist
+    Then the security headers should be present but relaxed
+    Then the task should fail
+    Then the task should succeed
+    Then those accounts should be unlocked
+    When 50 clients disconnect simultaneously
+    When DevMode is false and I send an email
+    When DevMode is true and I send an email
+    When I access a protected route
+    When I access diagnostic endpoints
+    When I access the protected route without authentication
+    When I apply the RequireLogin middleware to a handler
+    When I attempt to login
+    When I attempt to login with valid credentials
+    When I broadcast an event "user-update" with data "Hello World"
+    When I broadcast an event directly to the broker
+    When I broadcast an event to specific clients
+    When I broadcast an update event
+    When I change my password
+    When I check the Buffkit version
+    When I connect to "/events" with SSE headers
+    When I connect to the SSE endpoint for the first time
+    When I disconnect after receiving events "1", "2", "3"
+    When I disconnect and don't reconnect for 35 seconds
+    When I disconnect and events "11" through "15" are broadcast
+    When I disconnect and lose connection state
+    When I disconnect and multiple events occur with timestamps
+    When I disconnect for an extended period
+    When I initialize a new SSE broker
+    When I inspect the middleware stack
+    When I login on device B
+    When I login with remember me checked
+    When I login without remember me checked
+    When I make 3 registration attempts within 1 minute
+    When I make 5 failed login attempts for that user
+    When I make 5 failed login attempts within 1 minute
+    When I make a request to any endpoint
+    When I make changes to templates or assets
+    When I query the component registry
+    When I rapidly disconnect and reconnect 10 times within 2 seconds
+    When I refresh the browser page
+    When I register a custom button component
+    When I register a mock client
+    When I register a new account
+    When I render HTML containing "<bk-alert>This is a warning message</bk-alert>"
+    When I render HTML containing "<bk-button>Click me</bk-button>"
+    When I render HTML containing "<bk-button>Unclosed tag"
+    When I render HTML containing "<bk-card>Content</bk-card>"
+    When I render HTML containing "<bk-unknown>Content</bk-unknown>"
+    When I render HTML containing "<button>Click me</button>"
+    When I render HTML containing '<bk-avatar user-id="123" />'
+    When I render HTML containing '<bk-button hx-post="/api/save" hx-target="#result">Save</bk-button>'
+    When I render HTML containing '<bk-button id="submit-btn" data-turbo="false">Submit</bk-button>'
+    When I render HTML containing '<bk-button onclick="alert(1)">Click</bk-button>'
+    When I render HTML containing '<bk-button variant="<variant>">Click</bk-button>'
+    When I render HTML containing '<bk-button variant="primary" size="large">Submit</bk-button>'
+    When I render HTML containing '<bk-dropdown data-test-id="menu" data-track-event="open">Menu</bk-dropdown>'
+    When I render HTML containing '<bk-dropdown x-data="{ open: false }">Menu</bk-dropdown>'
+    When I render HTML containing '<bk-dropdown>Menu</bk-dropdown>'
+    When I render HTML containing '<bk-feature flag="new-ui">New feature content</bk-feature>'
+    When I render HTML containing '<bk-icon name="check" />'
+    When I render HTML containing '<bk-input disabled readonly checked />'
+    When I render HTML containing '<bk-input type="email" required name="user_email" />'
+    When I render HTML containing '<bk-modal title="Confirm">Are you sure?</bk-modal>'
+    When I render HTML containing '<bk-progress-bar value="50" />'
+    When I render HTML containing '<bk-tabs default-tab="2">...</bk-tabs>'
+    When I render HTML containing '<bk-text><script>alert("XSS")</script></bk-text>'
+    When I render HTML containing '<div class="test">Content</div>'
+    When I render HTML containing multiple '<bk-input label="Email" />' components
+    When I render HTML containing:
+    When I render HTML with 100 component instances
+    When I render a partial template and broadcast it
+    When I request a password reset
+    When I revoke a specific session
+    When I revoke the session for device B
+    When I run "echo $TEST_VAR"
+    When I run "echo 'single quotes' and \"double quotes\""
+    When I run "echo error message >&2"
+    When I run "echo hello world"
+    When I run "echo test content > test.txt"
+    When I run "exit 0"
+    When I run "exit 1"
+    When I run "grift buffkit:migrate"
+    When I run "grift buffkit:rollback 1"
+    When I run "grift buffkit:rollback"
+    When I run "grift buffkit:scheduler" with timeout 2 seconds
+    When I run "grift buffkit:status"
+    When I run "grift buffkit:worker 10" with timeout 2 seconds
+    When I run "grift buffkit:worker" with timeout 2 seconds
+    When I run "grift buffkit:worker" with timeout 5 seconds
+    When I run "grift list"
+    When I run "pwd"
+    When I run 'echo $ANOTHER_VAR'
+    When I run 'echo testing'
+    When I run grift task "buffkit:migrate"
+    When I run grift task "buffkit:migrate:down"
+    When I run grift task "buffkit:migrate:down" with args "1"
+    When I run grift task "buffkit:migrate:status"
+    When I run grift task "jobs:worker"
+    When I send an HTML email with content "<h1>Welcome</h1>"
+    When I send an email with subject "Test Email"
+    When I submit a POST request to "/login"
+    When I submit a POST request to "/logout"
+    When I submit a password reset request for "nonexistent@example.com"
+    When I submit a password reset request for "user@example.com"
+    When I submit a registration with email "existing@example.com"
+    When I submit a registration with email "newuser@example.com" and password "SecurePass123!"
+    When I submit a registration with email "user@example.com" and password "weak"
+    When I try to register with password "password"
+    When I try to set password "12345678"
+    When I unregister the client
+    When I visit "/__mail/preview"
+    When I visit "/forgot-password"
+    When I visit "/login"
+    When I visit "/profile"
+    When I visit "/register"
+    When I visit "/sessions"
+    When I visit "/verify-email?token=invalid"
+    When I visit the reset password link
+    When I visit the verification link
+    When I wire Buffkit with a nil auth secret
+    When I wire Buffkit with a valid configuration
+    When I wire Buffkit with an empty auth secret
+    When I wire Buffkit with an invalid Redis URL "redis://invalid:99999/0"
+    When a broadcast error occurs
+    When a client disconnects and reconnects
+    When an error occurs during request processing
+    When another client attempts to connect with the same session ID
+    When client A disconnects
+    When my connection drops and I reconnect through server B
+    When my connection drops for 5 seconds
+    When the account unlock job runs
+    When the client disconnects
+    When the connection is established
+    When the heartbeat timer triggers
+    When the response content-type is "application/json"
+    When the session cleanup job runs

@@ -59,9 +59,9 @@ func (ts *TestSuite) Reset() {
 	// Shutdown kit if it exists to prevent goroutine leaks
 	if ts.kit != nil {
 		ts.kit.Shutdown()
+		ts.kit = nil // Clear reference after shutdown
 	}
 	ts.app = nil
-	ts.kit = nil
 	ts.config = buffkit.Config{}
 	ts.response = nil
 	ts.request = nil
@@ -1856,14 +1856,7 @@ func InitializeScenario(ctx *godog.ScenarioContext, bridge *SharedBridge) {
 	}
 
 	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
-		// Shutdown broker if it exists to prevent goroutine leaks
-		if ts.broker != nil {
-			ts.broker.Shutdown()
-		}
-		// Also shutdown broker from kit if it exists
-		if ts.kit != nil && ts.kit.Broker != nil {
-			ts.kit.Broker.Shutdown()
-		}
+		// Reset will handle all shutdowns
 		ts.Reset()
 		if ts.shared != nil {
 			ts.shared.Cleanup()
