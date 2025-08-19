@@ -1,18 +1,28 @@
-# TODO: Complete Undefined BDD Steps
+# TODO: Achieve 100% BDD Coverage for v0.1 Spec
 
 ## Overview
-**Initial Undefined Steps:** 324
-**Steps Completed:** ~240+ (via universal patterns + grift tasks)
-**Remaining:** ~80 (mostly @skip SSE reconnection and advanced auth)
-**Priority:** Complete core features for v0.1-alpha release
+**Current Code Coverage:** ~7.4% overall (some packages up to 75%)
+**Feature Files:** Aligned with spec after removing 77 out-of-scope scenarios
+**New Goal:** 100% BDD coverage of actual PLAN.md specification
+**Priority:** Systematic coverage of all packages with proper BDD scenarios
 
-## Completion Status by Category
-- ✅ **CLI/Grift Tasks:** 100% DONE (all migration and worker tasks)
-- ✅ **Basic Patterns:** 100% DONE (output assertions, env vars, commands)
-- 🟨 **Component System:** ~70% (basic rendering done, advanced features pending)
-- 🟨 **SSE Basic:** ~50% (broadcasting works, reconnection @skip)
-- 🟡 **Authentication:** ~40% (basic auth works, advanced features pending)
-- ⚠️ **Development Mode:** ~20% (mostly deferred to v0.2)
+## BDD Coverage Plan Summary
+- **Created 5 new feature files:** mail.feature, jobs.feature, security.feature, import_maps.feature, migrations.feature
+- **Total new scenarios needed:** ~150 scenarios across all packages
+- **Estimated effort:** 3 weeks to achieve 80-90% coverage
+- **See:** `.agent/bdd-coverage-plan.md` for complete details
+
+## Package Coverage Status
+- 🔴 **auth/** - 0% coverage - Need: login, logout, session, password hashing scenarios
+- 🔴 **mail/** - 0% coverage - Need: SMTP, dev sender, preview endpoint scenarios  
+- 🔴 **jobs/** - 0% coverage - Need: Asynq runtime, job processing, worker scenarios
+- 🔴 **secure/** - 0% coverage - Need: headers, CSRF, rate limiting scenarios
+- 🔴 **components/** - 0% coverage - Need: registry, expansion, middleware scenarios
+- 🟡 **importmap/** - 22.6% coverage - Need: pin/unpin, vendoring, HTML generation scenarios
+- 🟡 **ssr/** - 23.9% coverage - Need: render partial, SSE broadcast scenarios
+- 🟡 **sse/** - 0% coverage - Need: broker, heartbeat, client management scenarios
+- 🟢 **migrations/** - 75.7% coverage - Need: rollback, status, multi-dialect scenarios
+- 🟡 **buffkit.go** - 7.4% coverage - Need: wiring, configuration, shutdown scenarios
 
 ### Latest Progress (Updated)
 - ✅ Fixed goroutine leaks by adding Shutdown() to SSR broker
