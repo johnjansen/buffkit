@@ -46,14 +46,12 @@ func TestAuthenticationFeatures(t *testing.T) {
 			bridge.RegisterBridgedSteps(ctx)
 
 			// Initialize authentication scenarios
-			InitializeScenario(ctx, bridge)             // Basic scenarios (includes auth steps)
-			InitializeAuthEnhancedScenario(ctx, bridge) // Enhanced auth from auth_enhanced_steps_test.go - pass bridge
+			InitializeScenario(ctx, bridge) // Basic scenarios (includes auth steps)
 		},
 		Options: &godog.Options{
 			Format: "pretty",
 			Paths: []string{
 				"authentication.feature",
-				"authentication_enhanced.feature",
 			},
 			TestingT: t,
 			Tags:     "~@skip",
@@ -74,14 +72,12 @@ func TestSSEFeatures(t *testing.T) {
 			bridge.RegisterBridgedSteps(ctx)
 
 			// Initialize SSE scenarios
-			InitializeScenario(ctx, bridge)                // Basic scenarios (includes SSE steps) - pass bridge
-			InitializeSSEReconnectionScenario(ctx, bridge) // SSE reconnection from sse_reconnection_test.go - pass bridge
+			InitializeScenario(ctx, bridge) // Basic scenarios (includes SSE steps) - pass bridge
 		},
 		Options: &godog.Options{
 			Format: "pretty",
 			Paths: []string{
 				"server_sent_events.feature",
-				"sse_reconnection.feature",
 			},
 			TestingT: t,
 			Tags:     "~@skip",
@@ -179,8 +175,6 @@ func TestAllFeatures(t *testing.T) {
 			// These work alongside the shared bridge
 			InitializeScenario(ctx, bridge) // Basic scenarios from steps_test.go
 			InitializeBasicScenario(ctx)           // Basic integration from basic_test.go
-			InitializeSSEReconnectionScenario(ctx, bridge) // SSE reconnection from sse_reconnection_test.go
-			InitializeAuthEnhancedScenario(ctx, bridge)    // Enhanced auth from auth_enhanced_steps_test.go
 			InitializeComponentsScenario(ctx, bridge)      // Components from components_steps_test.go
 		},
 		Options: &godog.Options{

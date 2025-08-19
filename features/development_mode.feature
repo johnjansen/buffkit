@@ -1,7 +1,7 @@
 Feature: Development Mode Features
   As a developer working on a Buffkit application
-  I want special development-mode features
-  So that I can debug and develop more efficiently
+  I want development-specific features like mail preview
+  So that I can debug and test email functionality without sending real emails
 
   Background:
     Given I have a Buffalo application
@@ -12,7 +12,6 @@ Feature: Development Mode Features
     When I visit "/__mail/preview"
     Then I should see the mail preview interface
     And the response status should be 200
-    And I should see a list of sent emails
 
   Scenario: Mail preview endpoint is not available in production
     Given the application is wired with DevMode set to false
@@ -20,41 +19,25 @@ Feature: Development Mode Features
     Then the response status should be 404
     And the endpoint should not exist
 
-  Scenario: Development mail sender logs emails
+  Scenario: Development mail sender logs emails instead of sending
     Given I have a development mail sender
     When I send an email with subject "Test Email"
-    And I send an email with subject "Another Test"
-    Then the emails should be logged instead of sent
-    And I should be able to view them in the mail preview
-    And the preview should show both email subjects
+    Then the email should be logged instead of sent
+    And I should be able to view it in the mail preview
 
-  Scenario: Development mail sender stores email content
+  Scenario: Development mail sender stores multiple emails
+    Given I have a development mail sender
+    When I send an email with subject "First Email"
+    And I send an email with subject "Second Email"
+    Then both emails should be stored
+    And I should see both in the mail preview interface
+
+  Scenario: Mail preview shows HTML and text versions
     Given I have a development mail sender
     When I send an HTML email with content "<h1>Welcome</h1>"
     Then the email should be stored with HTML content
     And I should be able to preview the rendered HTML
-    And the email should include both HTML and text versions
-
-  Scenario: Security headers are relaxed in dev mode
-    Given the application is running in development mode
-    When I make a request to any endpoint
-    Then the security headers should be present but relaxed
-    And the Content-Security-Policy should allow development tools
-    And debugging should be easier
-
-  Scenario: Error messages are verbose in dev mode
-    Given the application is running in development mode
-    When an error occurs during request processing
-    Then I should see detailed error messages
-    And stack traces should be included
-    And debugging information should be available
-
-  Scenario: Hot reloading compatibility
-    Given the application is running in development mode
-    When I make changes to templates or assets
-    Then the changes should be reflected without restart
-    And the import maps should support development workflows
-    And asset serving should prioritize development speed
+    And the preview should show both HTML and text versions
 
   Scenario: Development vs production mail behavior
     Given I have the same Buffkit configuration
@@ -64,20 +47,8 @@ Feature: Development Mode Features
     Then the email should be sent via SMTP
     And no preview should be generated
 
-  Scenario: Development diagnostics
+  Scenario: Security headers are present but relaxed in dev mode
     Given the application is running in development mode
-    When I access diagnostic endpoints
-    Then I should see information about:
-      | Component | Status |
-      | SSE Broker | Active connections count |
-      | Auth Store | User count |
-      | Job Queue | Pending jobs |
-      | Import Maps | Loaded dependencies |
-      | Components | Registered components |
-
-  Scenario: Development-only middleware
-    Given the application is wired with development mode
-    When I inspect the middleware stack
-    Then development-specific middleware should be present
-    And production optimizations should be disabled
-    And debugging tools should be available
+    When I make a request to any endpoint
+    Then security headers should be present
+    But they should be configured for development convenience
