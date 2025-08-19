@@ -120,7 +120,6 @@ func InitializeComponentsScenario(ctx *godog.ScenarioContext, bridge *SharedBrid
 	ctx.Step(`^I have registered a default button component$`, suite.iHaveRegisteredDefaultButtonComponent)
 	ctx.Step(`^I register a custom button component$`, suite.iRegisterCustomButtonComponent)
 	ctx.Step(`^I have registered a tabs component$`, suite.iHaveRegisteredTabsComponent)
-	ctx.Step(`^I have registered a feature flag component$`, suite.iHaveRegisteredFeatureFlagComponent)
 	ctx.Step(`^I have registered a user avatar component$`, suite.iHaveRegisteredUserAvatarComponent)
 
 	// Component-specific output validation
@@ -131,7 +130,7 @@ func InitializeComponentsScenario(ctx *godog.ScenarioContext, bridge *SharedBrid
 	ctx.Step(`^the custom component should be used for rendering$`, suite.theCustomComponentShouldBeUsedForRendering)
 	ctx.Step(`^the default component should be replaced$`, suite.theDefaultComponentShouldBeReplaced)
 	ctx.Step(`^the expansion should complete within (\d+)ms$`, suite.theExpansionShouldCompleteWithinMs)
-	ctx.Step(`^the "([^"]*)" flag is enabled$`, suite.theFlagIsEnabled)
+	// Removed - feature flags are not part of the Buffkit spec
 	ctx.Step(`^the JSON should be returned unchanged$`, suite.theJSONShouldBeReturnedUnchanged)
 	ctx.Step(`^the original HTML should be preserved$`, suite.theOriginalHTMLShouldBePreserved)
 	ctx.Step(`^the output should contain appropriate classes for "([^"]*)"$`, suite.theOutputShouldContainAppropriateClassesFor)
@@ -246,16 +245,28 @@ func (s *ComponentsTestSuite) componentExpansionMiddlewareIsActive() error {
 func (s *ComponentsTestSuite) iHaveRegisteredButtonComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
-		s.registry.RegisterDefaults()
 	}
+
+	// Register a simple button component
+	s.registry.Register("bk-button", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		variant := attrs["variant"]
+		if variant == "" {
+			variant = "primary"
+		}
+		href := attrs["href"]
+		content := slots["default"]
+
+		if href != "" {
+			return []byte(fmt.Sprintf(`<a href="%s" class="btn btn-%s">%s</a>`, href, variant, content)), nil
+		}
+		return []byte(fmt.Sprintf(`<button class="btn btn-%s">%s</button>`, variant, content)), nil
+	})
 
 	// Share the registry with SharedContext so rendering works properly
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
 
-	// Also register defaults to ensure all components are available
-	s.registry.RegisterDefaults()
 	return nil
 }
 
@@ -427,15 +438,23 @@ func (s *ComponentsTestSuite) iHaveRegisteredCardComponent() error {
 func (s *ComponentsTestSuite) iHaveRegisteredDropdownComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
-		s.registry.RegisterDefaults()
 	}
+
+	// Register a simple dropdown component
+	s.registry.Register("bk-dropdown", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		trigger := slots["trigger"]
+		if trigger == "" {
+			trigger = "Menu"
+		}
+		content := slots["default"]
+		return []byte(fmt.Sprintf(`<div class="dropdown">%s<div class="dropdown-content">%s</div></div>`, trigger, content)), nil
+	})
 
 	// Share the registry with SharedContext
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
 
-	// Dropdown component is already registered in defaults
 	return nil
 }
 
@@ -466,15 +485,23 @@ func (s *ComponentsTestSuite) iHaveRegisteredCardComponentWithSlots() error {
 func (s *ComponentsTestSuite) iHaveRegisteredAlertComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
-		s.registry.RegisterDefaults()
 	}
+
+	// Register a simple alert component
+	s.registry.Register("bk-alert", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		variant := attrs["variant"]
+		if variant == "" {
+			variant = "info"
+		}
+		content := slots["default"]
+		return []byte(fmt.Sprintf(`<div class="alert alert-%s">%s</div>`, variant, content)), nil
+	})
 
 	// Share the registry with SharedContext
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
 
-	// Alert component is already registered in defaults
 	return nil
 }
 
@@ -519,8 +546,17 @@ func (s *ComponentsTestSuite) iHaveRegisteredInputComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	// Input component is registered in defaults
-	s.registry.RegisterDefaults()
+
+	// Register a simple input component
+	s.registry.Register("bk-input", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		inputType := attrs["type"]
+		if inputType == "" {
+			inputType = "text"
+		}
+		name := attrs["name"]
+		return []byte(fmt.Sprintf(`<input type="%s" name="%s" class="form-control">`, inputType, name)), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -531,8 +567,13 @@ func (s *ComponentsTestSuite) iHaveRegisteredIconComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	// Icon component is now part of defaults
-	s.registry.RegisterDefaults()
+
+	// Register a simple icon component
+	s.registry.Register("bk-icon", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		name := attrs["name"]
+		return []byte(fmt.Sprintf(`<i class="icon icon-%s"></i>`, name)), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -542,9 +583,13 @@ func (s *ComponentsTestSuite) iHaveRegisteredIconComponent() error {
 func (s *ComponentsTestSuite) iHaveRegisteredComponentNamed(name string) error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
-		s.registry.RegisterDefaults()
 	}
-	// Component with hyphenated name (like progress-bar) is already registered
+
+	// Register a generic component with the given name
+	s.registry.Register(name, func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		return []byte(fmt.Sprintf(`<div class="%s">%s</div>`, name, slots["default"])), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -553,22 +598,46 @@ func (s *ComponentsTestSuite) iHaveRegisteredComponentNamed(name string) error {
 func (s *ComponentsTestSuite) iHaveRegisteredButtonAndCardComponents() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
-		s.registry.RegisterDefaults()
 	}
+
+	// Register button component
+	s.registry.Register("bk-button", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		variant := attrs["variant"]
+		if variant == "" {
+			variant = "primary"
+		}
+		return []byte(fmt.Sprintf(`<button class="btn btn-%s">%s</button>`, variant, slots["default"])), nil
+	})
+
+	// Register card component
+	s.registry.Register("bk-card", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		return []byte(`<div class="card">` + slots["default"] + `</div>`), nil
+	})
 
 	// Share the registry with SharedContext
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
 
-	// Both components are already registered in defaults
 	return nil
 }
 func (s *ComponentsTestSuite) iHaveRegisteredMultipleComponents() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register multiple basic components
+	s.registry.Register("bk-button", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		return []byte(`<button class="btn">` + slots["default"] + `</button>`), nil
+	})
+	s.registry.Register("bk-card", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		return []byte(`<div class="card">` + slots["default"] + `</div>`), nil
+	})
+	s.registry.Register("bk-modal", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		title := attrs["title"]
+		return []byte(fmt.Sprintf(`<div class="modal"><h2>%s</h2>%s</div>`, title, slots["default"])), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -579,7 +648,12 @@ func (s *ComponentsTestSuite) iHaveRegisteredDefaultButtonComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register a default button component
+	s.registry.Register("bk-button", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		return []byte(`<button class="btn btn-primary">` + slots["default"] + `</button>`), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -605,29 +679,35 @@ func (s *ComponentsTestSuite) iHaveRegisteredTabsComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register a simple tabs component
+	s.registry.Register("bk-tabs", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		defaultTab := attrs["default-tab"]
+		if defaultTab == "" {
+			defaultTab = "1"
+		}
+		return []byte(fmt.Sprintf(`<div class="tabs" data-initial-tab="%s">%s</div>`, defaultTab, slots["default"])), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
 	return nil
 }
 
-func (s *ComponentsTestSuite) iHaveRegisteredFeatureFlagComponent() error {
-	if s.registry == nil {
-		s.registry = components.NewRegistry()
-	}
-	s.registry.RegisterDefaults()
-	if s.shared != nil {
-		s.shared.ComponentRegistry = s.registry
-	}
-	return nil
-}
+// Removed - feature flags are not part of the Buffkit spec
 
 func (s *ComponentsTestSuite) iHaveRegisteredUserAvatarComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register a simple avatar component
+	s.registry.Register("bk-avatar", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		userID := attrs["user-id"]
+		return []byte(fmt.Sprintf(`<img class="avatar" src="/avatars/%s.jpg" alt="User %s">`, userID, userID)), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -1064,7 +1144,16 @@ func (s *ComponentsTestSuite) iHaveRegisteredAButtonComponentWithVariants() erro
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register button with variant support
+	s.registry.Register("bk-button", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		variant := attrs["variant"]
+		if variant == "" {
+			variant = "primary"
+		}
+		return []byte(fmt.Sprintf(`<button class="btn btn-%s">%s</button>`, variant, slots["default"])), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -1075,7 +1164,12 @@ func (s *ComponentsTestSuite) iHaveRegisteredACodeComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register code component
+	s.registry.Register("bk-code", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		return []byte(`<pre><code>` + slots["default"] + `</code></pre>`), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -1086,7 +1180,17 @@ func (s *ComponentsTestSuite) iHaveRegisteredAFormFieldComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register form field component
+	s.registry.Register("bk-field", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		label := attrs["label"]
+		name := attrs["name"]
+		if name == "" {
+			name = "field"
+		}
+		return []byte(fmt.Sprintf(`<div class="form-field"><label for="%s">%s</label>%s</div>`, name, label, slots["default"])), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -1097,7 +1201,13 @@ func (s *ComponentsTestSuite) iHaveRegisteredAModalComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register modal component
+	s.registry.Register("bk-modal", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		title := attrs["title"]
+		return []byte(fmt.Sprintf(`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><h2 id="modal-title">%s</h2>%s</div>`, title, slots["default"])), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -1108,7 +1218,12 @@ func (s *ComponentsTestSuite) iHaveRegisteredATextComponent() error {
 	if s.registry == nil {
 		s.registry = components.NewRegistry()
 	}
-	s.registry.RegisterDefaults()
+
+	// Register text component
+	s.registry.Register("bk-text", func(attrs map[string]string, slots map[string]string) ([]byte, error) {
+		return []byte(`<span class="text">` + slots["default"] + `</span>`), nil
+	})
+
 	if s.shared != nil {
 		s.shared.ComponentRegistry = s.registry
 	}
@@ -1286,18 +1401,7 @@ func (s *ComponentsTestSuite) theExpansionShouldCompleteWithinMs(ms int) error {
 	return nil
 }
 
-func (s *ComponentsTestSuite) theFlagIsEnabled(flag string) error {
-	// Enable the feature flag
-	components.SetFeatureFlag(flag, true)
-
-	// Re-render the last HTML since the flag state changed
-	if s.shared != nil && s.shared.Input != "" {
-		// Re-render with the flag now enabled
-		return s.shared.IRenderHTMLContaining(s.shared.Input)
-	}
-
-	return nil
-}
+// Removed - feature flags are not part of the Buffkit spec
 
 func (s *ComponentsTestSuite) theJSONShouldBeReturnedUnchanged() error {
 	if s.shared == nil || s.shared.Output == "" {

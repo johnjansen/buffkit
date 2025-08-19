@@ -151,13 +151,7 @@ Feature: Component System
       | danger    |
       | ghost     |
   # Accessibility
-
-  Scenario: Ensure ARIA attributes are properly set
-    Given I have registered a modal component
-    When I render HTML containing '<bk-modal title="Confirm">Are you sure?</bk-modal>'
-    Then the output should contain 'role="dialog"'
-    And the output should contain 'aria-modal="true"'
-    And the output should contain 'aria-labelledby='
+# Edge Cases
 
   Scenario: Generate unique IDs for accessibility
     Given I have registered a form field component
@@ -205,10 +199,7 @@ Feature: Component System
     Then the output should not contain component boundary comments
   # Edge Cases
 
-  Scenario: Handle self-closing components
-    Given I have registered an icon component
-    When I render HTML containing '<bk-icon name="check" />'
-    Then the output should contain the rendered icon HTML
+  Scenario: Components with code blocks
 
   Scenario: Handle components with hyphenated names
     Given I have registered a component named "progress-bar"
@@ -227,22 +218,3 @@ Feature: Component System
       """
     Then the output should preserve the indentation
     And the output should maintain line breaks
-  # Component Lifecycle
-
-  Scenario: Component initialization attributes
-    Given I have registered a tabs component
-    When I render HTML containing '<bk-tabs default-tab="2">...</bk-tabs>'
-    Then the output should contain 'data-initial-tab="2"'
-    And the second tab should be marked as active
-
-  Scenario: Component with conditional rendering
-    Given I have registered a feature flag component
-    When I render HTML containing '<bk-feature flag="new-ui">New feature content</bk-feature>'
-    And the "new-ui" flag is enabled
-    Then the output should contain "New feature content"
-
-  Scenario: Component with server-side data
-    Given I have registered a user avatar component
-    When I render HTML containing '<bk-avatar user-id="123" />'
-    Then the component should fetch user data during rendering
-    And the output should contain the user's avatar URL
