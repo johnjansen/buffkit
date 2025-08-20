@@ -2021,6 +2021,7 @@ func TestFeatures(t *testing.T) {
 // Step: Given I have an SSE broker
 func (ts *TestSuite) iHaveAnSSEBroker() error {
 	ts.broker = ssr.NewBroker()
+	ts.clients = make(map[string]*ssr.Client)
 	ts.clientCount = 0
 	return nil
 }
