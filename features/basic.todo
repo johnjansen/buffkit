@@ -1,0 +1,19 @@
+# TODO for basic.feature
+
+## Feature: Basic Buffkit Functionality
+
+### Scenario: Wire Buffkit successfully
+- ✅ Background: "Given I have a Buffalo application" - implemented in basic_test.go:97
+- ✅ Step: "When I wire Buffkit with a valid configuration" - implemented in basic_test.go:98
+- ✅ Step: "Then all components should be initialized" - implemented in basic_test.go:100
+- ✅ TEST PASSING
+
+### Scenario: Get version information
+- ✅ Step: "When I check the Buffkit version" - implemented in basic_test.go:99
+- ✅ Step: "Then I should get a non-empty version string" - implemented in basic_test.go:101
+- ✅ TEST PASSING
+
+## Status: ✅ ALL TESTS PASSING (2/2 scenarios)
+- Feature is properly implemented with BDD approach
+- Tests run successfully without hanging
+- Coverage: This feature contributes to the 4.2% coverage from BasicFeatures

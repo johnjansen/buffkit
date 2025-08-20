@@ -1,0 +1,88 @@
+# TODO for authentication.feature
+
+## Feature: Authentication System
+
+### Scenario: Accessing login form
+- [ ] Implement GET /login route handler
+- [ ] Return simple HTML login form
+- [ ] Ensure response status is 200
+- [ ] Step: "When I visit /login" - needs proper test implementation
+- [ ] Step: "Then I should see the login form" - check for form elements
+- [ ] Step: "And the response status should be 200" - verify status code
+
+### Scenario: Login form accepts POST requests
+- [ ] Implement POST /login route handler
+- [ ] Handler should exist (not 404)
+- [ ] Step: "When I submit a POST request to /login" - test POST request
+- [ ] Step: "Then the route should exist" - verify handler registered
+- [ ] Step: "And the response should not be 404" - check status != 404
+
+### Scenario: Logout accepts POST requests
+- [ ] Implement POST /logout route handler
+- [ ] Handler should exist (not 404)
+- [ ] Step: "When I submit a POST request to /logout" - test POST request
+- [ ] Step: "Then the route should exist" - verify handler registered
+- [ ] Step: "And the response should not be 404" - check status != 404
+
+### Scenario: Protected routes require authentication
+- [ ] Implement RequireLogin middleware
+- [ ] Middleware should redirect to /login when not authenticated
+- [ ] Step: "Given I have a handler that requires login" - create protected handler
+- [ ] Step: "When I access the protected route without authentication" - test without auth
+- [ ] Step: "Then I should be redirected to login" - verify redirect to /login
+
+### Scenario: RequireLogin middleware exists
+- [ ] Export RequireLogin function
+- [ ] Function should accept buffalo.Handler and return buffalo.Handler
+- [ ] Step: "When I apply the RequireLogin middleware to a handler" - test middleware application
+- [ ] Step: "Then the middleware should be callable" - verify it's a function
+- [ ] Step: "And it should return a handler function" - verify return type
+
+### Scenario: Authenticated users can access protected routes
+- [ ] Implement session-based authentication
+- [ ] Store user ID in session after login
+- [ ] RequireLogin should allow authenticated users through
+- [ ] Step: "Given I am logged in as a valid user" - needs proper login flow
+- [ ] Step: "When I access a protected route" - test with auth
+- [ ] Step: "Then I should see the protected content" - verify content served
+- [ ] Step: "And I should not be redirected" - no redirect for auth'd users
+
+### Scenario: User context is available in protected routes
+- [ ] Add current user to context when authenticated
+- [ ] Make user data accessible in handlers
+- [ ] Step: "Given I am logged in as a valid user" - establish session
+- [ ] Step: "When I access a protected route" - access with session
+- [ ] Step: "Then the current user should be available in the context" - check context
+- [ ] Step: "And I can access user information" - verify user data accessible
+
+## Implementation Order (BDD-FIRST!)
+1. Write failing tests for each step
+2. Implement ONLY what's needed to make tests pass
+3. No extra features not in the feature file!
+
+## What NOT to implement (not in feature file):
+- ❌ Registration
+- ❌ Email verification
+- ❌ Password reset
+- ❌ Profile management
+- ❌ Session management UI
+- ❌ Rate limiting
+- ❌ Account locking
+- ❌ Remember me
+- ❌ OAuth
+- ❌ 2FA
+
+## Minimal Required Implementation:
+- User struct (email, password hash)
+- User store interface (Create, ByEmail)
+- Login handler (GET and POST)
+- Logout handler (POST)
+- RequireLogin middleware
+- Session helpers (SetUserSession, GetUserSession, ClearUserSession)
+- CurrentUser helper
+- Password hashing (HashPassword, CheckPassword)
+
+## Current Status:
+- ❌ All implementation deleted (auth_overengineered)
+- ❌ Need to start fresh with BDD-first approach
+- ❌ Tests hanging - need to fix test infrastructure first
