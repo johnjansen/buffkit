@@ -14,7 +14,9 @@ func TestRedisConnection(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to start Redis: %v", err)
 	}
-	defer container.Stop()
+	defer func() {
+		_ = container.Stop()
+	}()
 
 	// Try to connect to Redis
 	opt, err := asynq.ParseRedisURI(container.URL())
@@ -23,7 +25,9 @@ func TestRedisConnection(t *testing.T) {
 	}
 
 	client := asynq.NewClient(opt)
-	defer client.Close()
+	defer func() {
+		_ = client.Close()
+	}()
 
 	// Try to enqueue a test task
 	task := asynq.NewTask("test:ping", []byte("{}"))

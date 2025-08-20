@@ -115,7 +115,7 @@ func GetUserSession(c buffalo.Context) string {
 
 func ClearUserSession(c buffalo.Context) {
 	c.Session().Delete("user_id")
-	c.Session().Save()
+	_ = c.Session().Save()
 }
 
 // CurrentUser gets the current user from context - feature asks for this

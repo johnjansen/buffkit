@@ -28,16 +28,16 @@ func StartRedisContainer() (*RedisContainer, error) {
 
 	// For local testing, require Docker
 	if _, err := exec.LookPath("docker"); err != nil {
-		return nil, fmt.Errorf("Docker not found. Install Docker and try again")
+		return nil, fmt.Errorf("docker not found: install Docker and try again")
 	}
 
 	// Check if Docker daemon is running
 	versionCmd := exec.Command("docker", "version")
 	if output, err := versionCmd.CombinedOutput(); err != nil {
 		if strings.Contains(string(output), "Cannot connect to the Docker daemon") {
-			return nil, fmt.Errorf("Docker daemon is not running. Start Docker and try again")
+			return nil, fmt.Errorf("docker daemon is not running: start Docker and try again")
 		}
-		return nil, fmt.Errorf("Docker check failed: %v", err)
+		return nil, fmt.Errorf("docker check failed: %v", err)
 	}
 
 	// Start a Redis container
@@ -70,8 +70,8 @@ func StartRedisContainer() (*RedisContainer, error) {
 	}
 
 	// Clean up if we couldn't connect
-	exec.Command("docker", "stop", containerID).Run()
-	return nil, fmt.Errorf("Redis didn't start in time")
+	_ = exec.Command("docker", "stop", containerID).Run()
+	return nil, fmt.Errorf("redis didn't start in time")
 }
 
 // Stop stops the Redis container

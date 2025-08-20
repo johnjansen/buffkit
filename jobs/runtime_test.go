@@ -30,7 +30,6 @@ type jobsTestContext struct {
 	customHandlers map[string]func(context.Context, *asynq.Task) error
 	jobResults     map[string]error
 	redisContainer *jobs.RedisContainer
-	mu             sync.Mutex
 }
 
 // Helper struct to track enqueued jobs
@@ -287,9 +286,9 @@ func (ctx *jobsTestContext) reset() {
 		// Use Asynq to flush Redis if we have a runtime with client
 		if ctx.runtime != nil && ctx.runtime.Client != nil {
 			// The Asynq client doesn't expose a flush method, so we'll use FlushAll from container
-			ctx.redisContainer.FlushAll()
+			_ = ctx.redisContainer.FlushAll()
 		} else {
-			ctx.redisContainer.FlushAll()
+			_ = ctx.redisContainer.FlushAll()
 		}
 	}
 
@@ -787,9 +786,11 @@ func TestJobsFeatures(t *testing.T) {
 	// Start Redis container for all tests
 	container, err := jobs.StartRedisContainer()
 	if err != nil {
-		t.Fatalf("Docker must be running for jobs tests. Start Docker and try again.\nError: %v", err)
+		t.Fatalf("docker must be running for jobs tests: start Docker and try again\nerror: %v", err)
 	}
-	defer container.Stop()
+	defer func() {
+		_ = container.Stop()
+	}()
 
 	t.Logf("Using Redis container at %s", container.URL())
 
@@ -818,7 +819,7 @@ func InitializeScenarioWithContext(sc *godog.ScenarioContext, container *jobs.Re
 		testCtx.reset()
 		// Ensure Redis is clean for each scenario
 		if testCtx.redisContainer != nil {
-			testCtx.redisContainer.FlushAll()
+			_ = testCtx.redisContainer.FlushAll()
 		}
 		return ctx, nil
 	})
