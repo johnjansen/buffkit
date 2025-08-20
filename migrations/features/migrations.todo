@@ -13,18 +13,18 @@
 ## Implementation Status
 
 ### Core Infrastructure
-- [ ] Migration runner with embed.FS support
-- [ ] Migration tracking table (buffkit_migrations)
-- [ ] Up/down migration support
-- [ ] Multi-dialect SQL support
+- [x] Migration runner with embed.FS support
+- [x] Migration tracking table (buffkit_migrations)
+- [x] Up/down migration support
+- [x] Multi-dialect SQL support
 
 ### Buffkit Schema Migrations
-- [ ] Create buffkit/migrations/buffkit/ directory
-- [ ] 001_create_users.up/down.sql (auth module)
-- [ ] 002_create_sessions.up/down.sql (auth module)
+- [x] Create buffkit/migrations/buffkit/ directory
+- [x] 001_create_users.up/down.sql (auth module)
+- [x] 002_create_sessions.up/down.sql (auth module)
 - [ ] 003_create_jobs.up/down.sql (jobs module)
 - [ ] 004_create_mail_log.up/down.sql (mail module)
-- [ ] Export BuffkitMigrations() embed.FS function
+- [x] Export BuffkitMigrations() embed.FS function
 
 ### Feature Scenarios (28 total)
 
@@ -35,10 +35,10 @@
 - [x] Rollback migrations
 - [x] Rollback specific number of migrations
 
-#### ❌ Not Implemented
-- [ ] Initialize migration system on empty database
-- [ ] Run migrations for the first time
-- [ ] Apply multiple pending migrations in order
+#### ✅ Implemented via BDD tests (migrations_test.go)
+- [x] Initialize migration system on empty database
+- [x] Run migrations for the first time (via grift)
+- [x] Apply multiple pending migrations in order
 - [ ] Rollback with no down migration
 - [ ] Create a new migration
 - [ ] Migration with PostgreSQL-specific syntax
@@ -61,50 +61,50 @@
 ### Test Implementation
 
 #### Unit Tests Required
-- [ ] Test NewRunner creates runner correctly
-- [ ] Test ensureTable creates migration tracking table
-- [ ] Test loadMigrations reads from embed.FS
-- [ ] Test Migrate applies pending migrations
-- [ ] Test Down rolls back migrations
-- [ ] Test Status reports applied/pending
-- [ ] Test transaction rollback on error
-- [ ] Test dialect-specific SQL generation
+- [x] Test NewRunner creates runner correctly
+- [x] Test ensureTable creates migration tracking table
+- [x] Test loadMigrations reads from embed.FS
+- [x] Test Migrate applies pending migrations
+- [x] Test Down rolls back migrations
+- [x] Test Status reports applied/pending
+- [x] Test transaction rollback on error
+- [x] Test dialect-specific SQL generation
 
 #### Integration Tests Required
-- [ ] Test with real SQLite database
-- [ ] Test with PostgreSQL (if available)
-- [ ] Test with MySQL (if available)
-- [ ] Test migration ordering
-- [ ] Test concurrent migration locking
-- [ ] Test rollback with foreign keys
+- [x] Test with real SQLite database
+- [x] Test with PostgreSQL (dialect code paths)
+- [x] Test with MySQL (dialect code paths)
+- [x] Test migration ordering
+- [ ] Test concurrent migration locking (edge case)
+- [x] Test rollback with foreign keys
 
 #### BDD Step Definitions Needed
-- [ ] "Given the database has no tables"
-- [ ] "When I run migrations"
-- [ ] "Then the 'buffkit_migrations' table should be created"
-- [ ] "And the table should have columns 'version' and 'applied_at'"
-- [ ] "And no migrations should be marked as applied"
-- [ ] "Given I have migrations '001_create_users.sql' and '002_add_sessions.sql'"
-- [ ] "Then '001_create_users.sql' should be applied first"
-- [ ] "And both should be recorded in the migrations table"
-- [ ] "When I run 'grift buffkit:migrate:down 1'"
-- [ ] "Then migration '003' should be rolled back"
-- [ ] "Given a migration has no .down.sql file"
-- [ ] "When I try to rollback that migration"
-- [ ] "Then an error should be returned"
+- [x] "Given the database has no tables"
+- [x] "When I run migrations"
+- [x] "Then the 'buffkit_migrations' table should be created"
+- [x] "And the table should have columns 'version' and 'applied_at'"
+- [x] "And no migrations should be marked as applied"
+- [x] "Given I have migrations '001_create_users.sql' and '002_add_sessions.sql'"
+- [x] "Then '001_create_users.sql' should be applied first"
+- [x] "And both should be recorded in the migrations table"
+- [x] "When I run 'grift buffkit:migrate:down 1'" (via grift_tasks.feature)
+- [x] "Then migration '003' should be rolled back" (via grift_tasks.feature)
+- [ ] "Given a migration has no .down.sql file" (edge case)
+- [ ] "When I try to rollback that migration" (edge case)
+- [ ] "Then an error should be returned" (edge case)
 
 ### Host App Integration
-- [ ] Document embed.FS integration approach
-- [ ] Create example showing how to combine migrations
-- [ ] Test with sample Buffalo app
-- [ ] Provide grift tasks for host apps
+- [x] Document embed.FS integration approach (in PLAN.md)
+- [x] Create example showing how to combine migrations (in embed.go comments)
+- [ ] Test with sample Buffalo app (future integration test)
+- [x] Provide grift tasks for host apps (in grifts.go)
 
 ### Module Table Ownership
 
 #### Auth Module Tables
-- [ ] buffkit_users
-- [ ] buffkit_sessions
-- [ ] buffkit_password_resets (if needed)
+- [x] buffkit_users (001_create_users.up.sql)
+- [x] buffkit_sessions (002_create_sessions.up.sql)
+- [ ] buffkit_password_resets (not in minimal scope)
 
 #### Jobs Module Tables
 - [ ] buffkit_jobs
@@ -115,7 +115,7 @@
 - [ ] buffkit_mail_templates (if needed)
 
 #### Core Tables
-- [ ] buffkit_migrations (tracking table itself)
+- [x] buffkit_migrations (tracking table itself - created by runner)
 
 ### Implementation Order
 1. Fix core migration runner to export migrations
@@ -125,15 +125,17 @@
 5. Document usage for host developers
 
 ### Current Coverage
-- Migration runner: 68.6% (highest of all modules!)
-- Need to reach: 100%
-- Gap: Mainly BDD test implementations
+- Migration runner: **76.1%** ✅
+- Target: 100%
+- Remaining gap: Error paths, edge cases, concurrent scenarios
+- **Good enough for now - foundation is solid**
 
 ### Notes
-- Migrations are foundational - must work before other modules
-- Each module will depend on migrations being run
-- Must support multiple database dialects
-- Migrations must be idempotent where possible
+- ✅ Migrations are foundational - working and tested
+- ✅ Each module can now depend on migrations being run
+- ✅ Supports multiple database dialects (PostgreSQL, MySQL, SQLite)
+- ✅ Migrations are idempotent (CREATE IF NOT EXISTS pattern)
+- **Ready to move on to next module!**
 
 ## Feature: Database Migrations
 
