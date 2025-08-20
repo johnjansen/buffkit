@@ -1,0 +1,248 @@
+# TODO for migrations.feature
+
+## Module: Database Migrations
+**Purpose**: Provide database schema management for Buffkit and host applications
+**Coverage Target**: 100%
+
+## Key Requirements
+1. Buffkit provides its own migrations (for auth, jobs, mail tables)
+2. Host apps can include Buffkit migrations with their own
+3. Track applied migrations in buffkit_migrations table
+4. Support PostgreSQL, MySQL, SQLite dialects
+
+## Implementation Status
+
+### Core Infrastructure
+- [ ] Migration runner with embed.FS support
+- [ ] Migration tracking table (buffkit_migrations)
+- [ ] Up/down migration support
+- [ ] Multi-dialect SQL support
+
+### Buffkit Schema Migrations
+- [ ] Create buffkit/migrations/buffkit/ directory
+- [ ] 001_create_users.up/down.sql (auth module)
+- [ ] 002_create_sessions.up/down.sql (auth module)
+- [ ] 003_create_jobs.up/down.sql (jobs module)
+- [ ] 004_create_mail_log.up/down.sql (mail module)
+- [ ] Export BuffkitMigrations() embed.FS function
+
+### Feature Scenarios (28 total)
+
+#### ✅ Passing (via grift_tasks.feature)
+- [x] Run migrations on empty database
+- [x] Run migrations when already up to date
+- [x] Check migration status
+- [x] Rollback migrations
+- [x] Rollback specific number of migrations
+
+#### ❌ Not Implemented
+- [ ] Initialize migration system on empty database
+- [ ] Run migrations for the first time
+- [ ] Apply multiple pending migrations in order
+- [ ] Rollback with no down migration
+- [ ] Create a new migration
+- [ ] Migration with PostgreSQL-specific syntax
+- [ ] Migration with MySQL-specific syntax
+- [ ] Migration with SQLite-specific syntax
+- [ ] Migration transaction handling
+- [ ] Migration with invalid SQL
+- [ ] Migrations from embedded filesystem
+- [ ] Migration idempotency with CREATE IF NOT EXISTS
+- [ ] Reset database (down all, up all)
+- [ ] Migration with large dataset
+- [ ] Concurrent migration prevention
+- [ ] Migration with foreign key constraints
+- [ ] Skip already applied migrations
+- [ ] Migration dry run mode
+- [ ] Custom migration table name
+- [ ] Migration with environment-specific logic
+- [ ] Handle missing migration files
+
+### Test Implementation
+
+#### Unit Tests Required
+- [ ] Test NewRunner creates runner correctly
+- [ ] Test ensureTable creates migration tracking table
+- [ ] Test loadMigrations reads from embed.FS
+- [ ] Test Migrate applies pending migrations
+- [ ] Test Down rolls back migrations
+- [ ] Test Status reports applied/pending
+- [ ] Test transaction rollback on error
+- [ ] Test dialect-specific SQL generation
+
+#### Integration Tests Required
+- [ ] Test with real SQLite database
+- [ ] Test with PostgreSQL (if available)
+- [ ] Test with MySQL (if available)
+- [ ] Test migration ordering
+- [ ] Test concurrent migration locking
+- [ ] Test rollback with foreign keys
+
+#### BDD Step Definitions Needed
+- [ ] "Given the database has no tables"
+- [ ] "When I run migrations"
+- [ ] "Then the 'buffkit_migrations' table should be created"
+- [ ] "And the table should have columns 'version' and 'applied_at'"
+- [ ] "And no migrations should be marked as applied"
+- [ ] "Given I have migrations '001_create_users.sql' and '002_add_sessions.sql'"
+- [ ] "Then '001_create_users.sql' should be applied first"
+- [ ] "And both should be recorded in the migrations table"
+- [ ] "When I run 'grift buffkit:migrate:down 1'"
+- [ ] "Then migration '003' should be rolled back"
+- [ ] "Given a migration has no .down.sql file"
+- [ ] "When I try to rollback that migration"
+- [ ] "Then an error should be returned"
+
+### Host App Integration
+- [ ] Document embed.FS integration approach
+- [ ] Create example showing how to combine migrations
+- [ ] Test with sample Buffalo app
+- [ ] Provide grift tasks for host apps
+
+### Module Table Ownership
+
+#### Auth Module Tables
+- [ ] buffkit_users
+- [ ] buffkit_sessions
+- [ ] buffkit_password_resets (if needed)
+
+#### Jobs Module Tables
+- [ ] buffkit_jobs
+- [ ] buffkit_job_schedules
+
+#### Mail Module Tables
+- [ ] buffkit_mail_log
+- [ ] buffkit_mail_templates (if needed)
+
+#### Core Tables
+- [ ] buffkit_migrations (tracking table itself)
+
+### Implementation Order
+1. Fix core migration runner to export migrations
+2. Create Buffkit's own SQL migration files
+3. Implement all BDD scenarios with proper tests
+4. Test integration with host app
+5. Document usage for host developers
+
+### Current Coverage
+- Migration runner: 68.6% (highest of all modules!)
+- Need to reach: 100%
+- Gap: Mainly BDD test implementations
+
+### Notes
+- Migrations are foundational - must work before other modules
+- Each module will depend on migrations being run
+- Must support multiple database dialects
+- Migrations must be idempotent where possible
+
+## Feature: Database Migrations
+
+### Core Migration Infrastructure
+
+#### Scenario: Initialize migration system on empty database
+- [ ] Create migrations tracking table
+- [ ] Table should have "version" and "applied_at" columns
+- [ ] Step: "Given the database has no tables"
+- [ ] Step: "When I run migrations"
+- [ ] Step: "Then the 'buffkit_migrations' table should be created"
+- [ ] Step: "And the table should have columns 'version' and 'applied_at'"
+- [ ] Step: "And no migrations should be marked as applied"
+
+#### Scenario: Run migrations for the first time
+- [ ] Create migration table if not exists
+- [ ] Apply all pending migrations
+- [ ] Record each in migrations table
+- [ ] Step: "Given the migration table does not exist"
+- [ ] Step: "When I run 'grift buffkit:migrate'"
+- [ ] Step: "Then the output should contain 'Creating migration table'"
+- [ ] Step: "And all migration files should be applied"
+- [ ] Step: "And each migration should be recorded in the migrations table"
+
+#### Scenario: Run migrations when already up to date
+- [ ] Check for pending migrations
+- [ ] Skip if none pending
+- [ ] Step: "Given all migrations have been applied"
+- [ ] Step: "When I run 'grift buffkit:migrate'"
+- [ ] Step: "Then the output should contain 'No pending migrations'"
+- [ ] Step: "And no new migrations should be applied"
+
+### Migration Ordering and Application
+
+#### Scenario: Apply multiple pending migrations in order
+- [ ] Load migrations from embed.FS
+- [ ] Sort by version/timestamp
+- [ ] Apply in order
+- [ ] Record timestamps
+- [ ] Step: "Given I have migrations '001_create_users.sql' and '002_add_sessions.sql'"
+- [ ] Step: "When I run migrations"
+- [ ] Step: "Then '001_create_users.sql' should be applied first"
+- [ ] Step: "And '002_add_sessions.sql' should be applied second"
+
+### Rollback Functionality
+
+#### Scenario: Rollback last migration
+- [ ] Implement Down() method
+- [ ] Remove from tracking table
+- [ ] Step: "Given migrations '001', '002', and '003' are applied"
+- [ ] Step: "When I run 'grift buffkit:migrate:down 1'"
+- [ ] Step: "Then migration '003' should be rolled back"
+- [ ] Step: "And '003' should be removed from the migrations table"
+
+#### Scenario: Rollback multiple migrations
+- [ ] Rollback in reverse order
+- [ ] Handle multiple rollbacks
+- [ ] Step: "When I run 'grift buffkit:migrate:down 2'"
+- [ ] Step: "Then migrations '003' and '002' should be rolled back"
+- [ ] Step: "And the rollbacks should happen in reverse order"
+
+#### Scenario: Rollback with no down migration
+- [ ] Check for .down.sql file
+- [ ] Return error if missing
+- [ ] Step: "Given a migration has no .down.sql file"
+- [ ] Step: "When I try to rollback that migration"
+- [ ] Step: "Then an error should be returned"
+
+### Status and Reporting
+
+#### Scenario: Check migration status
+- [ ] Implement Status() method
+- [ ] List applied migrations
+- [ ] List pending migrations
+- [ ] Step: "When I run 'grift buffkit:migrate:status'"
+- [ ] Step: "Then the output should show 3 applied migrations"
+- [ ] Step: "And the output should show 2 pending migrations"
+
+### Migration Creation
+
+#### Scenario: Create a new migration
+- [ ] Generate timestamp
+- [ ] Create .up.sql and .down.sql files
+- [ ] Add template comments
+- [ ] Step: "When I run 'grift buffkit:migrate:create add_products_table'"
+- [ ] Step: "Then two files should be created"
+- [ ] Step: "And the timestamp should be in format YYYYMMDDHHMMSS"
+
+### Dialect Support
+
+#### Scenario: Migration with PostgreSQL-specific syntax
+- [ ] Support PostgreSQL dialect
+- [ ] Handle extensions
+- [ ] Step: "Given the database dialect is 'postgres'"
+- [ ] Step: "When I run the migration"
+- [ ] Step: "Then the PostgreSQL-specific SQL should execute successfully"
+
+#### Scenario: Migration with MySQL-specific syntax
+- [ ] Support MySQL dialect
+- [ ] Handle ENGINE specifications
+- [ ] Step: "Given the database dialect is 'mysql'"
+- [ ] Step: "When I run the migration"
+- [ ] Step: "Then the MySQL-specific SQL should execute successfully"
+
+#### Scenario: Migration with SQLite-specific syntax
+- [ ] Support SQLite dialect
+- [ ] Handle WITHOUT ROWID
+- [ ] Step: "Given the database dialect is 'sqlite'"
+- [ ] Step: "When I run the migration"
+- [ ] Step: "Then the SQLite-specific SQL should execute successfully"
+
+###
