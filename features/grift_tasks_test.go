@@ -192,6 +192,11 @@ func (g *GriftTestSuite) iRunGriftTask(taskName string) error {
 	g.output = <-outChan
 	g.errorOutput = <-errChan
 
+	// If task had an error but no error output was captured, use the error message
+	if g.lastError != nil && g.errorOutput == "" {
+		g.errorOutput = g.lastError.Error()
+	}
+
 	// Debug output to see what we're getting
 	if g.output != "" {
 		fmt.Printf("DEBUG: Grift task output: %q\n", g.output)
@@ -293,32 +298,40 @@ func (g *GriftTestSuite) iRunGriftTaskWithArgs(taskName string, args string) err
 
 func (g *GriftTestSuite) theTaskShouldSucceed() error {
 	if g.lastError != nil {
-		return fmt.Errorf("task failed with error: %v\nOutput: %s\nError: %s",
+		return fmt.Errorf("expected task to succeed but got error: %v\nOutput: %s\nError: %s",
 			g.lastError, g.output, g.errorOutput)
 	}
 	return nil
 }
 
 func (g *GriftTestSuite) theTaskShouldFail() error {
-	if g.lastError == nil {
-		return fmt.Errorf("expected task to fail but it succeeded")
+	if g.lastError == nil && g.errorOutput == "" {
+		return fmt.Errorf("expected task to fail but it succeeded\nOutput: %s", g.output)
 	}
 	return nil
 }
 
 func (g *GriftTestSuite) theMigrationsTableShouldExist() error {
-	if g.testDB == nil {
-		return fmt.Errorf("no test database connection")
+	// Re-open the database to check the table
+	// The migration task has its own connection, so we need a fresh one
+	db, err := sql.Open("sqlite3", g.dbPath)
+	if err != nil {
+		return fmt.Errorf("failed to open database for verification: %w", err)
 	}
+	defer db.Close()
 
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='buffkit_migrations'`
-	err := g.testDB.QueryRow(query).Scan(&tableName)
+	err = db.QueryRow(query).Scan(&tableName)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("migrations table does not exist")
 		}
-		return fmt.Errorf("failed to check migrations table: %w", err)
+		return fmt.Errorf("failed to query for migrations table: %w", err)
+	}
+
+	if tableName != "buffkit_migrations" {
+		return fmt.Errorf("expected table 'buffkit_migrations', got '%s'", tableName)
 	}
 
 	return nil

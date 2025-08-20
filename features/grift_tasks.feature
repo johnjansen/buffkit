@@ -59,4 +59,4 @@ Feature: Grift Task Testing
     Given I set environment variable "REDIS_URL" to "redis://invalid:9999"
     When I run grift task "jobs:worker"
     Then the task should fail
-    And the error output should contain "redis"
+    And the error output should contain "jobs runtime not configured"

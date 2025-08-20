@@ -614,13 +614,29 @@ func (c *SharedContext) TheFileShouldContain(path, expected string) error {
 
 // TheMigrationsTableShouldExist checks if migrations table was created
 func (c *SharedContext) TheMigrationsTableShouldExist() error {
+	var db *sql.DB
+
+	// If TestDB is not set, try to open a connection using DATABASE_URL
 	if c.TestDB == nil {
-		return fmt.Errorf("no test database connection")
+		dbURL := os.Getenv("DATABASE_URL")
+		if dbURL == "" {
+			return fmt.Errorf("no test database connection and DATABASE_URL not set")
+		}
+
+		// Open a new connection to check the table
+		var err error
+		db, err = sql.Open("sqlite3", dbURL)
+		if err != nil {
+			return fmt.Errorf("failed to open database for verification: %w", err)
+		}
+		defer db.Close()
+	} else {
+		db = c.TestDB
 	}
 
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='buffkit_migrations'`
-	err := c.TestDB.QueryRow(query).Scan(&tableName)
+	err := db.QueryRow(query).Scan(&tableName)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("migrations table does not exist")
