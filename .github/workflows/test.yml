@@ -63,12 +63,12 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          # Temporarily skip feature tests until goroutine leak is fixed
           go test -coverprofile=coverage.out -covermode=atomic \
             -timeout=30s \
-            $(go list ./... | grep -v /features)
+            ./...
         env:
           REDIS_URL: redis://localhost:6379/0
+          GITHUB_ACTIONS: true
 
       - name: Display coverage summary
         run: |

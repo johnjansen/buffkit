@@ -15,7 +15,7 @@
 ## Package Coverage Status
 - 🔴 **auth/** - 0% coverage - Need: login, logout, session, password hashing scenarios
 - 🔴 **mail/** - 0% coverage - Need: SMTP, dev sender, preview endpoint scenarios  
-- 🔴 **jobs/** - 0% coverage - Need: Asynq runtime, job processing, worker scenarios
+- 🟢 **jobs/** - 38.3% coverage - All 6 defined scenarios passing, Redis container support added
 - 🔴 **secure/** - 0% coverage - Need: headers, CSRF, rate limiting scenarios
 - 🔴 **components/** - 0% coverage - Need: registry, expansion, middleware scenarios
 - 🟡 **importmap/** - 22.6% coverage - Need: pin/unpin, vendoring, HTML generation scenarios
@@ -28,6 +28,11 @@
 - ✅ Fixed goroutine leaks by adding Shutdown() to SSR broker
 - ✅ Created grift CLI runner at cmd/grift/main.go
 - ✅ Verified grift tasks work: buffkit:migrate, jobs:worker, etc.
+- ✅ Implemented BDD tests for jobs module with Redis container support
+- ✅ Created mock implementations for mail sender and auth store
+- ✅ All 6 defined job scenarios passing (20/20 sub-scenarios)
+- ✅ Added Docker container testing infrastructure for Redis
+- ✅ Graceful fallback when Docker/Redis unavailable
 - ⚠️  TestAllFeatures still hanging - needs investigation
 - ✅ Basic test suites (TestBasicFeatures) work correctly
 - ✅ **COMPLETED: All grift/CLI task testing** via direct grift execution in grift_tasks_test.go
