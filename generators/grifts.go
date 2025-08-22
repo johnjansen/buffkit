@@ -325,19 +325,13 @@ func {{$.Names.Plural}}{{. | title}}(c buffalo.Context) error {
 {{end}}
 `
 
-	// Create custom template functions
-	funcMap := map[string]interface{}{
-		"title": strings.Title,
-		"lower": strings.ToLower,
-	}
-
 	// Prepare template data
 	data := map[string]interface{}{
 		"Names":   names,
 		"Actions": actions,
 	}
 
-	if err := GenerateFileWithFuncs(actionTemplate, data, actionPath, funcMap); err != nil {
+	if err := GenerateFile(actionTemplate, data, actionPath); err != nil {
 		return fmt.Errorf("failed to generate actions: %w", err)
 	}
 
