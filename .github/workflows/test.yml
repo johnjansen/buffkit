@@ -22,9 +22,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    strategy:
-      matrix:
-        go-version: [1.21, 1.22]
 
     steps:
       - name: Checkout code
@@ -33,7 +30,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: stable
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -41,9 +38,8 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go-version }}-
             ${{ runner.os }}-go-
 
       - name: Download dependencies
@@ -76,7 +72,6 @@ jobs:
           go tool cover -func=coverage.out | tail -5
 
       - name: Upload coverage to Codecov
-        if: matrix.go-version == '1.22'
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.out
@@ -92,7 +87,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22
+          go-version: stable
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
