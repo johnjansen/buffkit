@@ -272,7 +272,12 @@ func (s *mockAuthStore) Reset() {
 
 // Initialize test context
 func (ctx *jobsTestContext) reset() {
-	ctx.runtime = nil
+	// Cleanup existing runtime before resetting
+	if ctx.runtime != nil {
+		ctx.runtime.Shutdown()
+		ctx.runtime = nil
+	}
+
 	ctx.redisURL = ""
 	ctx.err = nil
 	ctx.logBuffer = &strings.Builder{}
@@ -283,13 +288,8 @@ func (ctx *jobsTestContext) reset() {
 
 	// Clear Redis data between tests
 	if ctx.redisContainer != nil {
-		// Use Asynq to flush Redis if we have a runtime with client
-		if ctx.runtime != nil && ctx.runtime.Client != nil {
-			// The Asynq client doesn't expose a flush method, so we'll use FlushAll from container
-			_ = ctx.redisContainer.FlushAll()
-		} else {
-			_ = ctx.redisContainer.FlushAll()
-		}
+		// Use FlushAll from container to clear Redis
+		_ = ctx.redisContainer.FlushAll()
 	}
 
 	// Reset mocks

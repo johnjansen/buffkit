@@ -91,6 +91,16 @@ func NewRuntime(redisURL string) (*Runtime, error) {
 	return runtime, nil
 }
 
+// Shutdown gracefully stops the jobs runtime
+func (r *Runtime) Shutdown() {
+	if r.Server != nil {
+		r.Server.Shutdown()
+	}
+	if r.Client != nil {
+		_ = r.Client.Close()
+	}
+}
+
 // RegisterDefaults registers default job handlers
 func (r *Runtime) RegisterDefaults() {
 	if r.Mux == nil {

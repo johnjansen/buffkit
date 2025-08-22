@@ -58,6 +58,16 @@ func (m *MigrationTestSuite) iHaveABuffaloApplicationWithBuffkitWired() error {
 }
 
 func (m *MigrationTestSuite) iHaveACleanTestDatabase() error {
+	// Clean up any existing database first
+	if m.db != nil {
+		_ = m.db.Close()
+		m.db = nil
+	}
+	if m.tempDir != "" {
+		_ = os.RemoveAll(m.tempDir)
+		m.tempDir = ""
+	}
+
 	// Create a temporary directory for test database
 	tempDir, err := os.MkdirTemp("", "buffkit-migration-test-*")
 	if err != nil {
@@ -356,10 +366,15 @@ func InitializeMigrationScenario(ctx *godog.ScenarioContext) {
 
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		suite.Reset()
+		// Ensure we start with a clean database for each scenario
+		if err := suite.iHaveACleanTestDatabase(); err != nil {
+			return ctx, err
+		}
 		return ctx, nil
 	})
 
 	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		// Clean up after each scenario
 		suite.Reset()
 		return ctx, nil
 	})

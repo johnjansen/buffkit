@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/johnjansen/buffkit/migrations"
+	_ "github.com/johnjansen/buffkit/generators" // Register generator tasks
 	"github.com/markbates/grift/grift"
 
 	// Import database drivers

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -80,7 +81,10 @@ func (tc *jobsTestContext) theJobShouldBeMovedToTheDeadLetterQueue() error {
 }
 
 func (tc *jobsTestContext) anErrorShouldBeLogged() error {
-	if tc.logBuffer != nil && tc.logBuffer.Len() == 0 {
+	if tc.logBuffer == nil {
+		tc.logBuffer = &strings.Builder{}
+	}
+	if tc.logBuffer.Len() == 0 {
 		return fmt.Errorf("expected error to be logged but log buffer is empty")
 	}
 	return nil
@@ -93,6 +97,11 @@ func (tc *jobsTestContext) theJobShouldNotBeRetriedAgain() error {
 
 // Worker management scenarios
 func (tc *jobsTestContext) iRun(command string) error {
+	// Ensure log buffer is initialized
+	if tc.logBuffer == nil {
+		tc.logBuffer = &strings.Builder{}
+	}
+
 	// Simulate running a grift command
 	tc.logBuffer.WriteString(fmt.Sprintf("Running command: %s\n", command))
 
@@ -126,6 +135,11 @@ func (tc *jobsTestContext) itShouldLog(message string) error {
 }
 
 func (tc *jobsTestContext) thereArePendingJobs(count int) error {
+	// Ensure log buffer is initialized for later checks
+	if tc.logBuffer == nil {
+		tc.logBuffer = &strings.Builder{}
+	}
+
 	// Simulate pending jobs
 	for i := 0; i < count; i++ {
 		tc.enqueuedJobs = append(tc.enqueuedJobs, enqueuedJob{
@@ -186,6 +200,11 @@ func (tc *jobsTestContext) itShouldShutDownCleanly() error {
 
 // Multiple workers scenarios
 func (tc *jobsTestContext) iHaveWorkersRunning(count int) error {
+	// Ensure log buffer is initialized
+	if tc.logBuffer == nil {
+		tc.logBuffer = &strings.Builder{}
+	}
+
 	// Simulate multiple workers
 	tc.logBuffer.WriteString(fmt.Sprintf("Started %d workers\n", count))
 	return nil
@@ -291,6 +310,11 @@ func (tc *jobsTestContext) theJobShouldProcessAfterHour(hours int) error {
 
 // Periodic job scenarios
 func (tc *jobsTestContext) iScheduleAJobToRunEveryHour() error {
+	// Ensure log buffer is initialized
+	if tc.logBuffer == nil {
+		tc.logBuffer = &strings.Builder{}
+	}
+
 	// Schedule a periodic job
 	tc.logBuffer.WriteString("Scheduled periodic job to run every hour\n")
 	return nil
@@ -427,6 +451,11 @@ func (tc *jobsTestContext) theJobShouldProcessSuccessfully() error {
 
 // Error handling scenarios
 func (tc *jobsTestContext) aJobHandlerReturnsAnError() error {
+	// Ensure log buffer is initialized
+	if tc.logBuffer == nil {
+		tc.logBuffer = &strings.Builder{}
+	}
+
 	tc.err = fmt.Errorf("handler error")
 	tc.logBuffer.WriteString(fmt.Sprintf("Error: %v\n", tc.err))
 	return nil
