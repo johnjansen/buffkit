@@ -11,16 +11,16 @@ import (
 
 // NameVariants holds different case variations of a name
 type NameVariants struct {
-	Original   string // As provided by user
-	Snake      string // snake_case
-	Camel      string // CamelCase
-	Lower      string // lowercase
-	Upper      string // UPPERCASE
-	Kebab      string // kebab-case
-	Plural     string // pluralized snake_case
-	Singular   string // singularized snake_case
-	Title      string // Title Case
-	Package    string // package safe name
+	Original string // As provided by user
+	Snake    string // snake_case
+	Camel    string // CamelCase
+	Lower    string // lowercase
+	Upper    string // UPPERCASE
+	Kebab    string // kebab-case
+	Plural   string // pluralized snake_case
+	Singular string // singularized snake_case
+	Title    string // Title Case
+	Package  string // package safe name
 }
 
 // NewNameVariants creates all name variations from input
@@ -44,29 +44,29 @@ func ToSnake(s string) string {
 	// Handle common cases
 	s = strings.ReplaceAll(s, "-", "_")
 	s = strings.ReplaceAll(s, " ", "_")
-	
+
 	// Insert underscores before capitals
 	re := regexp.MustCompile("([a-z0-9])([A-Z])")
 	s = re.ReplaceAllString(s, "${1}_${2}")
-	
+
 	// Handle multiple capitals
 	re = regexp.MustCompile("([A-Z]+)([A-Z][a-z])")
 	s = re.ReplaceAllString(s, "${1}_${2}")
-	
+
 	return strings.ToLower(s)
 }
 
 // ToCamel converts string to CamelCase
 func ToCamel(s string) string {
 	// Split on common delimiters
-	parts := regexp.MustCompile("[_\\-\\s]+").Split(s, -1)
-	
+	parts := regexp.MustCompile(`[_\-\s]+`).Split(s, -1)
+
 	for i, part := range parts {
 		if len(part) > 0 {
 			parts[i] = strings.ToUpper(part[:1]) + strings.ToLower(part[1:])
 		}
 	}
-	
+
 	return strings.Join(parts, "")
 }
 
@@ -78,7 +78,7 @@ func ToKebab(s string) string {
 
 // ToTitle converts string to Title Case
 func ToTitle(s string) string {
-	words := regexp.MustCompile("[_\\-\\s]+").Split(s, -1)
+	words := regexp.MustCompile(`[_\-\s]+`).Split(s, -1)
 	for i, word := range words {
 		if len(word) > 0 {
 			words[i] = strings.ToUpper(word[:1]) + strings.ToLower(word[1:])
@@ -92,12 +92,12 @@ func ToPackage(s string) string {
 	// Remove any non-alphanumeric characters
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	s = reg.ReplaceAllString(s, "")
-	
+
 	// Ensure it starts with a letter
 	if len(s) > 0 && s[0] >= '0' && s[0] <= '9' {
 		s = "pkg" + s
 	}
-	
+
 	return strings.ToLower(s)
 }
 
@@ -114,21 +114,21 @@ func Pluralize(s string) string {
 		"woman":  "women",
 		"tooth":  "teeth",
 	}
-	
+
 	if plural, ok := irregulars[s]; ok {
 		return plural
 	}
-	
+
 	// Basic pluralization rules
 	switch {
-	case strings.HasSuffix(s, "s") || strings.HasSuffix(s, "x") || 
-		 strings.HasSuffix(s, "ch") || strings.HasSuffix(s, "sh"):
+	case strings.HasSuffix(s, "s") || strings.HasSuffix(s, "x") ||
+		strings.HasSuffix(s, "ch") || strings.HasSuffix(s, "sh"):
 		return s + "es"
 	case strings.HasSuffix(s, "y") && len(s) > 1:
 		// Check if vowel before y
 		beforeY := s[len(s)-2]
-		if beforeY != 'a' && beforeY != 'e' && beforeY != 'i' && 
-		   beforeY != 'o' && beforeY != 'u' {
+		if beforeY != 'a' && beforeY != 'e' && beforeY != 'i' &&
+			beforeY != 'o' && beforeY != 'u' {
 			return s[:len(s)-1] + "ies"
 		}
 		return s + "s"
@@ -154,11 +154,11 @@ func Singularize(s string) string {
 		"women":    "woman",
 		"teeth":    "tooth",
 	}
-	
+
 	if singular, ok := irregulars[s]; ok {
 		return singular
 	}
-	
+
 	// Basic singularization rules
 	switch {
 	case strings.HasSuffix(s, "ies"):
@@ -169,10 +169,10 @@ func Singularize(s string) string {
 		}
 		return s[:len(s)-3] + "fe"
 	case strings.HasSuffix(s, "es"):
-		if strings.HasSuffix(s[:len(s)-2], "s") || 
-		   strings.HasSuffix(s[:len(s)-2], "x") ||
-		   strings.HasSuffix(s[:len(s)-2], "ch") ||
-		   strings.HasSuffix(s[:len(s)-2], "sh") {
+		if strings.HasSuffix(s[:len(s)-2], "s") ||
+			strings.HasSuffix(s[:len(s)-2], "x") ||
+			strings.HasSuffix(s[:len(s)-2], "ch") ||
+			strings.HasSuffix(s[:len(s)-2], "sh") {
 			return s[:len(s)-2]
 		}
 		return s[:len(s)-1]
@@ -196,29 +196,29 @@ type Field struct {
 // Format: name:type name:type:nullable
 func ParseFields(args []string) []Field {
 	fields := make([]Field, 0, len(args))
-	
+
 	for _, arg := range args {
 		parts := strings.Split(arg, ":")
 		if len(parts) < 2 {
 			continue
 		}
-		
+
 		field := Field{
 			Name: ToCamel(parts[0]),
 			Type: mapFieldType(parts[1]),
 		}
-		
+
 		// Check for nullable flag
 		if len(parts) > 2 && parts[2] == "nullable" {
 			field.Nullable = true
 		}
-		
+
 		// Generate JSON tag
 		field.Tag = fmt.Sprintf(`json:"%s" db:"%s"`, ToSnake(parts[0]), ToSnake(parts[0]))
-		
+
 		fields = append(fields, field)
 	}
-	
+
 	return fields
 }
 
@@ -241,7 +241,7 @@ func mapFieldType(t string) string {
 		"json":     "json.RawMessage",
 		"jsonb":    "json.RawMessage",
 	}
-	
+
 	if mapped, ok := typeMap[strings.ToLower(t)]; ok {
 		return mapped
 	}
@@ -255,25 +255,25 @@ func GenerateFile(tmplContent string, data interface{}, outputPath string) error
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory %s: %w", dir, err)
 	}
-	
+
 	// Parse and execute template
 	tmpl, err := template.New("generator").Parse(tmplContent)
 	if err != nil {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
-	
+
 	// Create output file
 	file, err := os.Create(outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", outputPath, err)
 	}
 	defer file.Close()
-	
+
 	// Execute template to file
 	if err := tmpl.Execute(file, data); err != nil {
 		return fmt.Errorf("failed to execute template: %w", err)
 	}
-	
+
 	return nil
 }
 
