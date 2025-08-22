@@ -629,7 +629,12 @@ func (c *SharedContext) TheMigrationsTableShouldExist() error {
 		if err != nil {
 			return fmt.Errorf("failed to open database for verification: %w", err)
 		}
-		defer db.Close()
+		defer func() {
+			if err := db.Close(); err != nil {
+				// Log error but don't fail the test
+				fmt.Printf("Failed to close database: %v\n", err)
+			}
+		}()
 	} else {
 		db = c.TestDB
 	}

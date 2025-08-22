@@ -22,7 +22,11 @@ func TestDirectCoverage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Logf("Failed to close database: %v", err)
+		}
+	}()
 
 	// Create a Buffalo app
 	app := buffalo.New(buffalo.Options{})
@@ -223,7 +227,6 @@ func TestDirectCoverage(t *testing.T) {
 		// Test migration runner - needs an embed.FS for migrations
 		// We'll skip this as it requires actual migration files
 		t.Skip("Migration runner requires embedded migration files")
-		return
 		/*
 			runner := buffkit.NewMigrationRunner(db, migrationFS, "sqlite3")
 			if runner == nil {
@@ -262,7 +265,6 @@ func TestAuthHelpers(t *testing.T) {
 	// Buffalo doesn't expose NewContext publicly, so we'll skip session tests
 	// as they require a proper HTTP handler context
 	t.Skip("Session helpers require a Buffalo handler context")
-	return
 
 	// Session test code would go here if we had a context
 }

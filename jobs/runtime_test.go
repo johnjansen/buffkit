@@ -862,6 +862,89 @@ func InitializeScenarioWithContext(sc *godog.ScenarioContext, container *jobs.Re
 	sc.Step(`^the (\d+) expired sessions should be deleted$`, testCtx.theExpiredSessionsShouldBeDeleted)
 	sc.Step(`^the (\d+) active sessions should remain$`, testCtx.theActiveSessionsShouldRemain)
 	sc.Step(`^the job should complete successfully$`, testCtx.theJobShouldCompleteSuccessfully)
+
+	// Job retry and failure
+	sc.Step(`^the mail system is temporarily unavailable$`, testCtx.theMailSystemIsTemporarilyUnavailable)
+	sc.Step(`^an email job is processed$`, testCtx.anEmailJobIsProcessed)
+	sc.Step(`^the job should fail$`, testCtx.theJobShouldFail)
+	sc.Step(`^the job should be retried with exponential backoff$`, testCtx.theJobShouldBeRetriedWithExponentialBackoff)
+	sc.Step(`^the retry count should be tracked$`, testCtx.theRetryCountShouldBeTracked)
+	sc.Step(`^a job has failed (\d+) times$`, testCtx.aJobHasFailedTimes)
+	sc.Step(`^the job fails again$`, testCtx.theJobFailsAgain)
+	sc.Step(`^the job should be moved to the dead letter queue$`, testCtx.theJobShouldBeMovedToTheDeadLetterQueue)
+	sc.Step(`^an error should be logged$`, testCtx.anErrorShouldBeLogged)
+	sc.Step(`^the job should not be retried again$`, testCtx.theJobShouldNotBeRetriedAgain)
+
+	// Worker management
+	sc.Step(`^I run "([^"]*)"$`, testCtx.iRun)
+	sc.Step(`^the worker should start$`, testCtx.theWorkerShouldStart)
+	sc.Step(`^it should begin processing jobs$`, testCtx.itShouldBeginProcessingJobs)
+	sc.Step(`^it should log "([^"]*)"$`, testCtx.itShouldLog)
+	sc.Step(`^there are (\d+) pending jobs$`, testCtx.thereArePendingJobs)
+	sc.Step(`^there are (\d+) completed jobs$`, testCtx.thereAreCompletedJobs)
+	sc.Step(`^I should see "([^"]*)"$`, testCtx.iShouldSee)
+
+	// Graceful shutdown
+	sc.Step(`^a worker is running$`, testCtx.aWorkerIsRunning)
+	sc.Step(`^I send a SIGTERM signal$`, testCtx.iSendASIGTERMSignal)
+	sc.Step(`^the worker should stop accepting new jobs$`, testCtx.theWorkerShouldStopAcceptingNewJobs)
+	sc.Step(`^it should finish processing current jobs$`, testCtx.itShouldFinishProcessingCurrentJobs)
+	sc.Step(`^it should shut down cleanly$`, testCtx.itShouldShutDownCleanly)
+
+	// Multiple workers
+	sc.Step(`^I have (\d+) workers running$`, testCtx.iHaveWorkersRunning)
+	sc.Step(`^there are (\d+) jobs in the queue$`, testCtx.thereAreJobsInTheQueue)
+	sc.Step(`^the workers process jobs$`, testCtx.theWorkersProcessJobs)
+	sc.Step(`^jobs should be distributed among workers$`, testCtx.jobsShouldBeDistributedAmongWorkers)
+	sc.Step(`^no job should be processed twice$`, testCtx.noJobShouldBeProcessedTwice)
+	sc.Step(`^all jobs should complete$`, testCtx.allJobsShouldComplete)
+
+	// Timeout handling
+	sc.Step(`^I have a jobs runtime$`, testCtx.iHaveAJobsRuntime)
+	sc.Step(`^I enqueue a job with a (\d+) second timeout$`, testCtx.iEnqueueAJobWithASecondTimeout)
+	sc.Step(`^the job takes (\d+) seconds to process$`, testCtx.theJobTakesSecondsToProcess)
+	sc.Step(`^the job should be cancelled after (\d+) seconds$`, testCtx.theJobShouldBeCancelledAfterSeconds)
+	sc.Step(`^a timeout error should be logged$`, testCtx.aTimeoutErrorShouldBeLogged)
+
+	// Scheduled jobs
+	sc.Step(`^I schedule a job to run in (\d+) hour$`, testCtx.iScheduleAJobToRunInHour)
+	sc.Step(`^the job should not process immediately$`, testCtx.theJobShouldNotProcessImmediately)
+	sc.Step(`^the job should process after (\d+) hour$`, testCtx.theJobShouldProcessAfterHour)
+
+	// Periodic jobs
+	sc.Step(`^I schedule a job to run every hour$`, testCtx.iScheduleAJobToRunEveryHour)
+	sc.Step(`^the job should run at the specified interval$`, testCtx.theJobShouldRunAtTheSpecifiedInterval)
+	sc.Step(`^each execution should be tracked$`, testCtx.eachExecutionShouldBeTracked)
+
+	// Priority handling
+	sc.Step(`^there are high priority jobs$`, testCtx.thereAreHighPriorityJobs)
+	sc.Step(`^there are low priority jobs$`, testCtx.thereAreLowPriorityJobs)
+	sc.Step(`^the worker processes jobs$`, testCtx.theWorkerProcessesJobs)
+	sc.Step(`^high priority jobs should be processed first$`, testCtx.highPriorityJobsShouldBeProcessedFirst)
+
+	// Custom handlers
+	sc.Step(`^I register a custom handler for "([^"]*)"$`, testCtx.iRegisterACustomHandlerFor)
+	sc.Step(`^I enqueue a job with type "([^"]*)"$`, testCtx.iEnqueueAJobWithType)
+	sc.Step(`^my custom handler should be called$`, testCtx.myCustomHandlerShouldBeCalled)
+	sc.Step(`^the job should process successfully$`, testCtx.theJobShouldProcessSuccessfully)
+
+	// Error handling
+	sc.Step(`^a job handler returns an error$`, testCtx.aJobHandlerReturnsAnError)
+	sc.Step(`^the error should be logged$`, testCtx.theErrorShouldBeLogged)
+	sc.Step(`^the error details should be stored$`, testCtx.theErrorDetailsShouldBeStored)
+	sc.Step(`^the job should be retried based on configuration$`, testCtx.theJobShouldBeRetriedBasedOnConfiguration)
+
+	// Payload validation
+	sc.Step(`^I enqueue a job with invalid payload$`, testCtx.iEnqueueAJobWithInvalidPayload)
+	sc.Step(`^the job should fail validation$`, testCtx.theJobShouldFailValidation)
+	sc.Step(`^an error should be returned$`, testCtx.anErrorShouldBeReturned)
+	sc.Step(`^the job should not be queued$`, testCtx.theJobShouldNotBeQueued)
+
+	// Concurrency limits
+	sc.Step(`^I have a jobs runtime with concurrency set to (\d+)$`, testCtx.iHaveAJobsRuntimeWithConcurrencySetTo)
+	sc.Step(`^(\d+) jobs are queued$`, testCtx.jobsAreQueued)
+	sc.Step(`^at most (\d+) jobs should process simultaneously$`, testCtx.atMostJobsShouldProcessSimultaneously)
+	sc.Step(`^remaining jobs should wait in queue$`, testCtx.remainingJobsShouldWaitInQueue)
 }
 
 func InitializeScenario(sc *godog.ScenarioContext) {
@@ -911,4 +994,87 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^the (\d+) expired sessions should be deleted$`, testCtx.theExpiredSessionsShouldBeDeleted)
 	sc.Step(`^the (\d+) active sessions should remain$`, testCtx.theActiveSessionsShouldRemain)
 	sc.Step(`^the job should complete successfully$`, testCtx.theJobShouldCompleteSuccessfully)
+
+	// Job retry and failure
+	sc.Step(`^the mail system is temporarily unavailable$`, testCtx.theMailSystemIsTemporarilyUnavailable)
+	sc.Step(`^an email job is processed$`, testCtx.anEmailJobIsProcessed)
+	sc.Step(`^the job should fail$`, testCtx.theJobShouldFail)
+	sc.Step(`^the job should be retried with exponential backoff$`, testCtx.theJobShouldBeRetriedWithExponentialBackoff)
+	sc.Step(`^the retry count should be tracked$`, testCtx.theRetryCountShouldBeTracked)
+	sc.Step(`^a job has failed (\d+) times$`, testCtx.aJobHasFailedTimes)
+	sc.Step(`^the job fails again$`, testCtx.theJobFailsAgain)
+	sc.Step(`^the job should be moved to the dead letter queue$`, testCtx.theJobShouldBeMovedToTheDeadLetterQueue)
+	sc.Step(`^an error should be logged$`, testCtx.anErrorShouldBeLogged)
+	sc.Step(`^the job should not be retried again$`, testCtx.theJobShouldNotBeRetriedAgain)
+
+	// Worker management
+	sc.Step(`^I run "([^"]*)"$`, testCtx.iRun)
+	sc.Step(`^the worker should start$`, testCtx.theWorkerShouldStart)
+	sc.Step(`^it should begin processing jobs$`, testCtx.itShouldBeginProcessingJobs)
+	sc.Step(`^it should log "([^"]*)"$`, testCtx.itShouldLog)
+	sc.Step(`^there are (\d+) pending jobs$`, testCtx.thereArePendingJobs)
+	sc.Step(`^there are (\d+) completed jobs$`, testCtx.thereAreCompletedJobs)
+	sc.Step(`^I should see "([^"]*)"$`, testCtx.iShouldSee)
+
+	// Graceful shutdown
+	sc.Step(`^a worker is running$`, testCtx.aWorkerIsRunning)
+	sc.Step(`^I send a SIGTERM signal$`, testCtx.iSendASIGTERMSignal)
+	sc.Step(`^the worker should stop accepting new jobs$`, testCtx.theWorkerShouldStopAcceptingNewJobs)
+	sc.Step(`^it should finish processing current jobs$`, testCtx.itShouldFinishProcessingCurrentJobs)
+	sc.Step(`^it should shut down cleanly$`, testCtx.itShouldShutDownCleanly)
+
+	// Multiple workers
+	sc.Step(`^I have (\d+) workers running$`, testCtx.iHaveWorkersRunning)
+	sc.Step(`^there are (\d+) jobs in the queue$`, testCtx.thereAreJobsInTheQueue)
+	sc.Step(`^the workers process jobs$`, testCtx.theWorkersProcessJobs)
+	sc.Step(`^jobs should be distributed among workers$`, testCtx.jobsShouldBeDistributedAmongWorkers)
+	sc.Step(`^no job should be processed twice$`, testCtx.noJobShouldBeProcessedTwice)
+	sc.Step(`^all jobs should complete$`, testCtx.allJobsShouldComplete)
+
+	// Timeout handling
+	sc.Step(`^I have a jobs runtime$`, testCtx.iHaveAJobsRuntime)
+	sc.Step(`^I enqueue a job with a (\d+) second timeout$`, testCtx.iEnqueueAJobWithASecondTimeout)
+	sc.Step(`^the job takes (\d+) seconds to process$`, testCtx.theJobTakesSecondsToProcess)
+	sc.Step(`^the job should be cancelled after (\d+) seconds$`, testCtx.theJobShouldBeCancelledAfterSeconds)
+	sc.Step(`^a timeout error should be logged$`, testCtx.aTimeoutErrorShouldBeLogged)
+
+	// Scheduled jobs
+	sc.Step(`^I schedule a job to run in (\d+) hour$`, testCtx.iScheduleAJobToRunInHour)
+	sc.Step(`^the job should not process immediately$`, testCtx.theJobShouldNotProcessImmediately)
+	sc.Step(`^the job should process after (\d+) hour$`, testCtx.theJobShouldProcessAfterHour)
+
+	// Periodic jobs
+	sc.Step(`^I schedule a job to run every hour$`, testCtx.iScheduleAJobToRunEveryHour)
+	sc.Step(`^the job should run at the specified interval$`, testCtx.theJobShouldRunAtTheSpecifiedInterval)
+	sc.Step(`^each execution should be tracked$`, testCtx.eachExecutionShouldBeTracked)
+
+	// Priority handling
+	sc.Step(`^there are high priority jobs$`, testCtx.thereAreHighPriorityJobs)
+	sc.Step(`^there are low priority jobs$`, testCtx.thereAreLowPriorityJobs)
+	sc.Step(`^the worker processes jobs$`, testCtx.theWorkerProcessesJobs)
+	sc.Step(`^high priority jobs should be processed first$`, testCtx.highPriorityJobsShouldBeProcessedFirst)
+
+	// Custom handlers
+	sc.Step(`^I register a custom handler for "([^"]*)"$`, testCtx.iRegisterACustomHandlerFor)
+	sc.Step(`^I enqueue a job with type "([^"]*)"$`, testCtx.iEnqueueAJobWithType)
+	sc.Step(`^my custom handler should be called$`, testCtx.myCustomHandlerShouldBeCalled)
+	sc.Step(`^the job should process successfully$`, testCtx.theJobShouldProcessSuccessfully)
+
+	// Error handling
+	sc.Step(`^a job handler returns an error$`, testCtx.aJobHandlerReturnsAnError)
+	sc.Step(`^the error should be logged$`, testCtx.theErrorShouldBeLogged)
+	sc.Step(`^the error details should be stored$`, testCtx.theErrorDetailsShouldBeStored)
+	sc.Step(`^the job should be retried based on configuration$`, testCtx.theJobShouldBeRetriedBasedOnConfiguration)
+
+	// Payload validation
+	sc.Step(`^I enqueue a job with invalid payload$`, testCtx.iEnqueueAJobWithInvalidPayload)
+	sc.Step(`^the job should fail validation$`, testCtx.theJobShouldFailValidation)
+	sc.Step(`^an error should be returned$`, testCtx.anErrorShouldBeReturned)
+	sc.Step(`^the job should not be queued$`, testCtx.theJobShouldNotBeQueued)
+
+	// Concurrency limits
+	sc.Step(`^I have a jobs runtime with concurrency set to (\d+)$`, testCtx.iHaveAJobsRuntimeWithConcurrencySetTo)
+	sc.Step(`^(\d+) jobs are queued$`, testCtx.jobsAreQueued)
+	sc.Step(`^at most (\d+) jobs should process simultaneously$`, testCtx.atMostJobsShouldProcessSimultaneously)
+	sc.Step(`^remaining jobs should wait in queue$`, testCtx.remainingJobsShouldWaitInQueue)
 }

@@ -318,7 +318,12 @@ func (g *GriftTestSuite) theMigrationsTableShouldExist() error {
 	if err != nil {
 		return fmt.Errorf("failed to open database for verification: %w", err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			// Log error but don't fail the test
+			fmt.Printf("Failed to close database: %v\n", err)
+		}
+	}()
 
 	var tableName string
 	query := `SELECT name FROM sqlite_master WHERE type='table' AND name='buffkit_migrations'`

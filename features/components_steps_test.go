@@ -456,15 +456,6 @@ func (s *ComponentsTestSuite) iHaveRegisteredAButtonComponentWithVariants() erro
 	return nil
 }
 
-func (s *ComponentsTestSuite) shareRegistryWithSharedContext() error {
-	// Share the registry with SharedContext so rendering works properly
-	if s.shared != nil {
-		s.shared.ComponentRegistry = s.registry
-	}
-
-	return nil
-}
-
 func (s *ComponentsTestSuite) iRenderHTMLContaining(html string) error {
 	// Use the actual component expansion function from the registry
 	if s.registry == nil {

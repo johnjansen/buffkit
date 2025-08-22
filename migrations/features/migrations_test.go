@@ -31,11 +31,17 @@ type MigrationTestSuite struct {
 
 func (m *MigrationTestSuite) Reset() {
 	if m.db != nil {
-		m.db.Close()
+		if err := m.db.Close(); err != nil {
+			// Log error but continue cleanup
+			fmt.Printf("Failed to close database: %v\n", err)
+		}
 		m.db = nil
 	}
 	if m.tempDir != "" {
-		os.RemoveAll(m.tempDir)
+		if err := os.RemoveAll(m.tempDir); err != nil {
+			// Log error but continue cleanup
+			fmt.Printf("Failed to remove temp dir: %v\n", err)
+		}
 		m.tempDir = ""
 	}
 	m.runner = nil
@@ -113,7 +119,11 @@ func (m *MigrationTestSuite) theTableShouldHaveColumns(column1, column2 string) 
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			fmt.Printf("Failed to close rows: %v\n", err)
+		}
+	}()
 
 	columns := make(map[string]bool)
 	for rows.Next() {
@@ -246,7 +256,11 @@ func (m *MigrationTestSuite) theAppliedAtTimestampsShouldBeInOrder() error {
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			fmt.Printf("Failed to close rows: %v\n", err)
+		}
+	}()
 
 	var lastTime string
 	for rows.Next() {
