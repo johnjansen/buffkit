@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -93,6 +94,15 @@ type Broker struct {
 	// shutdown channel signals the broker to stop gracefully.
 	// Close this channel to stop the broker's goroutines.
 	shutdown chan struct{}
+
+	// mu protects the clients map and shutdown state
+	mu sync.RWMutex
+
+	// wg tracks active goroutines for graceful shutdown
+	wg sync.WaitGroup
+
+	// isShuttingDown prevents multiple shutdown calls
+	isShuttingDown bool
 }
 
 // NewBroker creates a new SSE broker and starts its event loops.
@@ -117,11 +127,19 @@ func NewBroker() *Broker {
 
 	// Start the broker's main event loop in a goroutine.
 	// This handles all client lifecycle and message distribution.
-	go broker.run()
+	broker.wg.Add(1)
+	go func() {
+		defer broker.wg.Done()
+		broker.run()
+	}()
 
 	// Start heartbeat ticker in a separate goroutine.
 	// This ensures connections stay alive through proxies.
-	go broker.heartbeat()
+	broker.wg.Add(1)
+	go func() {
+		defer broker.wg.Done()
+		broker.heartbeat()
+	}()
 
 	return broker
 }
@@ -139,9 +157,12 @@ func (b *Broker) run() {
 		select {
 		case <-b.shutdown:
 			// Clean up all clients
+			b.mu.Lock()
 			for _, client := range b.clients {
 				close(client.Events)
 			}
+			b.clients = make(map[string]*Client)
+			b.mu.Unlock()
 			return
 		case client := <-b.register:
 			// New client connected - add to registry.
@@ -205,7 +226,16 @@ func (b *Broker) heartbeat() {
 
 // Shutdown gracefully stops the broker and all its goroutines
 func (b *Broker) Shutdown() {
+	b.mu.Lock()
+	if b.isShuttingDown {
+		b.mu.Unlock()
+		return
+	}
+	b.isShuttingDown = true
+	b.mu.Unlock()
+
 	close(b.shutdown)
+	b.wg.Wait()
 }
 
 // Broadcast sends an event to all connected clients.
