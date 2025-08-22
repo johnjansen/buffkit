@@ -5,11 +5,26 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/markbates/grift/grift"
 )
+
+// toTitle converts a string to title case (replacement for deprecated strings.Title)
+func toTitle(s string) string {
+	if s == "" {
+		return ""
+	}
+
+	// Simple title case implementation
+	words := strings.Fields(s)
+	for i, word := range words {
+		if len(word) > 0 {
+			words[i] = strings.ToUpper(word[:1]) + strings.ToLower(word[1:])
+		}
+	}
+	return strings.Join(words, " ")
+}
 
 func init() {
 	// Register generator tasks
@@ -76,7 +91,7 @@ func generateModel(c *grift.Context) error {
 
 	// Generate model struct
 	modelPath := fmt.Sprintf("models/%s.go", names.Snake)
-	
+
 	modelTemplate := `package models
 
 import (
@@ -106,11 +121,11 @@ func ({{.Names.Lower}} *{{.Names.Camel}}) Create(ctx context.Context, db *sql.DB
 		INSERT INTO {{.Names.Plural}} ({{.FieldNamesDB}}, created_at, updated_at)
 		VALUES ({{.FieldPlaceholders}}, ?, ?)
 		RETURNING id` + "`" + `
-	
+
 	now := time.Now()
 	{{.Names.Lower}}.CreatedAt = now
 	{{.Names.Lower}}.UpdatedAt = now
-	
+
 	err := db.QueryRowContext(ctx, query, {{.FieldValues}}, now, now).Scan(&{{.Names.Lower}}.ID)
 	return err
 }
@@ -121,9 +136,9 @@ func ({{.Names.Lower}} *{{.Names.Camel}}) Update(ctx context.Context, db *sql.DB
 		UPDATE {{.Names.Plural}}
 		SET {{.UpdateFields}}, updated_at = ?
 		WHERE id = ?` + "`" + `
-	
+
 	{{.Names.Lower}}.UpdatedAt = time.Now()
-	
+
 	_, err := db.ExecContext(ctx, query, {{.FieldValues}}, {{.Names.Lower}}.UpdatedAt, {{.Names.Lower}}.ID)
 	return err
 }
@@ -139,14 +154,14 @@ func ({{.Names.Lower}} *{{.Names.Camel}}) Delete(ctx context.Context, db *sql.DB
 func Find{{.Names.Camel}}(ctx context.Context, db *sql.DB, id int) (*{{.Names.Camel}}, error) {
 	{{.Names.Lower}} := &{{.Names.Camel}}{}
 	query := ` + "`" + `SELECT * FROM {{.Names.Plural}} WHERE id = ?` + "`" + `
-	
+
 	err := db.QueryRowContext(ctx, query, id).Scan(
 		&{{.Names.Lower}}.ID,
 {{range .Fields}}		&{{$.Names.Lower}}.{{.Name}},
 {{end}}		&{{.Names.Lower}}.CreatedAt,
 		&{{.Names.Lower}}.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -156,13 +171,13 @@ func Find{{.Names.Camel}}(ctx context.Context, db *sql.DB, id int) (*{{.Names.Ca
 // All{{.Names.Plural}} returns all {{.Names.Plural}} from the database
 func All{{.Names.Plural}}(ctx context.Context, db *sql.DB) ([]*{{.Names.Camel}}, error) {
 	query := ` + "`" + `SELECT * FROM {{.Names.Plural}} ORDER BY created_at DESC` + "`" + `
-	
+
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var {{.Names.Plural}} []*{{.Names.Camel}}
 	for rows.Next() {
 		{{.Names.Lower}} := &{{.Names.Camel}}{}
@@ -177,21 +192,21 @@ func All{{.Names.Plural}}(ctx context.Context, db *sql.DB) ([]*{{.Names.Camel}},
 		}
 		{{.Names.Plural}} = append({{.Names.Plural}}, {{.Names.Lower}})
 	}
-	
+
 	return {{.Names.Plural}}, rows.Err()
 }
 `
 
 	// Prepare template data
 	data := map[string]interface{}{
-		"Names":  names,
-		"Fields": fields,
-		"HasUUID": hasFieldType(fields, "uuid.UUID"),
-		"HasJSON": hasFieldType(fields, "json.RawMessage"),
-		"FieldNamesDB": fieldNamesDB(fields),
+		"Names":             names,
+		"Fields":            fields,
+		"HasUUID":           hasFieldType(fields, "uuid.UUID"),
+		"HasJSON":           hasFieldType(fields, "json.RawMessage"),
+		"FieldNamesDB":      fieldNamesDB(fields),
 		"FieldPlaceholders": fieldPlaceholders(fields),
-		"FieldValues": fieldValues(fields, names.Lower),
-		"UpdateFields": updateFields(fields),
+		"FieldValues":       fieldValues(fields, names.Lower),
+		"UpdateFields":      updateFields(fields),
 	}
 
 	if err := GenerateFile(modelTemplate, data, modelPath); err != nil {
@@ -218,7 +233,7 @@ func generateAction(c *grift.Context) error {
 
 	resource := c.Args[0]
 	names := NewNameVariants(resource)
-	
+
 	// Default actions if none specified
 	actions := c.Args[1:]
 	if len(actions) == 0 {
@@ -226,12 +241,12 @@ func generateAction(c *grift.Context) error {
 	}
 
 	actionPath := fmt.Sprintf("actions/%s.go", names.Plural)
-	
+
 	actionTemplate := `package actions
 
 import (
 	"net/http"
-	
+
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo/render"
 	"your-app/models"
@@ -243,14 +258,14 @@ func {{$.Names.Plural}}{{. | title}}(c buffalo.Context) error {
 	if err != nil {
 		return err
 	}
-	
+
 	c.Set("{{$.Names.Plural}}", {{$.Names.Plural}})
 	return c.Render(http.StatusOK, r.HTML("{{$.Names.Plural}}/index.plush.html"))
 {{else if eq . "show"}}	{{$.Names.Lower}}, err := models.Find{{$.Names.Camel}}(c.Request().Context(), c.Value("db").(*sql.DB), c.Param("id"))
 	if err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
-	
+
 	c.Set("{{$.Names.Lower}}", {{$.Names.Lower}})
 	return c.Render(http.StatusOK, r.HTML("{{$.Names.Plural}}/show.plush.html"))
 {{else if eq . "new"}}	{{$.Names.Lower}} := &models.{{$.Names.Camel}}{}
@@ -260,49 +275,49 @@ func {{$.Names.Plural}}{{. | title}}(c buffalo.Context) error {
 	if err := c.Bind({{$.Names.Lower}}); err != nil {
 		return err
 	}
-	
+
 	if err := {{$.Names.Lower}}.Create(c.Request().Context(), c.Value("db").(*sql.DB)); err != nil {
 		c.Set("{{$.Names.Lower}}", {{$.Names.Lower}})
 		c.Set("errors", err)
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("{{$.Names.Plural}}/new.plush.html"))
 	}
-	
-	c.Flash().Add("success", "{{$.Names.Title}} was created successfully")
+
+	c.Flash().Add("success", "{{.Names.Camel}} was created successfully")
 	return c.Redirect(http.StatusSeeOther, "/{{$.Names.Plural}}/%d", {{$.Names.Lower}}.ID)
 {{else if eq . "edit"}}	{{$.Names.Lower}}, err := models.Find{{$.Names.Camel}}(c.Request().Context(), c.Value("db").(*sql.DB), c.Param("id"))
 	if err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
-	
+
 	c.Set("{{$.Names.Lower}}", {{$.Names.Lower}})
 	return c.Render(http.StatusOK, r.HTML("{{$.Names.Plural}}/edit.plush.html"))
 {{else if eq . "update"}}	{{$.Names.Lower}}, err := models.Find{{$.Names.Camel}}(c.Request().Context(), c.Value("db").(*sql.DB), c.Param("id"))
 	if err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
-	
+
 	if err := c.Bind({{$.Names.Lower}}); err != nil {
 		return err
 	}
-	
+
 	if err := {{$.Names.Lower}}.Update(c.Request().Context(), c.Value("db").(*sql.DB)); err != nil {
 		c.Set("{{$.Names.Lower}}", {{$.Names.Lower}})
 		c.Set("errors", err)
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("{{$.Names.Plural}}/edit.plush.html"))
 	}
-	
-	c.Flash().Add("success", "{{$.Names.Title}} was updated successfully")
+
+	c.Flash().Add("success", "{{.Names.Camel}} was updated successfully")
 	return c.Redirect(http.StatusSeeOther, "/{{$.Names.Plural}}/%d", {{$.Names.Lower}}.ID)
 {{else if eq . "destroy"}}	{{$.Names.Lower}}, err := models.Find{{$.Names.Camel}}(c.Request().Context(), c.Value("db").(*sql.DB), c.Param("id"))
 	if err != nil {
 		return c.Error(http.StatusNotFound, err)
 	}
-	
+
 	if err := {{$.Names.Lower}}.Delete(c.Request().Context(), c.Value("db").(*sql.DB)); err != nil {
 		return err
 	}
-	
-	c.Flash().Add("success", "{{$.Names.Title}} was deleted successfully")
+
+	c.Flash().Add("success", "{{.Names.Camel}} was deleted successfully")
 	return c.Redirect(http.StatusSeeOther, "/{{$.Names.Plural}}")
 {{else}}	// TODO: Implement {{.}} action
 	return c.Render(http.StatusOK, r.HTML("{{$.Names.Plural}}/{{.}}.plush.html"))
@@ -327,11 +342,11 @@ func {{$.Names.Plural}}{{. | title}}(c buffalo.Context) error {
 	}
 
 	fmt.Printf("✅ Generated actions: %s\n", actionPath)
-	
+
 	// Generate route registration helper
 	fmt.Println("\n📝 Add these routes to your app:")
 	fmt.Printf("app.Resource(\"/"+"%s\", buffalo.WrapHandlerFunc(actions.%s))\n", names.Plural, names.Plural+"Index")
-	
+
 	return nil
 }
 
@@ -341,19 +356,19 @@ func generateResource(c *grift.Context) error {
 	if err := generateModel(c); err != nil {
 		return err
 	}
-	
+
 	// Then generate actions
 	if err := generateAction(c); err != nil {
 		return err
 	}
-	
+
 	// Generate basic view templates
 	name := c.Args[0]
 	names := NewNameVariants(name)
-	
+
 	viewsDir := fmt.Sprintf("templates/%s", names.Plural)
 	views := []string{"index", "show", "new", "edit", "_form"}
-	
+
 	for _, view := range views {
 		viewPath := filepath.Join(viewsDir, view+".plush.html")
 		if err := generateView(names, view, viewPath); err != nil {
@@ -361,7 +376,7 @@ func generateResource(c *grift.Context) error {
 		}
 		fmt.Printf("✅ Generated view: %s\n", viewPath)
 	}
-	
+
 	return nil
 }
 
@@ -373,7 +388,7 @@ func generateMigration(c *grift.Context) error {
 
 	name := c.Args[0]
 	fields := ParseFields(c.Args[1:])
-	
+
 	// Detect migration type from name
 	var migrationType string
 	if strings.HasPrefix(name, "create_") {
@@ -430,7 +445,7 @@ func generateMigration(c *grift.Context) error {
 	fmt.Printf("✅ Created migration files:\n")
 	fmt.Printf("   - %s\n", upFile)
 	fmt.Printf("   - %s\n", downFile)
-	
+
 	return nil
 }
 
@@ -442,10 +457,10 @@ func generateComponent(c *grift.Context) error {
 
 	name := c.Args[0]
 	names := NewNameVariants(name)
-	
+
 	// Generate component file
 	componentPath := fmt.Sprintf("components/%s.go", names.Snake)
-	
+
 	componentTemplate := `package components
 
 import (
@@ -461,15 +476,15 @@ func {{.Names.Camel}}Component(attrs map[string]string, slots map[string][]byte)
 	if variant == "" {
 		variant = "default"
 	}
-	
+
 	class := attrs["class"]
 	id := attrs["id"]
-	
+
 	// Get content from default slot
 	content := slots["default"]
-	
+
 	// Build component HTML
-	tmpl := ` + "`" + `<div 
+	tmpl := ` + "`" + `<div
 		{{if .ID}}id="{{.ID}}"{{end}}
 		class="bk-{{.Names.Kebab}} bk-{{.Names.Kebab}}-{{.Variant}}{{if .Class}} {{.Class}}{{end}}"
 		data-component="{{.Names.Kebab}}"
@@ -479,24 +494,24 @@ func {{.Names.Camel}}Component(attrs map[string]string, slots map[string][]byte)
 			{{.Header}}
 		</div>
 		{{end}}
-		
+
 		<div class="bk-{{.Names.Kebab}}-content">
 			{{.Content}}
 		</div>
-		
+
 		{{if .Footer}}
 		<div class="bk-{{.Names.Kebab}}-footer">
 			{{.Footer}}
 		</div>
 		{{end}}
 	</div>` + "`" + `
-	
+
 	// Parse and execute template
 	t, err := template.New("{{.Names.Snake}}").Parse(tmpl)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse {{.Names.Snake}} template: %w", err)
 	}
-	
+
 	data := map[string]interface{}{
 		"Names":   map[string]string{"Kebab": "{{.Names.Kebab}}"},
 		"ID":      id,
@@ -506,12 +521,12 @@ func {{.Names.Camel}}Component(attrs map[string]string, slots map[string][]byte)
 		"Header":  template.HTML(slots["header"]),
 		"Footer":  template.HTML(slots["footer"]),
 	}
-	
+
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
 		return nil, fmt.Errorf("failed to execute {{.Names.Snake}} template: %w", err)
 	}
-	
+
 	return buf.Bytes(), nil
 }
 
@@ -532,7 +547,7 @@ func Register{{.Names.Camel}}(registry *Registry) {
 	fmt.Printf("✅ Generated component: %s\n", componentPath)
 	fmt.Printf("\n📝 Register your component in your app setup:\n")
 	fmt.Printf("kit.Components.Register(\"%s\", components.%sComponent)\n", names.Kebab, names.Camel)
-	
+
 	// Generate CSS file
 	cssPath := fmt.Sprintf("assets/css/components/%s.css", names.Kebab)
 	cssTemplate := `/* {{.Names.Title}} Component Styles */
@@ -589,7 +604,7 @@ func Register{{.Names.Camel}}(registry *Registry) {
 	} else {
 		fmt.Printf("✅ Generated CSS: %s\n", cssPath)
 	}
-	
+
 	return nil
 }
 
@@ -601,9 +616,9 @@ func generateJob(c *grift.Context) error {
 
 	name := c.Args[0]
 	names := NewNameVariants(name)
-	
+
 	jobPath := fmt.Sprintf("jobs/%s.go", names.Snake)
-	
+
 	jobTemplate := `package jobs
 
 import (
@@ -611,7 +626,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	
+
 	"github.com/hibiken/asynq"
 )
 
@@ -629,24 +644,24 @@ func {{.Names.Camel}}Handler(ctx context.Context, t *asynq.Task) error {
 	if err := json.Unmarshal(t.Payload(), &job); err != nil {
 		return fmt.Errorf("failed to unmarshal {{.Names.Snake}} job: %w", err)
 	}
-	
+
 	// Log job start
 	fmt.Printf("Processing {{.Names.Snake}} job %s at %v\n", job.ID, job.Timestamp)
-	
+
 	// TODO: Implement your job logic here
 	// Example:
 	// - Send emails
 	// - Process data
 	// - Call external APIs
 	// - Update database records
-	
+
 	// Simulate work
 	select {
 	case <-time.After(2 * time.Second):
 		// Job completed successfully
 		fmt.Printf("Completed {{.Names.Snake}} job %s\n", job.ID)
 		return nil
-		
+
 	case <-ctx.Done():
 		// Job was cancelled
 		return fmt.Errorf("{{.Names.Snake}} job %s was cancelled", job.ID)
@@ -660,25 +675,25 @@ func Enqueue{{.Names.Camel}}(client *asynq.Client, data string) error {
 		Data:      data,
 		Timestamp: time.Now(),
 	}
-	
+
 	payload, err := json.Marshal(job)
 	if err != nil {
 		return fmt.Errorf("failed to marshal {{.Names.Snake}} job: %w", err)
 	}
-	
+
 	task := asynq.NewTask("{{.Names.Snake}}", payload)
-	
+
 	// Enqueue with options
 	info, err := client.Enqueue(task,
 		asynq.Queue("default"),
 		asynq.MaxRetry(3),
 		asynq.Timeout(5*time.Minute),
 	)
-	
+
 	if err != nil {
 		return fmt.Errorf("failed to enqueue {{.Names.Snake}} job: %w", err)
 	}
-	
+
 	fmt.Printf("Enqueued {{.Names.Snake}} job %s (task ID: %s)\n", job.ID, info.ID)
 	return nil
 }
@@ -705,7 +720,7 @@ func generateJobID() string {
 	fmt.Printf("✅ Generated job handler: %s\n", jobPath)
 	fmt.Printf("\n📝 Register your job handler in your app setup:\n")
 	fmt.Printf("jobs.Register%sHandler(kit.Jobs.Mux)\n", names.Camel)
-	
+
 	return nil
 }
 
@@ -717,15 +732,15 @@ func generateMailer(c *grift.Context) error {
 
 	name := c.Args[0]
 	names := NewNameVariants(name)
-	
+
 	// Default mail actions if none specified
 	actions := c.Args[1:]
 	if len(actions) == 0 {
 		actions = []string{"welcome", "notification"}
 	}
-	
+
 	mailerPath := fmt.Sprintf("mailers/%s.go", names.Snake)
-	
+
 	mailerTemplate := `package mailers
 
 import (
@@ -733,7 +748,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	
+
 	"github.com/johnjansen/buffkit/mail"
 )
 
@@ -756,42 +771,37 @@ func (m *{{$.Names.Camel}}Mailer) Send{{. | title}}(ctx context.Context, to stri
 	if err != nil {
 		return fmt.Errorf("failed to parse {{.}} template: %w", err)
 	}
-	
+
 	// Execute template
 	var body bytes.Buffer
 	if err := tmpl.Execute(&body, data); err != nil {
 		return fmt.Errorf("failed to execute {{.}} template: %w", err)
 	}
-	
+
 	// Create message
 	msg := mail.Message{
 		To:      []string{to},
-		Subject: "{{. | title}} from {{$.Names.Title}}",
+		Subject: "Welcome from Your App", // This should be customized per action
 		HTML:    body.String(),
 	}
-	
+
 	// Send email
 	return m.sender.Send(ctx, msg)
 }
 {{end}}
 `
 
-	// Create custom template functions
-	funcMap := map[string]interface{}{
-		"title": strings.Title,
-	}
-
 	data := map[string]interface{}{
 		"Names":   names,
 		"Actions": actions,
 	}
 
-	if err := GenerateFileWithFuncs(mailerTemplate, data, mailerPath, funcMap); err != nil {
+	if err := GenerateFile(mailerTemplate, data, mailerPath); err != nil {
 		return fmt.Errorf("failed to generate mailer: %w", err)
 	}
 
 	fmt.Printf("✅ Generated mailer: %s\n", mailerPath)
-	
+
 	// Generate email templates
 	for _, action := range actions {
 		templatePath := fmt.Sprintf("templates/mail/%s/%s.html", names.Snake, action)
@@ -815,10 +825,10 @@ func (m *{{$.Names.Camel}}Mailer) Send{{. | title}}(ctx context.Context, to stri
         </div>
         <div class="content">
             <p>Hello {{.Name}},</p>
-            
+
             <!-- Add your email content here -->
-            <p>This is a ` + action + ` email from ` + names.Title + `.</p>
-            
+            <p>This is a ` + action + ` email from Your App.</p>
+
             <p>Best regards,<br>The Team</p>
         </div>
         <div class="footer">
@@ -827,14 +837,14 @@ func (m *{{$.Names.Camel}}Mailer) Send{{. | title}}(ctx context.Context, to stri
     </div>
 </body>
 </html>`
-		
+
 		if err := GenerateFile(emailTemplate, nil, templatePath); err != nil {
 			fmt.Printf("⚠️  Could not generate email template %s: %v\n", action, err)
 		} else {
 			fmt.Printf("✅ Generated email template: %s\n", templatePath)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -846,9 +856,9 @@ func generateSSE(c *grift.Context) error {
 
 	name := c.Args[0]
 	names := NewNameVariants(name)
-	
+
 	ssePath := fmt.Sprintf("sse/%s.go", names.Snake)
-	
+
 	sseTemplate := `package sse
 
 import (
@@ -856,7 +866,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	
+
 	"github.com/gobuffalo/buffalo"
 	"github.com/johnjansen/buffkit/sse"
 )
@@ -876,16 +886,16 @@ func {{.Names.Camel}}Handler(broker *sse.Broker) buffalo.Handler {
 		if eventType == "" {
 			eventType = "{{.Names.Snake}}"
 		}
-		
+
 		// Subscribe to broker
 		client := broker.Subscribe(eventType)
 		defer broker.Unsubscribe(client)
-		
+
 		// Set SSE headers
 		c.Response().Header().Set("Content-Type", "text/event-stream")
 		c.Response().Header().Set("Cache-Control", "no-cache")
 		c.Response().Header().Set("Connection", "keep-alive")
-		
+
 		// Send events
 		for {
 			select {
@@ -895,7 +905,7 @@ func {{.Names.Camel}}Handler(broker *sse.Broker) buffalo.Handler {
 					return err
 				}
 				c.Response().(http.Flusher).Flush()
-				
+
 			case <-c.Request().Context().Done():
 				// Client disconnected
 				return nil
@@ -911,12 +921,12 @@ func Broadcast{{.Names.Camel}}(broker *sse.Broker, data string) error {
 		Data:      data,
 		Timestamp: time.Now(),
 	}
-	
+
 	payload, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("failed to marshal {{.Names.Snake}} event: %w", err)
 	}
-	
+
 	broker.Broadcast("{{.Names.Snake}}", payload)
 	return nil
 }
@@ -938,7 +948,7 @@ func Setup{{.Names.Camel}}Routes(app *buffalo.App, broker *sse.Broker) {
 	fmt.Printf("✅ Generated SSE handler: %s\n", ssePath)
 	fmt.Printf("\n📝 Set up your SSE routes in your app:\n")
 	fmt.Printf("sse.Setup%sRoutes(app, kit.Broker)\n", names.Camel)
-	
+
 	return nil
 }
 
@@ -972,7 +982,7 @@ func generateModelMigration(names *NameVariants, fields []Field) error {
 func generateCreateTableSQL(tableName string, fields []Field) string {
 	sql := fmt.Sprintf("CREATE TABLE %s (\n", tableName)
 	sql += "    id SERIAL PRIMARY KEY,\n"
-	
+
 	for _, field := range fields {
 		sqlType := mapToSQLType(field.Type)
 		nullable := ""
@@ -981,11 +991,11 @@ func generateCreateTableSQL(tableName string, fields []Field) string {
 		}
 		sql += fmt.Sprintf("    %s %s%s,\n", ToSnake(field.Name), sqlType, nullable)
 	}
-	
+
 	sql += "    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
 	sql += "    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
 	sql += ");"
-	
+
 	return sql
 }
 
@@ -1031,7 +1041,7 @@ func mapToSQLType(goType string) string {
 		"uuid.UUID":       "UUID",
 		"json.RawMessage": "JSONB",
 	}
-	
+
 	if sqlType, ok := typeMap[goType]; ok {
 		return sqlType
 	}
@@ -1085,73 +1095,44 @@ func generateView(names *NameVariants, view, path string) error {
 		"index": `<h1>{{.Names.Title}} List</h1>
 <%= for ({{.Names.Lower}}) in {{.Names.Plural}} { %>
   <div>
-    <%= {{.Names.Lower}}.ID %> - 
+    <%= {{.Names.Lower}}.ID %> -
     <a href="/{{.Names.Plural}}/<%= {{.Names.Lower}}.ID %>">View</a>
   </div>
 <% } %>
 <a href="/{{.Names.Plural}}/new">New {{.Names.Title}}</a>`,
-		
+
 		"show": `<h1>{{.Names.Title}} Details</h1>
 <p>ID: <%= {{.Names.Lower}}.ID %></p>
 <a href="/{{.Names.Plural}}/<%= {{.Names.Lower}}.ID %>/edit">Edit</a>
 <a href="/{{.Names.Plural}}">Back to List</a>`,
-		
+
 		"new": `<h1>New {{.Names.Title}}</h1>
 <%= form_for({{.Names.Lower}}, {action: "/{{.Names.Plural}}", method: "POST"}) { %>
   <%= partial("{{.Names.Plural}}/form.html") %>
   <button type="submit">Create</button>
 <% } %>`,
-		
+
 		"edit": `<h1>Edit {{.Names.Title}}</h1>
 <%= form_for({{.Names.Lower}}, {action: "/{{.Names.Plural}}/" + {{.Names.Lower}}.ID, method: "PUT"}) { %>
   <%= partial("{{.Names.Plural}}/form.html") %>
   <button type="submit">Update</button>
 <% } %>`,
-		
+
 		"_form": `<!-- Add your form fields here -->
 <div>
   <label>Field Name</label>
   <input type="text" name="field_name" value="<%= {{.Names.Lower}}.FieldName %>" />
 </div>`,
 	}
-	
+
 	tmpl, ok := templates[view]
 	if !ok {
 		tmpl = fmt.Sprintf("<!-- %s view for %s -->", view, names.Title)
 	}
-	
+
 	data := map[string]interface{}{
 		"Names": names,
 	}
-	
-	return GenerateFile(tmpl, data, path)
-}
 
-// GenerateFileWithFuncs creates a file from a template with custom functions
-func GenerateFileWithFuncs(tmplContent string, data interface{}, outputPath string, funcs template.FuncMap) error {
-	// Create directory if it doesn't exist
-	dir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", dir, err)
-	}
-	
-	// Parse and execute template with functions
-	tmpl, err := template.New("generator").Funcs(funcs).Parse(tmplContent)
-	if err != nil {
-		return fmt.Errorf("failed to parse template: %w", err)
-	}
-	
-	// Create output file
-	file, err := os.Create(outputPath)
-	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", outputPath, err)
-	}
-	defer file.Close()
-	
-	// Execute template to file
-	if err := tmpl.Execute(file, data); err != nil {
-		return fmt.Errorf("failed to execute template: %w", err)
-	}
-	
-	return nil
+	return GenerateFile(tmpl, data, path)
 }

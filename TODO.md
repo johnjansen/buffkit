@@ -14,12 +14,16 @@
 - [x] Disabled out-of-scope component features (slots, nested expansion, dev mode comments)
 - [x] Implemented all undefined step definitions for jobs module
 - [x] Achieved 56.2% test coverage for jobs module (up from 11.5%)
+- [x] Fixed all golangci-lint issues (CI lint check now passing ✅)
+- [x] Created missing feature files (components, SSE, authentication)
+- [x] Added proper resource cleanup (Jobs Runtime Shutdown, test reset)
+- [x] Fixed log buffer initialization in test steps
 
 ### 🔧 In Progress
-- [ ] Fix SSE test implementation (nil map initialization issues)
-- [ ] Implement remaining undefined steps for SSE/Authentication
-- [ ] Add proper cleanup for goroutines in tests
-- [ ] Fix minor issues in 6 failing job scenarios (log buffer initialization, mock handler calls)
+- [ ] Fix Redis pubsub goroutine panics in features tests
+- [ ] Fix remaining 7 failing job scenarios
+- [ ] Clean up migration test state between scenarios
+- [ ] Achieve 100% CI pass rate
 
 ### 📋 Phase 1: Core Infrastructure (Week 1)
 - [x] Complete `buffkit_integration.feature` with all wiring scenarios
@@ -97,20 +101,21 @@
 
 ## Testing Metrics
 - **Current Coverage**: ~7.4% overall
-- **Jobs Module Coverage**: 56.2% ✅
+- **Jobs Module Coverage**: 47.7% (56.2% locally) ✅
 - **Target Coverage**: 80-90%
 - **Core Features**: 15/15 scenarios passing ✅
 - **Grift Tasks**: 9/9 scenarios passing ✅
 - **Basic Features**: 2/2 scenarios passing ✅
-- **Jobs Module**: 14/20 scenarios passing (6 with minor issues)
-- **Total**: 40 scenarios passing
-- **SSE Tests**: Multiple failures due to implementation issues
-- **Undefined Steps**: 0 in jobs module ✅, remaining in SSE and Authentication areas
+- **Jobs Module**: 13/20 scenarios passing (7 with minor issues)
+- **Total**: 39 scenarios passing
+- **CI Status**: Lint ✅ | Tests ❌ (goroutine panics)
+- **Undefined Steps**: 0 in jobs module ✅, all feature files created with @skip tags
 
 ## Notes for Next Session
+- Review `.agent/ci-status.md` for current CI failure analysis
+- Check `.agent/jobs-testing-notes.md` for jobs module learnings
 - Review `.agent/bdd-coverage-plan.md` for detailed implementation strategy
-- Check `.agent/cleanup.md` for any technical debt to address
-- Refer to `.agent/regrets.md` for decisions to reconsider
+- Fix Redis pubsub goroutine leaks causing CI failures
 
 ## Quick Commands
 ```bash
