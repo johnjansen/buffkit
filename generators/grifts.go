@@ -10,22 +10,6 @@ import (
 	"github.com/markbates/grift/grift"
 )
 
-// toTitle converts a string to title case (replacement for deprecated strings.Title)
-func toTitle(s string) string {
-	if s == "" {
-		return ""
-	}
-
-	// Simple title case implementation
-	words := strings.Fields(s)
-	for i, word := range words {
-		if len(word) > 0 {
-			words[i] = strings.ToUpper(word[:1]) + strings.ToLower(word[1:])
-		}
-	}
-	return strings.Join(words, " ")
-}
-
 func init() {
 	// Register generator tasks
 	registerGeneratorTasks()
