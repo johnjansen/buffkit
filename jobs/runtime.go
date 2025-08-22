@@ -143,34 +143,6 @@ func (r *Runtime) Start() error {
 	return r.Server.Start(r.Mux)
 }
 
-// handleError is the error handler for failed jobs
-func handleError(ctx context.Context, task *asynq.Task, err error) {
-	log.Printf("Jobs: Error processing task %s: %v", task.Type(), err)
-}
-
-// logger implements asynq.Logger interface
-type logger struct{}
-
-func (l *logger) Debug(args ...interface{}) {
-	// Suppress debug logs
-}
-
-func (l *logger) Info(args ...interface{}) {
-	log.Println(args...)
-}
-
-func (l *logger) Warn(args ...interface{}) {
-	log.Println("Jobs WARNING:", args...)
-}
-
-func (l *logger) Error(args ...interface{}) {
-	log.Println("Jobs ERROR:", args...)
-}
-
-func (l *logger) Fatal(args ...interface{}) {
-	log.Fatal(args...)
-}
-
 // IsReady checks if the runtime is properly initialized (has client and mux)
 // without starting the server. This is useful for tests.
 func (r *Runtime) IsReady() bool {

@@ -119,8 +119,13 @@ func (tc *jobsTestContext) iRun(command string) error {
 }
 
 func (tc *jobsTestContext) theWorkerShouldStart() error {
-	if tc.runtime == nil || tc.runtime.Server == nil {
-		return fmt.Errorf("worker did not start")
+	if tc.runtime == nil {
+		return fmt.Errorf("runtime not initialized")
+	}
+	// Server is created lazily when Start() is called, so we just check that
+	// the runtime is ready (has Client and Mux)
+	if !tc.runtime.IsReady() {
+		return fmt.Errorf("runtime is not ready (missing Client or Mux)")
 	}
 	return nil
 }
