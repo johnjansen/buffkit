@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -43,39 +42,21 @@ func NewRuntime(redisURL string) (*Runtime, error) {
 	// Parse Redis connection options
 	opt, err := asynq.ParseRedisURI(redisURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid redis URL: %w", err)
-	}
-
-	// Validate that we don't have obviously invalid hostnames or unreachable ports
-	if strings.Contains(redisURL, "invalid:") || strings.Contains(redisURL, "://invalid") ||
-		strings.Contains(redisURL, ":99999") {
-		return nil, fmt.Errorf("failed to connect to Redis: invalid host or unreachable port")
+		return nil, fmt.Errorf("failed to parse Redis URL: %w", err)
 	}
 
 	// Create client for enqueuing jobs
 	client := asynq.NewClient(opt)
 
-	// Create server for processing jobs
-	server := asynq.NewServer(
-		opt,
-		asynq.Config{
-			Concurrency: 10, // Default concurrency
-			Queues: map[string]int{
-				"critical": 6,
-				"default":  3,
-				"low":      1,
-			},
-			ErrorHandler: asynq.ErrorHandlerFunc(handleError),
-			Logger:       &logger{},
-		},
-	)
+	// Don't create server yet - delay until Start() is called
+	// This prevents goroutines from starting prematurely in tests
 
-	// Create mux for routing jobs to handlers
+	// Create ServeMux for routing
 	mux := asynq.NewServeMux()
 
 	runtime := &Runtime{
 		Client: client,
-		Server: server,
+		Server: nil, // Server will be created in Start() or when needed
 		Mux:    mux,
 		config: Config{
 			RedisURL:    redisURL,
@@ -93,9 +74,14 @@ func NewRuntime(redisURL string) (*Runtime, error) {
 
 // Shutdown gracefully stops the jobs runtime
 func (r *Runtime) Shutdown() {
+	// Shutdown server first (stops accepting new jobs)
 	if r.Server != nil {
 		r.Server.Shutdown()
+		// Give server time to clean up
+		time.Sleep(100 * time.Millisecond)
 	}
+
+	// Then close the client
 	if r.Client != nil {
 		_ = r.Client.Close()
 	}
@@ -115,13 +101,80 @@ func (r *Runtime) RegisterDefaults() {
 
 // Start begins processing jobs
 func (r *Runtime) Start() error {
-	if r.Server == nil {
+	if r.config.RedisURL == "" {
 		log.Println("Jobs: No Redis configured, skipping job worker")
 		return nil
 	}
 
+	// Create server now if it doesn't exist
+	if r.Server == nil {
+		opt, err := asynq.ParseRedisURI(r.config.RedisURL)
+		if err != nil {
+			return fmt.Errorf("failed to parse Redis URL: %w", err)
+		}
+
+		// Use defaults if not configured
+		concurrency := r.config.Concurrency
+		if concurrency == 0 {
+			concurrency = 10
+		}
+
+		queues := r.config.Queues
+		if len(queues) == 0 {
+			queues = map[string]int{
+				"critical": 6,
+				"default":  3,
+				"low":      1,
+			}
+		}
+
+		r.Server = asynq.NewServer(
+			opt,
+			asynq.Config{
+				Concurrency:  concurrency,
+				Queues:       queues,
+				ErrorHandler: asynq.ErrorHandlerFunc(handleError),
+				Logger:       &logger{},
+			},
+		)
+	}
+
 	log.Println("Jobs: Starting worker...")
 	return r.Server.Start(r.Mux)
+}
+
+// handleError is the error handler for failed jobs
+func handleError(ctx context.Context, task *asynq.Task, err error) {
+	log.Printf("Jobs: Error processing task %s: %v", task.Type(), err)
+}
+
+// logger implements asynq.Logger interface
+type logger struct{}
+
+func (l *logger) Debug(args ...interface{}) {
+	// Suppress debug logs
+}
+
+func (l *logger) Info(args ...interface{}) {
+	log.Println(args...)
+}
+
+func (l *logger) Warn(args ...interface{}) {
+	log.Println("Jobs WARNING:", args...)
+}
+
+func (l *logger) Error(args ...interface{}) {
+	log.Println("Jobs ERROR:", args...)
+}
+
+func (l *logger) Fatal(args ...interface{}) {
+	log.Fatal(args...)
+}
+
+// IsReady checks if the runtime is properly initialized (has client and mux)
+// without starting the server. This is useful for tests.
+func (r *Runtime) IsReady() bool {
+	return r != nil && r.Client != nil && r.Mux != nil
 }
 
 // Stop gracefully shuts down the job processor
