@@ -39,6 +39,7 @@ type SharedContext struct {
 	Response *httptest.ResponseRecorder
 	Request  *http.Request
 	App      *buffalo.App
+	Kit      interface{} // Buffkit instance
 
 	// CLI command execution
 	LastCmd     *exec.Cmd

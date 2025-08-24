@@ -476,6 +476,9 @@ func (ts *TestSuite) theApplicationIsWiredWithDevModeSetToFalse() error {
 
 // Step: Then I should see the mail preview interface
 func (ts *TestSuite) iShouldSeeTheMailPreviewInterface() error {
+	if ts.response == nil {
+		return fmt.Errorf("no response captured - visit endpoint first")
+	}
 	if ts.response.Code != http.StatusOK {
 		return fmt.Errorf("expected mail preview interface (status 200), but got %d", ts.response.Code)
 	}

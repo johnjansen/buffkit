@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/cucumber/godog"
+	"github.com/gobuffalo/buffalo"
+	"github.com/johnjansen/buffkit"
 )
 
 // SharedBridge provides a way to use the shared context alongside existing test suites
@@ -127,8 +129,28 @@ func (b *SharedBridge) RegisterBridgedSteps(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
-	// Development mode checks
+	// Development mode checks - wire the app properly
 	ctx.Step(`^(?:the )?application is wired with DevMode set to (true|false)$`, func(devMode string) error {
+		// Parse the devMode boolean
+		isDevMode := devMode == "true"
+
+		// Wire the Buffalo app with Buffkit
+		app := buffalo.New(buffalo.Options{
+			Env: "test",
+		})
+		config := buffkit.Config{
+			AuthSecret: []byte("test-secret-key-32-chars-long-enough"),
+			DevMode:    isDevMode,
+		}
+
+		kit, err := buffkit.Wire(app, config)
+		if err != nil {
+			return fmt.Errorf("failed to wire Buffkit: %v", err)
+		}
+
+		// Store the app in the shared context so IVisit can use it
+		b.shared.SetHTTPApp(app)
+		b.shared.Kit = kit
 		b.shared.CaptureOutput(fmt.Sprintf("DevMode=%s", devMode))
 		return nil
 	})
