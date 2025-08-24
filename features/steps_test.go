@@ -476,6 +476,11 @@ func (ts *TestSuite) theApplicationIsWiredWithDevModeSetToFalse() error {
 
 // Step: Then I should see the mail preview interface
 func (ts *TestSuite) iShouldSeeTheMailPreviewInterface() error {
+	// Check if SharedContext has a response (from SharedBridge's IVisit)
+	if ts.shared != nil && ts.shared.Response != nil {
+		ts.response = ts.shared.Response
+	}
+	
 	if ts.response == nil {
 		return fmt.Errorf("no response captured - visit endpoint first")
 	}
@@ -1838,6 +1843,14 @@ func (ts *TestSuite) debuggingToolsShouldBeAvailable() error {
 
 // Step: Then the endpoint should not exist
 func (ts *TestSuite) theEndpointShouldNotExist() error {
+	// Check if SharedContext has a response (from SharedBridge's IVisit)
+	if ts.shared != nil && ts.shared.Response != nil {
+		ts.response = ts.shared.Response
+	}
+	
+	if ts.response == nil {
+		return fmt.Errorf("no response captured - visit endpoint first")
+	}
 	if ts.response.Code != http.StatusNotFound {
 		return fmt.Errorf("expected 404, but got %d", ts.response.Code)
 	}
