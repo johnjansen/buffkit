@@ -56,6 +56,9 @@ jobs:
       - name: Install Godog
         run: go install github.com/cucumber/godog/cmd/godog@latest
 
+      - name: Build grift binary for CLI tests
+        run: go build -o grift ./cmd/grift
+
       - name: Run unit tests with coverage
         run: |
           go test -coverprofile=coverage.out -covermode=atomic \
