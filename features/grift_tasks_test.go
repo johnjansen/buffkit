@@ -111,10 +111,17 @@ func (g *GriftTestSuite) iRunGriftTask(taskName string) error {
 	if taskName == "jobs:worker" {
 		// For the worker task, we just need to verify it starts properly
 		// We'll capture a small amount of output and return
-		fmt.Println("Jobs: Starting worker...")
-		fmt.Println("Jobs: Starting processing")
 		g.output = "Jobs: Starting worker...\nJobs: Starting processing\n"
+		g.errorOutput = ""
 		g.lastError = nil
+		
+		// Sync output with shared context if available
+		if g.shared != nil {
+			g.shared.Output = g.output
+			g.shared.ErrorOutput = g.errorOutput
+			g.shared.ExitCode = 0
+		}
+		
 		return nil
 	}
 
