@@ -38,13 +38,13 @@ Feature: CLI Tasks and Commands
 
   Scenario: Start job worker
     When I run "grift jobs:worker" with timeout 2 seconds
-    Then the output should contain "No Redis configured"
-    And the output should contain "no-op mode"
+    Then the error output should contain "jobs runtime not configured"
+    And the exit code should be 1
 
   Scenario: Start job worker with custom concurrency
     When I run "grift jobs:worker 10" with timeout 2 seconds
-    Then the output should contain "No Redis configured"
-    And the output should contain "no-op mode"
+    Then the error output should contain "jobs runtime not configured"
+    And the exit code should be 1
 
   @skip
   Scenario: Run scheduled job processor
