@@ -249,17 +249,40 @@ func (c *SharedContext) IHaveAWorkingDirectory(dir string) error {
 func (c *SharedContext) IRunCommand(command string) error {
 	// Special handling for grift commands
 	if strings.HasPrefix(command, "grift ") {
-		// Build grift binary if it doesn't exist
-		if _, err := os.Stat("./grift"); os.IsNotExist(err) {
-			buildCmd := exec.Command("go", "build", "-o", "grift", "./cmd/grift")
-			if err := buildCmd.Run(); err != nil {
-				c.LastError = fmt.Errorf("failed to build grift binary: %w", err)
-				c.ExitCode = -1
-				return nil
+		// Try to find grift binary in various locations
+		griftPath := ""
+		possiblePaths := []string{
+			"./grift",       // Current directory
+			"../grift",      // Parent directory (when running from features/)
+			"../../grift",   // Two levels up
+		}
+		
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				griftPath = path
+				break
 			}
 		}
-		// Replace "grift" with "./grift" to use our test binary
-		command = "./" + command
+		
+		// If not found, try to build it
+		if griftPath == "" {
+			// Try to build in parent directory
+			griftPath = "../grift"
+			buildCmd := exec.Command("go", "build", "-o", griftPath, "../cmd/grift")
+			if output, err := buildCmd.CombinedOutput(); err != nil {
+				// Try building from current directory
+				griftPath = "./grift"
+				buildCmd = exec.Command("go", "build", "-o", griftPath, "./cmd/grift")
+				if output2, err2 := buildCmd.CombinedOutput(); err2 != nil {
+					c.LastError = fmt.Errorf("failed to build grift binary: %w\nOutput: %s\n%s", err2, output, output2)
+					c.ExitCode = -1
+					return nil
+				}
+			}
+		}
+		
+		// Replace "grift" with the actual path
+		command = strings.Replace(command, "grift", griftPath, 1)
 	}
 	return c.IRunCommandWithTimeout(command, 30)
 }
@@ -274,17 +297,40 @@ func (c *SharedContext) IRunCommandWithTimeout(command string, timeoutSeconds in
 
 	// Special handling for grift commands
 	if strings.HasPrefix(command, "grift ") {
-		// Build grift binary if it doesn't exist
-		if _, err := os.Stat("./grift"); os.IsNotExist(err) {
-			buildCmd := exec.Command("go", "build", "-o", "grift", "./cmd/grift")
-			if err := buildCmd.Run(); err != nil {
-				c.LastError = fmt.Errorf("failed to build grift binary: %w", err)
-				c.ExitCode = -1
-				return nil
+		// Try to find grift binary in various locations
+		griftPath := ""
+		possiblePaths := []string{
+			"./grift",       // Current directory
+			"../grift",      // Parent directory (when running from features/)
+			"../../grift",   // Two levels up
+		}
+		
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				griftPath = path
+				break
 			}
 		}
-		// Replace "grift" with "./grift" to use our test binary
-		command = "./" + command
+		
+		// If not found, try to build it
+		if griftPath == "" {
+			// Try to build in parent directory
+			griftPath = "../grift"
+			buildCmd := exec.Command("go", "build", "-o", griftPath, "../cmd/grift")
+			if output, err := buildCmd.CombinedOutput(); err != nil {
+				// Try building from current directory  
+				griftPath = "./grift"
+				buildCmd = exec.Command("go", "build", "-o", griftPath, "./cmd/grift")
+				if output2, err2 := buildCmd.CombinedOutput(); err2 != nil {
+					c.LastError = fmt.Errorf("failed to build grift binary: %w\nOutput: %s\n%s", err2, output, output2)
+					c.ExitCode = -1
+					return nil
+				}
+			}
+		}
+		
+		// Replace "grift" with the actual path
+		command = strings.Replace(command, "grift", griftPath, 1)
 	}
 
 	// Parse command
