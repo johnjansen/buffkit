@@ -202,22 +202,8 @@ func registerJobTasks() {
 			// In a real app, this would be set during Wire()
 			kit := globalKit
 			if kit == nil || kit.Jobs == nil {
-				// Try to create a minimal jobs runtime
-				redisURL := getRedisURL()
-				if redisURL == "" {
-					fmt.Println("⚠️  No Redis configured (REDIS_URL not set)")
-					fmt.Println("   Job worker running in no-op mode")
-					fmt.Println("   Press Ctrl+C to stop")
-
-					// Wait for interrupt
-					sigChan := make(chan os.Signal, 1)
-					signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
-					<-sigChan
-
-					fmt.Println("\n✅ Worker stopped")
-					return nil
-				}
-
+				// Always error out if jobs runtime isn't properly configured
+				fmt.Fprintln(os.Stderr, "jobs runtime not configured - ensure Buffkit is wired into your app")
 				return fmt.Errorf("jobs runtime not configured - ensure Buffkit is wired into your app")
 			}
 
