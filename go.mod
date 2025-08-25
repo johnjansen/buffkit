@@ -7,7 +7,6 @@ require (
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gobuffalo/buffalo v1.1.0
 	github.com/gobuffalo/envy v1.10.2
-	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/hibiken/asynq v0.24.1
 	github.com/lib/pq v1.10.9
 	github.com/markbates/grift v1.5.0

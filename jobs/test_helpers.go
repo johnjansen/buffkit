@@ -17,6 +17,15 @@ type RedisContainer struct {
 
 // StartRedisContainer starts a Redis container for testing
 func StartRedisContainer() (*RedisContainer, error) {
+	// Check if we should use existing Redis
+	if os.Getenv("USE_EXISTING_REDIS") == "true" {
+		// Use existing Redis on default port
+		return &RedisContainer{
+			port:  "6379",
+			isGHA: true, // Mark as GHA to prevent stopping
+		}, nil
+	}
+	
 	// Check if we're running in GitHub Actions
 	if os.Getenv("GITHUB_ACTIONS") == "true" {
 		// GHA provides Redis as a service on port 6379
@@ -40,7 +49,17 @@ func StartRedisContainer() (*RedisContainer, error) {
 		return nil, fmt.Errorf("docker check failed: %v", err)
 	}
 
-	// Start a Redis container
+	// Check if Redis is already running on port 6379
+	pingCmd := exec.Command("redis-cli", "-p", "6379", "ping")
+	if output, err := pingCmd.Output(); err == nil && strings.TrimSpace(string(output)) == "PONG" {
+		// Redis is already running, use it instead of starting a new container
+		return &RedisContainer{
+			port:  "6379",
+			isGHA: true, // Mark as GHA to prevent stopping
+		}, nil
+	}
+	
+	// Start a Redis container on default port
 	cmd := exec.Command(
 		"docker", "run",
 		"-d",

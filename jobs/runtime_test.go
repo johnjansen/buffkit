@@ -951,11 +951,29 @@ func InitializeScenarioWithContext(sc *godog.ScenarioContext, container *jobs.Re
 }
 
 func InitializeScenario(sc *godog.ScenarioContext) {
-	// Create a default context without Redis container
-	testCtx := &jobsTestContext{}
+	// Start Redis container for tests
+	container, err := jobs.StartRedisContainer()
+	if err != nil {
+		// If we can't start Redis, tests will fail but at least they'll run
+		log.Printf("Warning: Could not start Redis container: %v", err)
+	}
+	
+	// Create test context with Redis container
+	testCtx := &jobsTestContext{
+		redisContainer: container,
+	}
 
 	sc.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		testCtx.reset()
+		// Ensure Redis is clean for each scenario
+		if testCtx.redisContainer != nil {
+			_ = testCtx.redisContainer.FlushAll()
+		}
+		return ctx, nil
+	})
+	
+	sc.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+		// Clean up after scenario if needed
 		return ctx, nil
 	})
 
