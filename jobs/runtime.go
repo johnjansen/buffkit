@@ -45,6 +45,17 @@ func NewRuntime(redisURL string) (*Runtime, error) {
 		return nil, fmt.Errorf("failed to parse Redis URL: %w", err)
 	}
 
+	// Test Redis connectivity by creating an inspector to check queues
+	// This will fail if Redis is not accessible
+	inspector := asynq.NewInspector(opt)
+	defer inspector.Close()
+	
+	// Try to get queue info as a connectivity test
+	_, err = inspector.Queues()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to Redis: %w", err)
+	}
+
 	// Create client for enqueuing jobs
 	client := asynq.NewClient(opt)
 
